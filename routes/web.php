@@ -38,6 +38,25 @@ Route::get('/contact-us', function () {
     return view('contact');
 })->name('contact');
 
+// Customer Routes
+Route::prefix('customer')->name('customer.')->group(function () {
+    // Auth Routes (Public)
+    Route::get('/login', [App\Http\Controllers\Customer\AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Customer\AuthController::class, 'login']);
+    Route::get('/register', [App\Http\Controllers\Customer\AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [App\Http\Controllers\Customer\AuthController::class, 'register']);
+    Route::post('/logout', [App\Http\Controllers\Customer\AuthController::class, 'logout'])->name('logout');
+    
+    // Protected Customer Routes
+    Route::middleware(['auth:customer'])->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'show'])->name('profile');
+        Route::post('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'index'])->name('bookings');
+        Route::get('/bookings/{id}', [App\Http\Controllers\Customer\BookingController::class, 'show'])->name('bookings.show');
+    });
+});
+
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     // Auth Routes

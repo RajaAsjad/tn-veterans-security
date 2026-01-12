@@ -31,10 +31,19 @@
             </nav>
 
             <!-- Desktop Button (Far Right) -->
-            <div class="hidden lg:flex items-center">
-                <a href="{{ route('services') }}" class="btn primary-button">
-                Get Enrolled
-                </a>
+            <div class="hidden lg:flex items-center gap-4">
+                @auth('customer')
+                    <a href="{{ route('customer.dashboard') }}" class="destop-nav-link">Dashboard</a>
+                    <form method="POST" action="{{ route('customer.logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="destop-nav-link">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('customer.login') }}" class="destop-nav-link">Login</a>
+                    <a href="{{ route('customer.register') }}" class="btn primary-button">
+                        Sign Up
+                    </a>
+                @endauth
             </div>
 
             <!-- Hamburger Button (<1024px) -->
@@ -53,6 +62,16 @@
             <a href="{{ route('certified') }}" class="mobile-nav-links">Get Certified</a>
             <a href="{{ route('testimonials') }}" class="mobile-nav-links">Testimonials</a>
             <a href="{{ route('contact') }}" class="mobile-nav-links">Contact Us</a>
+            @auth('customer')
+                <a href="{{ route('customer.dashboard') }}" class="mobile-nav-links">Dashboard</a>
+                <form method="POST" action="{{ route('customer.logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="mobile-nav-links w-full text-left">Logout</button>
+                </form>
+            @else
+                <a href="{{ route('customer.login') }}" class="mobile-nav-links">Login</a>
+                <a href="{{ route('customer.register') }}" class="mobile-nav-links">Sign Up</a>
+            @endauth
             <div class="pt-6">
                 <a href="{{ route('contact') }}" class="block w-full bg-[var(--primary-color)] text-white text-center py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">
                     Contact Us
