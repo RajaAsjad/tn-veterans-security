@@ -1,0 +1,334 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+
+
+@theme {
+    --font-sans: 'Sofia Pro', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Barlow Condensed', sans-serif;
+}
+
+
+
+:root {
+       --bg-color: #FFFFFF;
+       --text-white: #FFFFFF; 
+       --text-color: #333333;
+       --primary-color: #3AA62C;
+       --btn-hover-color: #175B0E;
+}
+/* h2{
+    font-family: 'Barlow Condensed', sans-serif;
+} */
+    body {
+        background-color: var(--bg-color);
+        
+        
+    }
+
+    .btn {
+        @apply text-[18px] px-8 py-4 font-normal  tracking-widest  transition-colors shadow-md;
+
+    }
+
+    .primary-button {
+        @apply bg-[var(--primary-color)] text-[var(--text-white)] ;
+        &:hover {
+            @apply bg-[var(--btn-hover-color)];
+        }
+    }   
+
+    .secondary-button {
+        @apply bg-[#F6CB42] text-[var(--text-color)] ;
+        &:hover {
+            @apply bg-yellow-300;
+        }
+    } 
+
+
+    .header-logo {
+            @apply w-auto h-32 md:h-44 lg:h-56 max-w-none drop-shadow-2xl;
+    }
+    .destop-nav-link {
+        @apply hover:text-[var(--primary-color)] transition-colors;
+    }
+   .mobile-nav-links {
+    @apply text-[18px] font-normal p-2;
+   }
+   .mobile-nav-links:hover {
+    @apply text-[var(--primary-color)] transition-colors;
+   }
+   
+    .footer-ul {
+        @apply space-y-4 text-[var(--text-white)] text-[18px] font-normal;
+    }   
+    .footer-title {
+        @apply text-[28px] text-[var(--text-white)] font-bold mb-8 relative inline-block;
+    }
+    .footer-content {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 items-start mb-16;
+    }
+   .footer-link {
+    @apply transition-colors;
+}
+
+.footer-link:hover {
+    @apply text-[var(--primary-color)] transition-colors;
+}
+
+.contact-link {
+    @apply text-[var(--text-white)] transition-colors text-[20px] font-bold;
+}
+
+.hero-section {
+    @apply relative min-h-[600px] lg:min-h-[850px] flex items-center bg-cover bg-center overflow-hidden;
+    background-image: url('../../public/images/hero-section-bg-img.png');
+}
+
+.hero-overlay {
+    @apply absolute inset-0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 35%, rgba(0, 0, 0, 0) 100%);
+}
+
+.inner-hero {
+    @apply relative min-h-[300px] md:min-h-[400px] flex items-center bg-cover bg-center overflow-hidden;
+    background-image: url('../../public/images/hero-section-bg-img.png');
+}
+
+.inner-hero-overlay {
+    @apply absolute inset-0 bg-black/60;
+}
+
+.cert-list {
+    @apply mt-8 space-y-3;
+}
+
+.cert-item {
+    @apply flex items-start gap-3 text-[var(--text-white)] text-[16px] md:text-[20px] font-normal leading-tight;
+}
+
+.cert-bullet {
+    @apply w-2.5 h-2.5 rounded-full bg-[#F6CB42] mt-1.5 shrink-0;
+}
+
+/* About Section */
+.about-section {
+    @apply py-16 lg:py-24 overflow-hidden;
+}
+
+.about-title {
+    @apply text-[30px] md:text-[64px] font-bold leading-none mb-6;
+}
+
+.about-text {
+    @apply text-[#333333] text-[16px] md:text-[20px] font-normal leading-relaxed mb-6;
+}
+
+.about-vertical-line {
+    @apply w-[3px] bg-[var(--primary-color)] h-full absolute right-0 top-0 hidden lg:block;
+}
+
+.training-card {
+    @apply flex flex-col items-center text-center  cursor-pointer;
+}
+.training-card-img-div {
+    @apply overflow-hidden  mb-4 w-full h-[250px];   
+}
+.training-card-title {
+    @apply text-[18px] md:text-[22px] font-bold text-[var(--text-color)];
+}
+.training-heading {
+    @apply text-[30px] md:text-[45px] font-bold leading-tight uppercase text-center mb-16 max-w-[800px] mx-auto;
+}
+/* Trust Section */
+.trust-list {
+    @apply flex items-start gap-3;
+}   
+.trust-text {
+    @apply text-[var(--text-color)] font-medium text-[16px] md:text-[20px];
+}   
+
+.training-heading {
+    @apply text-[30px] md:text-[40px] font-bold leading-[1.2] mb-8;
+}
+
+.training-card-img {
+    @apply w-full h-full object-cover transition-transform duration-500 hover:scale-105;
+}
+
+/* Jason Section */
+.jason-section {
+    @apply relative min-h-[500px] lg:min-h-[650px] flex items-center bg-cover bg-center overflow-hidden;
+    background-image: url('../../public/images/jason-section-bg-img.png');
+}
+
+/* Contact Section */
+.contact-title {
+    @apply text-[30px] md:text-[36px] font-bold text-[var(--text-color)] mb-6 uppercase;
+}
+.contact-input {
+    @apply bg-[#F5F5F5] border-none p-4 w-full rounded-sm focus:ring-2 focus:ring-[var(--primary-color)] outline-none text-[15px] font-normal;
+}
+
+
+ @media (max-width: 1024px) {
+    .jason-overlay {
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 1) 100%);
+    }
+}
+/* Ready to Take Section */
+.ready-section {
+    @apply relative min-h-[450px] md:min-h-[500px] lg:min-h-[700px] flex items-center bg-cover bg-center overflow-hidden;
+    background-image: url('../../public/images/ready-to-take-img.png');
+}
+
+/* .ready-overlay {
+    @apply absolute inset-0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0) 100%);
+} */
+
+@media (max-width: 1024px) {
+    .ready-overlay {
+        background: rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* FAQs Section */
+.faqs-section {
+    @apply relative py-16 lg:py-24 overflow-hidden;
+}
+
+@media (min-width: 1024px) {
+    .faqs-section {
+        background-image: url('../../public/images/faqs-bg-img.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        /* max-height: 1000px;
+        height: 1000px; */
+     
+
+    }
+}
+
+.faq-item {
+    @apply mb-4  ;
+}
+
+.faq-question {
+    @apply w-full text-left p-4 text-[16px] md:text-[20px] font-bold text-[var(--text-color)] bg-[#F5F5F5] cursor-pointer flex justify-between items-center transition-all duration-300;
+}
+
+.faq-question:hover {
+    @apply transform md:translate-x-2 bg-[#eeeeee];
+}
+
+.faq-question::after {
+    content: '+';
+    @apply text-[24px] font-normal transition-transform duration-300;
+}
+
+.faq-item.active .faq-question {
+    @apply bg-[var(--primary-color)] text-white transform scale-[1.01];
+}
+
+.faq-item.active .faq-question::after {
+    content: '-';
+    @apply rotate-180;
+}
+
+.faq-answer {
+    @apply bg-[#F8F8F8] overflow-hidden max-h-0 transition-all duration-300;
+}
+
+.faq-item.active .faq-answer {
+    @apply max-h-[400px];
+}
+
+.faq-answer-content {
+    @apply p-4 text-[15px] md:text-[20px] text-[#666] leading-relaxed transition-all duration-500 transform translate-y-4 opacity-0;
+}
+
+.faq-item.active .faq-answer-content {
+    @apply translate-y-0 opacity-100;
+}
+
+@media (min-width: 1024px) and (max-width: 1200px) {
+    .desktop-nav {
+        font-size: 12px;
+    }
+}
+
+
+/* About us page */
+.inner-hero {
+    @apply relative min-h-[600px] md:min-h-[800px] flex items-center bg-cover bg-center overflow-hidden;
+    background-image: url('../../public/images/hero-section-bg-img.png');
+}
+
+.inner-hero-overlay {
+    @apply absolute inset-0;
+    background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.7));
+}
+
+.inner-hero-title {
+    @apply text-[45px] md:text-[80px] font-bold text-white uppercase leading-none mb-6;
+    font-family: var(--font-display);
+}
+
+.inner-hero-subtext {
+    @apply text-white text-[18px] md:text-[24px] font-normal max-w-[700px] leading-relaxed opacity-90;
+}
+
+.about-overview-section {
+    @apply py-16 lg:py-28 bg-white;
+}
+
+.about-overview-title {
+    @apply text-[32px] md:text-[50px] font-bold text-[var(--text-color)] uppercase mb-8 leading-[1.1];
+    font-family: var(--font-display);
+}
+
+.about-overview-text {
+    @apply text-[16px] md:text-[20px] text-[#444] leading-relaxed mb-6 font-normal;
+}
+
+.mission-vision-card {
+    @apply p-8 bg-[#F8F8F8] border-l-4 transition-all duration-300 hover:shadow-lg;
+}
+
+.mission-vision-card h3 {
+    @apply text-[22px] md:text-[26px] font-bold mb-3 uppercase text-[var(--text-color)];
+    font-family: var(--font-display);
+}
+
+.mission-vision-card p {
+    @apply text-[15px] md:text-[17px] text-[#666] leading-relaxed;
+}
+
+.about-trust-section {
+    @apply py-16 lg:py-28 bg-[#fafafa] border-y border-gray-100;
+}
+
+/* Training Services */
+.service-detail-card {
+    @apply flex flex-col bg-white shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
+}
+
+.service-detail-card h3 {
+    font-family: var(--font-display);
+}
+
+/* Testimonials */
+.testimonial-page-card {
+    @apply p-8 bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+}
+
+.testimonial-page-card h4 {
+    font-family: var(--font-display);
+}

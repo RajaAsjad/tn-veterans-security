@@ -1,0 +1,30 @@
+@font-face {
+    font-family: 'Sofia Pro';
+    src: url('/fonts/sofia-pro/Sofia Pro Regular Az.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+
+
+@font-face {
+    font-family: 'Sofia Pro';
+    src: url('/fonts/sofia-pro/Sofia Pro Bold Az.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Barlow Condensed';
+    src: url('/fonts/Barlow_Condensed/BarlowCondensed-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+h2{
+    font-family: 'Barlow Condensed', sans-serif;
+}
+
+body{
+    font-family: 'Sofia Pro', sans-serif;
+}
