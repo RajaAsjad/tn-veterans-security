@@ -37,7 +37,7 @@
                 <a href="{{ route('admin.profile.show') }}" class="block px-6 py-3 hover:bg-gray-700 {{ request()->routeIs('admin.profile.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                     <i class="fas fa-user mr-3"></i> My Profile
                 </a>
-                <a href="{{ route('services') }}" class="block px-6 py-3 hover:bg-gray-700" target="_blank">
+                <a href="{{ url('/') }}" class="block px-6 py-3 hover:bg-gray-700" target="_blank">
                     <i class="fas fa-external-link-alt mr-3"></i> View Website
                 </a>
                 <form method="POST" action="{{ route('admin.logout') }}" class="mt-4">

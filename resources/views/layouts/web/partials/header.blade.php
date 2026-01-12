@@ -32,8 +32,8 @@
 
             <!-- Desktop Button (Far Right) -->
             <div class="hidden lg:flex items-center">
-                <a href="{{ route('contact') }}" class="btn primary-button">
-                    Contact Us
+                <a href="{{ route('services') }}" class="btn primary-button">
+                Get Enrolled
                 </a>
             </div>
 

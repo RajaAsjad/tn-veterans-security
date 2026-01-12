@@ -56,7 +56,7 @@
 
                     <!-- CTA Button -->
                     <div class="mb-10 md:mb-16" data-aos="fade-up" data-aos-delay="600" data-aos-duration="1000">
-                        <a href="#" class="btn primary-button ">
+                        <a href="{{ route('certified') }}" class="btn primary-button ">
                             Get Certified Today
                         </a>
                     </div>
@@ -110,7 +110,7 @@
                        </div>
 
                        <div class="mt-10" data-aos="fade-up" data-aos-delay="600">
-                           <a href="#" class="btn primary-button inline-block text-center whitespace-nowrap">
+                           <a href="{{ route('about') }}" class="btn primary-button inline-block text-center whitespace-nowrap">
                                Learn More About Us
                            </a>
                        </div>
@@ -136,7 +136,7 @@
             @if($services->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
                     @foreach($services as $index => $service)
-                        <div class="training-card" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
+                        <a href="{{ route('service.details', $service->id) }}" class="training-card block cursor-pointer hover:opacity-90 transition-opacity" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
                             <div class="training-card-img-div">
                                 @if($service->image)
                                     <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
@@ -145,7 +145,7 @@
                                 @endif
                             </div>
                             <h3 class="training-card-title">{{ $service->title }}</h3>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             @else
@@ -240,7 +240,7 @@
                 </p>
 
                 <div data-aos="fade-up" data-aos-delay="500">
-                    <a href="#" class="btn primary-button inline-block !text-[16px]">
+                    <a href="{{ route('certified') }}" class="btn primary-button inline-block !text-[16px]">
                         Get Certified Today
                     </a>
                 </div>
@@ -494,10 +494,10 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-start md:justify-center lg:justify-start"
                  data-aos="fade-up"
                  data-aos-delay="420">
-                <a href="#" class="btn primary-button !text-center">
+                <a href="{{ route('certified') }}" class="btn primary-button !text-center">
                     Start Your Training
                 </a>
-                <a href="#" class="btn secondary-button !text-center">
+                <a href="{{ route('contact') }}" class="btn secondary-button !text-center">
                     Contact Us
                 </a>
             </div>

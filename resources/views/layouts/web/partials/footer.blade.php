@@ -27,8 +27,10 @@
                     <!-- Phone -->
                     @if($siteSettings && $siteSettings->phone)
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                <img src="{{ asset('images/footer-mobile-icon.png') }}" alt="Phone" class="w-full h-full object-cover">
+                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" style="background: #f6cb42;">
+                                <svg class="w-6 h-6" fill="#333333" viewBox="0 0 24 24">
+                                    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
                             </div>
                             <a href="tel:{{ str_replace([' ', '-', '(', ')'], '', $siteSettings->phone) }}" class="contact-link">
                                 {{ $siteSettings->phone }}
@@ -38,8 +40,11 @@
                     <!-- Email -->
                     @if($siteSettings && $siteSettings->email)
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                <img src="{{ asset('images/footer-mail-icon.png') }}" alt="Email" class="w-full h-full object-cover">
+                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center" style="background: #f6cb42;">
+                                <svg class="w-6 h-6" fill="#333333" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                </svg>
                             </div>
                             <a href="mailto:{{ $siteSettings->email }}" class="contact-link">
                                 {{ $siteSettings->email }}
@@ -49,8 +54,8 @@
                     <!-- Address -->
                     @if($siteSettings && $siteSettings->address)
                         <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                <svg class="w-full h-full text-white p-2" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0" style="background: #f6cb42;">
+                                <svg class="w-full h-full p-2" fill="#333333" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
@@ -77,13 +82,21 @@
                 <h4 class="footer-title">
                     Training Programs
                 </h4>
-                <ul class="footer-ul">
-                    <li><a href="#" class="footer-link">Armed Security Training</a></li>
-                    <li><a href="#" class="footer-link">Unarmed Security Training</a></li>
-                    <li><a href="#" class="footer-link">Handgun Carry Permit</a></li>
-                    <li><a href="#" class="footer-link">Certification Renewal</a></li>
-                    <li><a href="#" class="footer-link">Job Placement Assistance</a></li>
-                </ul>
+                @if($footerServices->count() > 0)
+                    <ul class="footer-ul">
+                        @foreach($footerServices as $service)
+                            <li>
+                                <a href="{{ route('service.details', $service->id) }}" class="footer-link">
+                                    {{ $service->title }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <ul class="footer-ul">
+                        <li><a href="{{ route('services') }}" class="footer-link">View All Services</a></li>
+                    </ul>
+                @endif
             </div>
            
 
