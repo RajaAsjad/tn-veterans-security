@@ -346,9 +346,9 @@
                                      alt="Phone"
                                      class="w-10 h-10">
                             </div>
-                            <a href="tel:6155541131"
+                            <a href="tel:{{ $siteSettings && $siteSettings->phone ? str_replace([' ', '-', '(', ')'], '', $siteSettings->phone) : '6155541131' }}"
                                class="text-[15px] md:text-[17px] font-bold">
-                                615-554-1131
+                                {{ $siteSettings && $siteSettings->phone ? $siteSettings->phone : '615-554-1131' }}
                             </a>
                         </div>
 
@@ -361,9 +361,9 @@
                                      alt="Mail"
                                      class="w-10 h-10">
                             </div>
-                            <a href="mailto:tnvetsecsvctrng@gmail.com"
+                            <a href="mailto:{{ $siteSettings && $siteSettings->email ? $siteSettings->email : 'tnvetsecsvctrng@gmail.com' }}"
                                class="text-[15px] md:text-[17px] font-bold">
-                                tnvetsecsvctrng@gmail.com
+                                {{ $siteSettings && $siteSettings->email ? $siteSettings->email : 'tnvetsecsvctrng@gmail.com' }}
                             </a>
                         </div>
 

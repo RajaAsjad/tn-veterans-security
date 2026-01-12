@@ -40,7 +40,13 @@
                                 </div>
                                 <div>
                                     <h4 class="text-[22px] font-bold mb-2 uppercase text-[var(--text-color)]" style="font-family: var(--font-display);">Our Location</h4>
-                                    <p class="text-[#666] text-[18px] md:text-[20px] leading-relaxed">123 Security Way,<br>Nashville, TN 37201</p>
+                                    <p class="text-[#666] text-[18px] md:text-[20px] leading-relaxed">
+                                        @if($siteSettings && $siteSettings->address)
+                                            {!! nl2br(e($siteSettings->address)) !!}
+                                        @else
+                                            123 Security Way,<br>Nashville, TN 37201
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
 
@@ -51,7 +57,13 @@
                                 </div>
                                 <div>
                                     <h4 class="text-[22px] font-bold mb-2 uppercase text-[var(--text-color)]" style="font-family: var(--font-display);">Phone Number</h4>
-                                    <p class="text-[#666] text-[18px] md:text-[20px]">(123) 456-7890</p>
+                                    <p class="text-[#666] text-[18px] md:text-[20px]">
+                                        @if($siteSettings && $siteSettings->phone)
+                                            {{ $siteSettings->phone }}
+                                        @else
+                                            (123) 456-7890
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
 
@@ -62,7 +74,13 @@
                                 </div>
                                 <div>
                                     <h4 class="text-[22px] font-bold mb-2 uppercase text-[var(--text-color)]" style="font-family: var(--font-display);">Email Address</h4>
-                                    <p class="text-[#666] text-[18px] md:text-[20px]">info@securitytraining.com</p>
+                                    <p class="text-[#666] text-[18px] md:text-[20px]">
+                                        @if($siteSettings && $siteSettings->email)
+                                            {{ $siteSettings->email }}
+                                        @else
+                                            info@securitytraining.com
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                         </div>

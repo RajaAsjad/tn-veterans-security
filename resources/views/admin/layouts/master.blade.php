@@ -22,6 +22,9 @@
                 <a href="{{ route('admin.services.index') }}" class="block px-6 py-3 hover:bg-gray-700 {{ request()->routeIs('admin.services.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                     <i class="fas fa-briefcase mr-3"></i> Services
                 </a>
+                <a href="{{ route('admin.settings.index') }}" class="block px-6 py-3 hover:bg-gray-700 {{ request()->routeIs('admin.settings.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                    <i class="fas fa-cog mr-3"></i> Site Settings
+                </a>
                 <a href="{{ route('services') }}" class="block px-6 py-3 hover:bg-gray-700" target="_blank">
                     <i class="fas fa-external-link-alt mr-3"></i> View Website
                 </a>

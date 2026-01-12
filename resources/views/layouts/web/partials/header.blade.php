@@ -6,9 +6,15 @@
             <!-- Logo Area (Exact Match to Screenshot) -->
             <div class="relative flex-shrink-0 z-[60]">
                 <a href="{{ url('/') }}" class="absolute -top-4 left-0 lg:-top-4">
-                    <img src="{{ asset('images/securty-logo.png') }}" 
-                         alt="TN Veterans Logo" 
-                         class="header-logo">
+                    @if($siteSettings && $siteSettings->header_logo)
+                        <img src="{{ asset('storage/' . $siteSettings->header_logo) }}" 
+                             alt="TN Veterans Logo" 
+                             class="header-logo">
+                    @else
+                        <img src="{{ asset('images/securty-logo.png') }}" 
+                             alt="TN Veterans Logo" 
+                             class="header-logo">
+                    @endif
                 </a>
                 <!-- Spacing block to push navigation to the right -->
                 <div class="w-24 md:w-32 lg:w-48"></div>
