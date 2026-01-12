@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel') - TN Veterans Security</title>
+    
+    <!-- Favicon -->
+    @if($siteSettings && $siteSettings->favicon)
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $siteSettings->favicon) }}?v={{ $siteSettings->updated_at->timestamp ?? time() }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $siteSettings->favicon) }}?v={{ $siteSettings->updated_at->timestamp ?? time() }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -25,6 +34,9 @@
                 <a href="{{ route('admin.settings.index') }}" class="block px-6 py-3 hover:bg-gray-700 {{ request()->routeIs('admin.settings.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
                     <i class="fas fa-cog mr-3"></i> Site Settings
                 </a>
+                <a href="{{ route('admin.profile.show') }}" class="block px-6 py-3 hover:bg-gray-700 {{ request()->routeIs('admin.profile.*') ? 'bg-gray-700 border-l-4 border-green-500' : '' }}">
+                    <i class="fas fa-user mr-3"></i> My Profile
+                </a>
                 <a href="{{ route('services') }}" class="block px-6 py-3 hover:bg-gray-700" target="_blank">
                     <i class="fas fa-external-link-alt mr-3"></i> View Website
                 </a>
@@ -44,7 +56,18 @@
                 <div class="px-6 py-4 flex justify-between items-center">
                     <h2 class="text-2xl font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h2>
                     <div class="flex items-center gap-4">
-                        <span class="text-gray-600">{{ Auth::user()->name ?? 'Admin' }}</span>
+                        <a href="{{ route('admin.profile.show') }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                            @if(Auth::user()->profile_picture)
+                                <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}" 
+                                     alt="Profile" 
+                                     class="h-10 w-10 rounded-full object-cover border-2 border-gray-300">
+                            @else
+                                <div class="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            @endif
+                            <span class="text-gray-600">{{ Auth::user()->name ?? 'Admin' }}</span>
+                        </a>
                     </div>
                 </div>
             </header>
