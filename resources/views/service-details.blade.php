@@ -165,8 +165,78 @@
                                             </p>
                                         </div>
                                     </div>
+                                    
+                                    @if($service->class_type)
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--primary-color)]/10 flex items-center justify-center mt-1">
+                                            <i class="fas fa-users text-[var(--primary-color)] text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[12px] text-gray-600 uppercase tracking-wider mb-1 font-semibold">Class Type</p>
+                                            <p class="text-[16px] font-bold text-[var(--text-color)]">
+                                                {{ $service->class_type === 'one-on-one' ? 'One-on-One Training' : 'Group Classes' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
+
+                            <!-- Pricing & Booking Card -->
+                            @if($service->is_active && ($service->price || $service->deposit_amount))
+                            <div class="bg-white border-2 border-[var(--primary-color)] p-6 rounded-lg shadow-lg" data-aos="fade-left" data-aos-delay="100">
+                                <h3 class="text-[22px] font-bold text-[var(--text-color)] mb-5 uppercase border-b-2 border-[var(--primary-color)] pb-3" style="font-family: var(--font-display);">
+                                    Pricing & Booking
+                                </h3>
+                                
+                                @if($service->price)
+                                <div class="mb-4">
+                                    <div class="flex items-baseline gap-2 mb-2">
+                                        <span class="text-[32px] font-bold text-[var(--primary-color)]">${{ number_format($service->price, 2) }}</span>
+                                        <span class="text-[14px] text-gray-600">per student</span>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                                @if($service->deposit_amount)
+                                <div class="mb-5 pb-4 border-b border-gray-200">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[14px] text-gray-600">Deposit Required:</span>
+                                        <span class="text-[18px] font-bold text-green-600">${{ number_format($service->deposit_amount, 2) }}</span>
+                                    </div>
+                                    <p class="text-[12px] text-gray-500 mt-1">per student</p>
+                                </div>
+                                @endif
+                                
+                                @if($service->hasAvailableSpots())
+                                    <a href="{{ route('customer.available-classes', $service->id) }}" 
+                                       class="block w-full bg-[var(--primary-color)] hover:bg-[var(--btn-hover-color)] text-white font-bold py-4 px-6 rounded-lg text-center transition-colors mb-3 text-[16px] uppercase" 
+                                       style="font-family: var(--font-display);">
+                                        <i class="fas fa-calendar-plus mr-2"></i> Book Now
+                                    </a>
+                                    <p class="text-[12px] text-gray-500 text-center">
+                                        View available class schedules
+                                    </p>
+                                @else
+                                    <button disabled
+                                       class="block w-full bg-gray-400 text-white font-bold py-4 px-6 rounded-lg text-center cursor-not-allowed mb-3 text-[16px] uppercase">
+                                        No Classes Available
+                                    </button>
+                                    <p class="text-[12px] text-gray-500 text-center">
+                                        Please check back later or contact us
+                                    </p>
+                                @endif
+                                
+                                @if($service->class_type === 'group')
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <p class="text-[12px] text-gray-600 text-center">
+                                            <i class="fas fa-users mr-1"></i>
+                                            Group classes available - Book for multiple students
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                            @endif
 
                             {{-- Contact Card - Hidden
                             <div class="p-6 rounded-lg shadow-xl text-white" style="background: linear-gradient(to bottom right, var(--primary-color), var(--btn-hover-color));" data-aos="fade-left" data-aos-delay="200">

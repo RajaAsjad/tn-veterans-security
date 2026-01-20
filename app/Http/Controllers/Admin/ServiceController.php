@@ -15,7 +15,10 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::orderBy('order')->orderBy('created_at', 'desc')->get();
+        $services = Service::withCount(['classSchedules', 'bookings'])
+            ->orderBy('order')
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('admin.services.index', compact('services'));
     }
 
@@ -46,6 +49,8 @@ class ServiceController extends Controller
         }
 
         $validated['is_active'] = $request->has('is_active');
+        $validated['has_online_parts'] = $request->has('has_online_parts');
+        $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
 
         Service::create($validated);
 
@@ -81,6 +86,13 @@ class ServiceController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
+            // Pricing fields
+            'price' => 'nullable|numeric|min:0',
+            'deposit_amount' => 'nullable|numeric|min:0',
+            // Class configuration
+            'class_type' => 'nullable|in:group,one-on-one',
+            'has_online_parts' => 'boolean',
+            'testing_in_person' => 'boolean',
         ]);
 
         if ($request->hasFile('image')) {
@@ -92,6 +104,10 @@ class ServiceController extends Controller
         }
 
         $validated['is_active'] = $request->has('is_active');
+        $validated['has_online_parts'] = $request->has('has_online_parts');
+        $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
+        $validated['has_online_parts'] = $request->has('has_online_parts');
+        $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
 
         $service->update($validated);
 

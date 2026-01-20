@@ -71,6 +71,80 @@
             @enderror
         </div>
 
+        <!-- Pricing Section -->
+        <div class="mb-6 border-t pt-4 mt-6">
+            <h3 class="text-lg font-bold mb-4">Pricing & Class Configuration</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="price" class="block text-gray-700 text-sm font-bold mb-2">Price ($)</label>
+                    <input type="number" 
+                           id="price" 
+                           name="price" 
+                           value="{{ old('price') }}"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    @error('price')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="deposit_amount" class="block text-gray-700 text-sm font-bold mb-2">Deposit Amount ($)</label>
+                    <input type="number" 
+                           id="deposit_amount" 
+                           name="deposit_amount" 
+                           value="{{ old('deposit_amount') }}"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    @error('deposit_amount')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="class_type" class="block text-gray-700 text-sm font-bold mb-2">Class Type</label>
+                    <select id="class_type" 
+                            name="class_type" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="group" {{ old('class_type', 'group') === 'group' ? 'selected' : '' }}>Group</option>
+                        <option value="one-on-one" {{ old('class_type') === 'one-on-one' ? 'selected' : '' }}>One-on-One</option>
+                    </select>
+                    @error('class_type')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="has_online_parts" 
+                           value="1"
+                           {{ old('has_online_parts') ? 'checked' : '' }}
+                           class="mr-2">
+                    <span class="text-sm text-gray-700">Has online parts/components</span>
+                </label>
+            </div>
+
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="testing_in_person" 
+                           value="1"
+                           {{ old('testing_in_person', true) ? 'checked' : '' }}
+                           class="mr-2">
+                    <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
+                </label>
+            </div>
+        </div>
+
         <div class="mb-6">
             <label class="flex items-center">
                 <input type="checkbox" 
