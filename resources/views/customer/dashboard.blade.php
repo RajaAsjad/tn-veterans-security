@@ -61,8 +61,10 @@
                     <h3 class="text-lg font-semibold text-gray-800">{{ $booking->service->title }}</h3>
                     <p class="text-gray-600 mt-1">
                         <i class="fas fa-calendar mr-2"></i>{{ $booking->booking_date->format('M d, Y') }}
-                        @if($booking->booking_time)
-                            <i class="fas fa-clock ml-4 mr-2"></i>{{ $booking->booking_time->format('h:i A') }}
+                        @if($booking->classSchedule)
+                            <i class="fas fa-clock ml-4 mr-2"></i>{{ \Carbon\Carbon::parse($booking->classSchedule->start_time)->format('h:i A') }}
+                        @elseif($booking->booking_time)
+                            <i class="fas fa-clock ml-4 mr-2"></i>{{ \Carbon\Carbon::parse($booking->booking_time)->format('h:i A') }}
                         @endif
                     </p>
                     <span class="inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold

@@ -36,7 +36,16 @@ class AuthController extends Controller
 
         if (Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('customer.dashboard'));
+            
+            // Get intended URL or default to dashboard
+            $intended = $request->session()->pull('url.intended', route('customer.dashboard'));
+            
+            // Prevent redirect loop - if intended is login, go to dashboard
+            if ($intended === route('customer.login') || str_contains($intended, '/customer/login')) {
+                $intended = route('customer.dashboard');
+            }
+            
+            return redirect($intended);
         }
 
         throw ValidationException::withMessages([

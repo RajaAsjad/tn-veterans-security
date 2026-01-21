@@ -51,7 +51,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/services/{serviceId}/available-classes', [App\Http\Controllers\Customer\BookingController::class, 'showAvailableClasses'])->name('available-classes');
     
     // Protected Customer Routes
-    Route::middleware(['auth:customer'])->group(function () {
+    Route::middleware([\App\Http\Middleware\AuthenticateCustomer::class])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'show'])->name('profile');
         Route::post('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'update'])->name('profile.update');

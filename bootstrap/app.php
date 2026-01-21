@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Handle authentication exceptions for customer guard
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
@@ -24,16 +24,17 @@ return Application::configure(basePath: dirname(__DIR__))
             $guards = $e->guards();
             $guard = !empty($guards) ? $guards[0] : null;
             
-            // Check request path first (most reliable)
-            if ($request->is('customer/*')) {
+            // Check request path first (most reliable method)
+            $path = $request->path();
+            if (str_starts_with($path, 'customer/')) {
                 return redirect()->route('customer.login');
             }
             
-            if ($request->is('admin/*')) {
+            if (str_starts_with($path, 'admin/')) {
                 return redirect()->route('admin.login');
             }
             
-            // Check guard name
+            // Check guard name as fallback
             if ($guard === 'customer') {
                 return redirect()->route('customer.login');
             }
@@ -43,7 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return redirect()->route('admin.login');
             }
             
-            // Fallback: customer login
+            // Final fallback: customer login
             return redirect()->route('customer.login');
         });
     })->create();
