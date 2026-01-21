@@ -1,113 +1,378 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Sign Up - TN Veterans Security</title>
+@extends('layouts.web.master')
+
+@section('title', 'Customer Sign Up - TN Veterans Security')
+
+@section('content')
+<style>
+    .auth-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: calc(100vh - 200px);
+    }
     
-    <!-- Favicon -->
-    @php
-        $siteSettings = \App\Models\SiteSetting::first();
-    @endphp
-    @if($siteSettings && $siteSettings->favicon)
-        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $siteSettings->favicon) }}?v={{ $siteSettings->updated_at->timestamp ?? time() }}">
-    @else
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    @endif
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen py-8">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Create Account</h1>
-            <p class="text-gray-600 mt-2">TN Veterans Security</p>
-        </div>
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color) 0%, var(--btn-hover-color) 100%);
+    }
+    
+    .auth-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+    }
+    
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        letter-spacing: 0.025em;
+    }
+    
+    .form-label .required {
+        color: #ef4444;
+        margin-left: 2px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #1f2937;
+        background-color: #f9fafb;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+    
+    .form-input:focus {
+        border-color: var(--primary-color);
+        background-color: white;
+        box-shadow: 0 0 0 4px rgba(58, 166, 44, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-input::placeholder {
+        color: #9ca3af;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .form-group:focus-within .input-icon {
+        color: var(--primary-color);
+    }
+    
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #1f2937;
+        background-color: #f9fafb;
+        transition: all 0.3s ease;
+        outline: none;
+        resize: vertical;
+        font-family: inherit;
+    }
+    
+    .form-textarea:focus {
+        border-color: var(--primary-color);
+        background-color: white;
+        box-shadow: 0 0 0 4px rgba(58, 166, 44, 0.1);
+    }
+    
+    .form-hint {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .form-hint i {
+        font-size: 0.7rem;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--btn-hover-color) 100%);
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(58, 166, 44, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-submit:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(58, 166, 44, 0.4);
+    }
+    
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+    
+    .btn-submit span {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .auth-link {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .auth-link::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary-color);
+        transition: width 0.3s ease;
+    }
+    
+    .auth-link:hover::after {
+        width: 100%;
+    }
+    
+    .auth-link:hover {
+        color: var(--btn-hover-color);
+    }
+    
+    .alert {
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #1f2937 0%, var(--primary-color) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .auth-header p {
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+</style>
 
-        @if($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+<section class="auth-container py-16 lg:py-24">
+    <div class="container mx-auto px-4 lg:px-10">
+        <div class="mx-auto" style="width: 450px; max-width: 100%;">
+            <div class="auth-card p-8 lg:p-10">
+                <div class="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Join TN Veterans Security to book training services</p>
+                </div>
+
+                @if($errors->any())
+                    <div class="alert bg-red-50 border-2 border-red-200 text-red-800">
+                        <ul class="list-disc list-inside space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li class="text-sm">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('customer.register') }}">
+                    @csrf
+
+                    <div class="form-group">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-user mr-2"></i>Full Name
+                            <span class="required">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" 
+                                   id="name" 
+                                   name="name" 
+                                   value="{{ old('name') }}"
+                                   required 
+                                   placeholder="Enter your full name"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope mr-2"></i>Email Address
+                            <span class="required">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ old('email') }}"
+                                   required 
+                                   placeholder="Enter your email address"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">
+                            <i class="fas fa-phone mr-2"></i>Phone Number
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="text" 
+                                   id="phone" 
+                                   name="phone" 
+                                   value="{{ old('phone') }}"
+                                   placeholder="(Optional)"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address" class="form-label">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Address
+                        </label>
+                        <textarea id="address" 
+                                  name="address" 
+                                  rows="3"
+                                  placeholder="(Optional) Enter your address"
+                                  class="form-textarea">{{ old('address') }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock mr-2"></i>Password
+                            <span class="required">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   required 
+                                   minlength="8"
+                                   placeholder="Create a strong password"
+                                   class="form-input">
+                        </div>
+                        <div class="form-hint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Minimum 8 characters required</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password_confirmation" class="form-label">
+                            <i class="fas fa-lock mr-2"></i>Confirm Password
+                            <span class="required">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" 
+                                   id="password_confirmation" 
+                                   name="password_confirmation" 
+                                   required 
+                                   minlength="8"
+                                   placeholder="Re-enter your password"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <span>
+                            <i class="fas fa-user-plus mr-2"></i>Create Account
+                        </span>
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Already have an account? 
+                        <a href="{{ route('customer.login') }}" class="auth-link">Sign In</a>
+                    </p>
+                </div>
             </div>
-        @endif
-
-        <form method="POST" action="{{ route('customer.register') }}">
-            @csrf
-
-            <div class="mb-4">
-                <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
-                <input type="text" 
-                       id="name" 
-                       name="name" 
-                       value="{{ old('name') }}"
-                       required 
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            </div>
-
-            <div class="mb-4">
-                <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                <input type="email" 
-                       id="email" 
-                       name="email" 
-                       value="{{ old('email') }}"
-                       required 
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            </div>
-
-            <div class="mb-4">
-                <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Phone (Optional)</label>
-                <input type="text" 
-                       id="phone" 
-                       name="phone" 
-                       value="{{ old('phone') }}"
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            </div>
-
-            <div class="mb-4">
-                <label for="address" class="block text-gray-700 text-sm font-bold mb-2">Address (Optional)</label>
-                <textarea id="address" 
-                          name="address" 
-                          rows="2"
-                          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('address') }}</textarea>
-            </div>
-
-            <div class="mb-4">
-                <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                <input type="password" 
-                       id="password" 
-                       name="password" 
-                       required 
-                       minlength="8"
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            </div>
-
-            <div class="mb-6">
-                <label for="password_confirmation" class="block text-gray-700 text-sm font-bold mb-2">Confirm Password</label>
-                <input type="password" 
-                       id="password_confirmation" 
-                       name="password_confirmation" 
-                       required 
-                       minlength="8"
-                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            </div>
-
-            <button type="submit" 
-                    class="w-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors shadow-md" style="background-color: #3AA62C;" onmouseover="this.style.backgroundColor='#175B0E'" onmouseout="this.style.backgroundColor='#3AA62C'">
-                Sign Up
-            </button>
-        </form>
-
-        <div class="mt-6 text-center">
-            <p class="text-sm text-gray-600">
-                Already have an account? 
-                <a href="{{ route('customer.login') }}" class="hover:underline font-semibold transition-colors" style="color: #3AA62C;" onmouseover="this.style.color='#175B0E'" onmouseout="this.style.color='#3AA62C'">Login</a>
-            </p>
-            <a href="{{ url('/') }}" class="text-sm text-gray-600 hover:text-gray-800 mt-2 inline-block">Back to Website</a>
         </div>
     </div>
-</body>
-</html>
+</section>
+@endsection
