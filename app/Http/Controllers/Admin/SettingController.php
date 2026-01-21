@@ -29,6 +29,20 @@ class SettingController extends Controller
             'instagram_url' => 'nullable|url|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'youtube_url' => 'nullable|url|max:255',
+            // QuickBooks API Configuration
+            'quickbooks_client_id' => 'nullable|string|max:255',
+            'quickbooks_client_secret' => 'nullable|string|max:255',
+            'quickbooks_company_id' => 'nullable|string|max:255',
+            'quickbooks_environment' => 'nullable|in:sandbox,production',
+            'quickbooks_access_token' => 'nullable|string',
+            'quickbooks_refresh_token' => 'nullable|string',
+            'quickbooks_enabled' => 'nullable|boolean',
+            // Bank API Configuration
+            'bank_api_provider' => 'nullable|string|max:255',
+            'bank_api_key' => 'nullable|string|max:255',
+            'bank_api_secret' => 'nullable|string|max:255',
+            'bank_account_id' => 'nullable|string|max:255',
+            'bank_sync_enabled' => 'nullable|boolean',
         ]);
 
         $settings = SiteSetting::first();
@@ -55,10 +69,18 @@ class SettingController extends Controller
             $validated['favicon'] = $request->file('favicon')->store('settings', 'public');
         }
 
-        // Remove null values to avoid overwriting with null
-        $validated = array_filter($validated, function($value) {
+        // Handle boolean fields
+        $validated['quickbooks_enabled'] = $request->has('quickbooks_enabled') ? true : false;
+        $validated['bank_sync_enabled'] = $request->has('bank_sync_enabled') ? true : false;
+        
+        // Remove null values to avoid overwriting with null (except for boolean fields)
+        $validated = array_filter($validated, function($value, $key) {
+            // Keep boolean false values and empty strings for API keys (to allow clearing)
+            if (in_array($key, ['quickbooks_enabled', 'bank_sync_enabled'])) {
+                return true;
+            }
             return $value !== null;
-        });
+        }, ARRAY_FILTER_USE_BOTH);
 
         if ($settings) {
             $settings->update($validated);

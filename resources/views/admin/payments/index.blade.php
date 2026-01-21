@@ -7,6 +7,19 @@
 <div class="mb-6 flex justify-between items-center">
     <h3 class="text-xl font-semibold">All Payments</h3>
     <div class="flex gap-4">
+        <!-- Bulk Sync Buttons -->
+        <form method="POST" action="{{ route('admin.payments.sync-all-quickbooks') }}" class="inline">
+            @csrf
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm" title="Sync all pending payments to QuickBooks">
+                <i class="fab fa-quickbooks mr-1"></i> Sync All to QuickBooks
+            </button>
+        </form>
+        <form method="POST" action="{{ route('admin.payments.sync-all-bank') }}" class="inline">
+            @csrf
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm" title="Sync all pending payments to bank">
+                <i class="fas fa-university mr-1"></i> Sync All to Bank
+            </button>
+        </form>
         <!-- Filter Form -->
         <form method="GET" action="{{ route('admin.payments.index') }}" class="flex gap-2">
             <select name="status" class="border rounded px-3 py-2 text-sm">

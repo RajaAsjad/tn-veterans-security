@@ -193,6 +193,175 @@
             </div>
         </div>
 
+        <!-- API Integration Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">API Integration</h3>
+            
+            <!-- QuickBooks Integration -->
+            <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-semibold text-gray-800">
+                        <i class="fab fa-quickbooks text-blue-600 mr-2"></i> QuickBooks Integration
+                    </h4>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" 
+                               name="quickbooks_enabled" 
+                               value="1"
+                               {{ old('quickbooks_enabled', $settings->quickbooks_enabled ?? false) ? 'checked' : '' }}
+                               class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-700">Enable QuickBooks Sync</span>
+                    </label>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="quickbooks_client_id" class="block text-gray-700 text-sm font-bold mb-2">Client ID</label>
+                        <input type="text" 
+                               id="quickbooks_client_id" 
+                               name="quickbooks_client_id" 
+                               value="{{ old('quickbooks_client_id', $settings->quickbooks_client_id ?? '') }}"
+                               placeholder="Enter QuickBooks Client ID"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        @error('quickbooks_client_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="quickbooks_client_secret" class="block text-gray-700 text-sm font-bold mb-2">Client Secret</label>
+                        <input type="password" 
+                               id="quickbooks_client_secret" 
+                               name="quickbooks_client_secret" 
+                               value="{{ old('quickbooks_client_secret', $settings->quickbooks_client_secret ?? '') }}"
+                               placeholder="Enter QuickBooks Client Secret"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" onclick="togglePassword('quickbooks_client_secret')" class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-eye" id="eye-quickbooks_client_secret"></i> Show/Hide
+                        </button>
+                        @error('quickbooks_client_secret')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="quickbooks_company_id" class="block text-gray-700 text-sm font-bold mb-2">Company ID</label>
+                        <input type="text" 
+                               id="quickbooks_company_id" 
+                               name="quickbooks_company_id" 
+                               value="{{ old('quickbooks_company_id', $settings->quickbooks_company_id ?? '') }}"
+                               placeholder="Enter QuickBooks Company ID"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        @error('quickbooks_company_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="quickbooks_environment" class="block text-gray-700 text-sm font-bold mb-2">Environment</label>
+                        <select id="quickbooks_environment" 
+                                name="quickbooks_environment" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="sandbox" {{ old('quickbooks_environment', $settings->quickbooks_environment ?? 'sandbox') === 'sandbox' ? 'selected' : '' }}>Sandbox</option>
+                            <option value="production" {{ old('quickbooks_environment', $settings->quickbooks_environment ?? 'sandbox') === 'production' ? 'selected' : '' }}>Production</option>
+                        </select>
+                        @error('quickbooks_environment')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label for="quickbooks_access_token" class="block text-gray-700 text-sm font-bold mb-2">Access Token (Optional - Auto-generated)</label>
+                        <input type="text" 
+                               id="quickbooks_access_token" 
+                               name="quickbooks_access_token" 
+                               value="{{ old('quickbooks_access_token', $settings->quickbooks_access_token ?? '') }}"
+                               placeholder="Will be auto-generated after OAuth"
+                               readonly
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-500 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline">
+                        <p class="text-xs text-gray-500 mt-1">This token is automatically generated during OAuth authentication</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bank Integration -->
+            <div class="mb-8 p-4 bg-green-50 rounded-lg border border-green-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-semibold text-gray-800">
+                        <i class="fas fa-university text-green-600 mr-2"></i> Bank Account Integration
+                    </h4>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" 
+                               name="bank_sync_enabled" 
+                               value="1"
+                               {{ old('bank_sync_enabled', $settings->bank_sync_enabled ?? false) ? 'checked' : '' }}
+                               class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-700">Enable Bank Sync</span>
+                    </label>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="bank_api_provider" class="block text-gray-700 text-sm font-bold mb-2">API Provider</label>
+                        <select id="bank_api_provider" 
+                                name="bank_api_provider" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="">Select Provider</option>
+                            <option value="plaid" {{ old('bank_api_provider', $settings->bank_api_provider ?? '') === 'plaid' ? 'selected' : '' }}>Plaid</option>
+                            <option value="yodlee" {{ old('bank_api_provider', $settings->bank_api_provider ?? '') === 'yodlee' ? 'selected' : '' }}>Yodlee</option>
+                            <option value="other" {{ old('bank_api_provider', $settings->bank_api_provider ?? '') === 'other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                        @error('bank_api_provider')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="bank_account_id" class="block text-gray-700 text-sm font-bold mb-2">Bank Account ID</label>
+                        <input type="text" 
+                               id="bank_account_id" 
+                               name="bank_account_id" 
+                               value="{{ old('bank_account_id', $settings->bank_account_id ?? '') }}"
+                               placeholder="Enter Bank Account ID"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        @error('bank_account_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="bank_api_key" class="block text-gray-700 text-sm font-bold mb-2">API Key</label>
+                        <input type="text" 
+                               id="bank_api_key" 
+                               name="bank_api_key" 
+                               value="{{ old('bank_api_key', $settings->bank_api_key ?? '') }}"
+                               placeholder="Enter Bank API Key"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        @error('bank_api_key')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="bank_api_secret" class="block text-gray-700 text-sm font-bold mb-2">API Secret</label>
+                        <input type="password" 
+                               id="bank_api_secret" 
+                               name="bank_api_secret" 
+                               value="{{ old('bank_api_secret', $settings->bank_api_secret ?? '') }}"
+                               placeholder="Enter Bank API Secret"
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" onclick="togglePassword('bank_api_secret')" class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-eye" id="eye-bank_api_secret"></i> Show/Hide
+                        </button>
+                        @error('bank_api_secret')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Button -->
         <div class="flex gap-4">
             <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">
@@ -204,4 +373,21 @@
         </div>
     </form>
 </div>
+
+<script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById('eye-' + fieldId);
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+</script>
 @endsection

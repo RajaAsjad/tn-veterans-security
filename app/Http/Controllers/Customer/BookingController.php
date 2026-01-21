@@ -7,9 +7,12 @@ use App\Models\Service;
 use App\Models\ServiceBooking;
 use App\Models\ClassSchedule;
 use App\Models\Payment;
+use App\Services\QuickBooksService;
+use App\Services\BankIntegrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class BookingController extends Controller
@@ -217,6 +220,43 @@ class BookingController extends Controller
             'payment_status' => 'deposit_paid',
             'status' => 'confirmed',
         ]);
+
+        // Auto-sync to QuickBooks and Bank if enabled (only for completed payments)
+        if ($payment->status === 'completed') {
+            try {
+                // Sync to QuickBooks
+                $quickBooksService = app(QuickBooksService::class);
+                $quickBooksResult = $quickBooksService->syncPayment($payment);
+                if (!$quickBooksResult['success']) {
+                    Log::warning('QuickBooks auto-sync failed', [
+                        'payment_id' => $payment->id,
+                        'error' => $quickBooksResult['message'],
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('QuickBooks auto-sync exception', [
+                    'payment_id' => $payment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            try {
+                // Sync to Bank
+                $bankService = app(BankIntegrationService::class);
+                $bankResult = $bankService->syncPayment($payment);
+                if (!$bankResult['success']) {
+                    Log::warning('Bank auto-sync failed', [
+                        'payment_id' => $payment->id,
+                        'error' => $bankResult['message'],
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Bank auto-sync exception', [
+                    'payment_id' => $payment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return redirect()->route('customer.bookings.show', $booking->id)
             ->with('success', 'Deposit payment received. Your booking is confirmed!');

@@ -156,6 +156,16 @@
                     <p class="text-sm text-gray-900">{{ $payment->quickbooks_synced_at->format('M d, Y h:i A') }}</p>
                 </div>
                 @endif
+                @if(!$payment->synced_to_quickbooks && $payment->status === 'completed')
+                <div class="pt-3 border-t">
+                    <form method="POST" action="{{ route('admin.payments.sync-quickbooks', $payment) }}">
+                        @csrf
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+                            <i class="fab fa-quickbooks mr-1"></i> Sync to QuickBooks
+                        </button>
+                    </form>
+                </div>
+                @endif
             </div>
         </div>
 
@@ -179,6 +189,16 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Synced At</label>
                     <p class="text-sm text-gray-900">{{ $payment->bank_synced_at->format('M d, Y h:i A') }}</p>
+                </div>
+                @endif
+                @if(!$payment->synced_to_bank && $payment->status === 'completed')
+                <div class="pt-3 border-t">
+                    <form method="POST" action="{{ route('admin.payments.sync-bank', $payment) }}">
+                        @csrf
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm">
+                            <i class="fas fa-university mr-1"></i> Sync to Bank
+                        </button>
+                    </form>
                 </div>
                 @endif
             </div>

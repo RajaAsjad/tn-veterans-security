@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\QuickBooksService;
+use App\Services\BankIntegrationService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -56,5 +58,107 @@ class PaymentController extends Controller
     {
         $payment->load(['booking.service', 'customer', 'booking.classSchedule']);
         return view('admin.payments.show', compact('payment'));
+    }
+
+    /**
+     * Sync payment to QuickBooks
+     */
+    public function syncQuickBooks(Payment $payment, QuickBooksService $quickBooksService)
+    {
+        try {
+            $result = $quickBooksService->syncPayment($payment);
+            
+            if ($result['success']) {
+                return redirect()->route('admin.payments.show', $payment->id)
+                    ->with('success', $result['message']);
+            } else {
+                return redirect()->route('admin.payments.show', $payment->id)
+                    ->with('error', $result['message']);
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.payments.show', $payment->id)
+                ->with('error', 'Failed to sync to QuickBooks: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync payment to bank
+     */
+    public function syncBank(Payment $payment, BankIntegrationService $bankService)
+    {
+        try {
+            $result = $bankService->syncPayment($payment);
+            
+            if ($result['success']) {
+                return redirect()->route('admin.payments.show', $payment->id)
+                    ->with('success', $result['message']);
+            } else {
+                return redirect()->route('admin.payments.show', $payment->id)
+                    ->with('error', $result['message']);
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.payments.show', $payment->id)
+                ->with('error', 'Failed to sync to bank: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync all pending payments to QuickBooks
+     */
+    public function syncAllQuickBooks(QuickBooksService $quickBooksService)
+    {
+        try {
+            $payments = Payment::where('status', 'completed')
+                ->where('synced_to_quickbooks', false)
+                ->get();
+            
+            $synced = 0;
+            $failed = 0;
+            
+            foreach ($payments as $payment) {
+                $result = $quickBooksService->syncPayment($payment);
+                if ($result['success']) {
+                    $synced++;
+                } else {
+                    $failed++;
+                }
+            }
+            
+            return redirect()->route('admin.payments.index')
+                ->with('success', "Synced {$synced} payments to QuickBooks. {$failed} failed.");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.payments.index')
+                ->with('error', 'Failed to sync payments: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sync all pending payments to bank
+     */
+    public function syncAllBank(BankIntegrationService $bankService)
+    {
+        try {
+            $payments = Payment::where('status', 'completed')
+                ->where('synced_to_bank', false)
+                ->get();
+            
+            $synced = 0;
+            $failed = 0;
+            
+            foreach ($payments as $payment) {
+                $result = $bankService->syncPayment($payment);
+                if ($result['success']) {
+                    $synced++;
+                } else {
+                    $failed++;
+                }
+            }
+            
+            return redirect()->route('admin.payments.index')
+                ->with('success', "Synced {$synced} payments to bank. {$failed} failed.");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.payments.index')
+                ->with('error', 'Failed to sync payments: ' . $e->getMessage());
+        }
     }
 }

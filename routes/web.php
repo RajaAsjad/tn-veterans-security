@@ -94,6 +94,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Payments Routes
         Route::get('/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{payment}', [App\Http\Controllers\Admin\PaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments/{payment}/sync-quickbooks', [App\Http\Controllers\Admin\PaymentController::class, 'syncQuickBooks'])->name('payments.sync-quickbooks');
+        Route::post('/payments/{payment}/sync-bank', [App\Http\Controllers\Admin\PaymentController::class, 'syncBank'])->name('payments.sync-bank');
+        Route::post('/payments/sync-all-quickbooks', [App\Http\Controllers\Admin\PaymentController::class, 'syncAllQuickBooks'])->name('payments.sync-all-quickbooks');
+        Route::post('/payments/sync-all-bank', [App\Http\Controllers\Admin\PaymentController::class, 'syncAllBank'])->name('payments.sync-all-bank');
         
         Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
