@@ -75,7 +75,11 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('customer.dashboard')->with('success', 'Account created successfully!');
+        $intended = $request->session()->pull('url.intended', route('customer.dashboard'));
+        if ($intended === route('customer.login') || str_contains($intended, '/customer/login')) {
+            $intended = route('customer.dashboard');
+        }
+        return redirect($intended)->with('success', 'Account created successfully!');
     }
 
     public function logout(Request $request)

@@ -26,6 +26,44 @@
         <section class="py-16 lg:py-24 bg-gradient-to-b from-white to-[#F8F8F8]">
             <div class="container mx-auto px-4 lg:px-10">
                 
+                <!-- Category Tabs -->
+                @if(isset($categories) && $categories->count() > 0)
+                    <div class="mb-8 flex flex-wrap gap-4 justify-center" data-aos="fade-up">
+                        <a href="{{ route('services') }}" 
+                           class="px-6 py-3 rounded-full font-semibold transition-all {{ !$category ? 'bg-[var(--primary-color)] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                            All Services
+                        </a>
+                        @foreach($categories as $cat)
+                            @php
+                                $categoryLabels = [
+                                    'security_training' => 'Security Training',
+                                    'nra' => 'NRA',
+                                    'red_cross' => 'Red Cross',
+                                    'handgun_carry' => 'Handgun Carry',
+                                    'services' => 'Services'
+                                ];
+                                $catLabel = $categoryLabels[$cat] ?? ucfirst(str_replace('_', ' ', $cat));
+                            @endphp
+                            <a href="{{ route('services', ['category' => $cat]) }}" 
+                               class="px-6 py-3 rounded-full font-semibold transition-all {{ $category === $cat ? 'bg-[var(--primary-color)] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                                {{ $catLabel }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                <!-- Active Filter Display -->
+                @if($category)
+                    <div class="mb-6 text-center" data-aos="fade-up" data-aos-delay="100">
+                        <p class="text-gray-600">
+                            Showing: <span class="font-bold text-[var(--primary-color)]">{{ ucfirst(str_replace('_', ' ', $category)) }}</span>
+                            @if($subcategory)
+                                > <span class="font-bold">{{ $subcategory }}</span>
+                            @endif
+                        </p>
+                    </div>
+                @endif
+                
                 @if($services->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
                         @foreach($services as $index => $service)
@@ -59,14 +97,34 @@
                                         
                                         <!-- Description -->
                                         @if($service->short_description)
-                                            <p class="text-[#666] text-[15px] lg:text-[16px] leading-relaxed mb-6 flex-1 line-clamp-3">
+                                            <p class="text-[#666] text-[15px] lg:text-[16px] leading-relaxed mb-4 flex-1 line-clamp-3">
                                                 {{ $service->short_description }}
                                             </p>
                                         @elseif($service->description)
-                                            <p class="text-[#666] text-[15px] lg:text-[16px] leading-relaxed mb-6 flex-1 line-clamp-3">
+                                            <p class="text-[#666] text-[15px] lg:text-[16px] leading-relaxed mb-4 flex-1 line-clamp-3">
                                                 {{ Str::limit(strip_tags($service->description), 150) }}
                                             </p>
                                         @endif
+
+                                        <!-- Location & Requirements -->
+                                        <div class="mb-4 space-y-2">
+                                            @if($service->location)
+                                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                                    <i class="fas fa-map-marker-alt text-[var(--primary-color)]"></i>
+                                                    <span>{{ $service->location }}</span>
+                                                </div>
+                                            @endif
+                                            @if($service->requires_dallas_law || $service->requires_active_shooter)
+                                                <div class="flex flex-wrap gap-2">
+                                                    @if($service->requires_dallas_law)
+                                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
+                                                    @endif
+                                                    @if($service->requires_active_shooter)
+                                                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
                                         
                                         <!-- Read More Link -->
                                         <div class="flex items-center gap-2 text-[var(--primary-color)] font-semibold mt-auto pt-4 border-t border-gray-100 group-hover:border-[var(--primary-color)]/30 transition-colors">

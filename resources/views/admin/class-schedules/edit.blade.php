@@ -117,7 +117,22 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Location -->
+            <div class="mb-4">
+                <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                <select id="location" 
+                        name="location" 
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">No Specific Location</option>
+                    <option value="Location A" {{ old('location', $classSchedule->location) === 'Location A' ? 'selected' : '' }}>Location A</option>
+                    <option value="Location B" {{ old('location', $classSchedule->location) === 'Location B' ? 'selected' : '' }}>Location B</option>
+                </select>
+                @error('location')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Room -->
             <div class="mb-4">
                 <label for="room" class="block text-gray-700 text-sm font-bold mb-2">Room</label>

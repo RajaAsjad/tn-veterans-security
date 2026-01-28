@@ -95,6 +95,14 @@
                     <label class="block text-sm font-medium text-gray-500">Duration</label>
                     <p class="text-base text-gray-900">{{ $booking->classSchedule->duration_hours }} {{ Str::plural('hour', $booking->classSchedule->duration_hours) }}</p>
                 </div>
+                @if($booking->location || ($booking->classSchedule && $booking->classSchedule->location))
+                <div>
+                    <label class="block text-sm font-medium text-gray-500">Location</label>
+                    <p class="text-base font-semibold text-[var(--primary-color)]">
+                        <i class="fas fa-map-marker-alt mr-1"></i>{{ $booking->location ?? $booking->classSchedule->location }}
+                    </p>
+                </div>
+                @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-500">Room</label>
                     <p class="text-base text-gray-900">{{ $booking->classSchedule->room ?? 'TBD' }}</p>

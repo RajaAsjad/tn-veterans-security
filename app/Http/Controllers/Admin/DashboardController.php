@@ -154,16 +154,6 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
         
-        // Upcoming Classes (Next 7 days)
-        $upcomingClasses = ClassSchedule::with('service')
-            ->where('class_date', '>=', today())
-            ->where('class_date', '<=', today()->addDays(7))
-            ->where('status', 'scheduled')
-            ->orderBy('class_date', 'asc')
-            ->orderBy('start_time', 'asc')
-            ->limit(10)
-            ->get();
-        
         return view('admin.dashboard', compact(
             'servicesCount',
             'activeServicesCount',
@@ -195,8 +185,7 @@ class DashboardController extends Controller
             'bankSynced',
             'bankPending',
             'recentBookings',
-            'recentPayments',
-            'upcomingClasses'
+            'recentPayments'
         ));
     }
 }

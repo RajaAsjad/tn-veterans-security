@@ -44,6 +44,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -74,6 +75,15 @@
                                     <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($booking->classSchedule->start_time)->format('h:i A') }}</div>
                                 @else
                                     <div class="text-sm text-gray-500">TBD</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($booking->location || ($booking->classSchedule && $booking->classSchedule->location))
+                                    <span class="text-sm font-semibold text-[var(--primary-color)]">
+                                        <i class="fas fa-map-marker-alt mr-1"></i>{{ $booking->location ?? $booking->classSchedule->location }}
+                                    </span>
+                                @else
+                                    <span class="text-sm text-gray-400">N/A</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

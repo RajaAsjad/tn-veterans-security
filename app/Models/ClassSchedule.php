@@ -18,6 +18,7 @@ class ClassSchedule extends Model
         'min_students',
         'current_students',
         'room',
+        'location',
         'instructor',
         'can_overlap',
         'status',

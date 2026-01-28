@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
@@ -14,6 +15,12 @@ class Service extends Model
         'image',
         'order',
         'is_active',
+        // Category and organization
+        'category',
+        'subcategory',
+        'location',
+        'requires_dallas_law',
+        'requires_active_shooter',
         // Class/Service pricing
         'price',
         'deposit_amount',
@@ -36,7 +43,42 @@ class Service extends Model
         'min_students' => 'integer',
         'has_online_parts' => 'boolean',
         'testing_in_person' => 'boolean',
+        'requires_dallas_law' => 'boolean',
+        'requires_active_shooter' => 'boolean',
     ];
+
+    /**
+     * Services linked from this one (e.g. Unarmed → Less Lethal, Dallas Law).
+     * Pivot: service_relationships (parent_service_id, linked_service_id, order).
+     */
+    public function linkedServices(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Service::class,
+            'service_relationships',
+            'parent_service_id',
+            'linked_service_id'
+        )
+            ->withPivot('order')
+            ->withTimestamps()
+            ->orderByPivot('order');
+    }
+
+    /**
+     * Services that link to this one (reverse of linkedServices).
+     */
+    public function linkedFromServices(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Service::class,
+            'service_relationships',
+            'linked_service_id',
+            'parent_service_id'
+        )
+            ->withPivot('order')
+            ->withTimestamps()
+            ->orderByPivot('order');
+    }
 
     /**
      * Get all class schedules for this service.

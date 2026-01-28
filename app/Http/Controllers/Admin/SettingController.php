@@ -43,6 +43,9 @@ class SettingController extends Controller
             'bank_api_secret' => 'nullable|string|max:255',
             'bank_account_id' => 'nullable|string|max:255',
             'bank_sync_enabled' => 'nullable|boolean',
+            // Instructor Bios
+            'jayson_bio' => 'nullable|string',
+            'kenny_bio' => 'nullable|string',
         ]);
 
         $settings = SiteSetting::first();

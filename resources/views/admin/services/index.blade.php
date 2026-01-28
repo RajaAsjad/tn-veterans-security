@@ -24,7 +24,6 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pricing</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedules</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -79,14 +78,6 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div>
-                                <div>{{ $service->class_schedules_count ?? 0 }} schedule(s)</div>
-                                <div class="text-xs text-gray-400">
-                                    {{ $service->bookings_count ?? 0 }} booking(s)
-                                </div>
-                            </div>
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $service->order }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($service->is_active)
@@ -100,9 +91,6 @@
                                 <a href="{{ route('admin.services.edit', $service) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{{ route('admin.class-schedules.create', ['service_id' => $service->id]) }}" class="text-green-600 hover:text-green-900" title="Add Schedule">
-                                    <i class="fas fa-calendar-plus"></i>
-                                </a>
                                 <form method="POST" action="{{ route('admin.services.destroy', $service) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this service?');">
                                     @csrf
                                     @method('DELETE')
@@ -115,7 +103,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                             No services found. <a href="{{ route('admin.services.create') }}" class="text-green-600 hover:underline">Create one now</a>
                         </td>
                     </tr>
