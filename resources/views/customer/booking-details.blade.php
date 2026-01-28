@@ -20,7 +20,7 @@
     </div>
 </div>
 
-@if(session('success'))
+<!-- @if(session('success'))
     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
         {{ session('success') }}
     </div>
@@ -30,7 +30,7 @@
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
         {{ session('error') }}
     </div>
-@endif
+@endif -->
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Main Content -->
@@ -90,6 +90,14 @@
                         <p class="text-sm text-gray-500">{{ $booking->classSchedule->duration_hours }} {{ Str::plural('hour', $booking->classSchedule->duration_hours) }}</p>
                     @endif
                 </div>
+                @if($booking->location || $booking->classSchedule->location)
+                <div>
+                    <p class="text-sm text-gray-500 mb-1">Location</p>
+                    <p class="text-lg font-semibold text-[var(--primary-color)]">
+                        <i class="fas fa-map-marker-alt mr-2"></i>{{ $booking->location ?? $booking->classSchedule->location }}
+                    </p>
+                </div>
+                @endif
                 @if($booking->classSchedule->room)
                 <div>
                     <p class="text-sm text-gray-500 mb-1">Room</p>

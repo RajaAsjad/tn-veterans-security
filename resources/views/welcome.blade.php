@@ -63,6 +63,91 @@
                 </div>
             </div>
        </section>
+
+       <!-- Veteran Owned & Instructor Bios Section -->
+       <section class="py-16 lg:py-24 bg-gradient-to-b from-white to-gray-50">
+           <div class="container mx-auto px-4 lg:px-10">
+               <!-- Veteran Owned Badge -->
+               <div class="text-center mb-12" data-aos="fade-up">
+                   <div class="inline-flex items-center gap-3 bg-[var(--primary-color)]/10 px-8 py-4 rounded-full border-2 border-[var(--primary-color)]">
+                       <i class="fas fa-flag text-[var(--primary-color)] text-2xl"></i>
+                       <div class="text-left">
+                           <p class="text-[20px] md:text-[24px] font-bold text-[var(--text-color)]">
+                               Veteran Owned and Operated
+                           </p>
+                           <p class="text-[14px] text-gray-600">Established March 2024</p>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Instructor Bios -->
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto mb-12">
+                   <!-- Jayson Bio -->
+                   <div class="bg-white rounded-lg shadow-lg p-8" data-aos="fade-right">
+                       <div class="flex items-center gap-4 mb-4">
+                           <div class="w-20 h-20 bg-[var(--primary-color)] rounded-full flex items-center justify-center" style="width: 80px; height: 80px;">
+                               <span class="text-white text-2xl font-bold">J</span>
+                           </div>
+                           <div>
+                               <h3 class="text-[24px] font-bold text-[var(--text-color)] uppercase">Jayson</h3>
+                               <p class="text-gray-600">Lead Instructor</p>
+                           </div>
+                       </div>
+                       <div class="text-gray-700 leading-relaxed">
+                           @if($siteSettings && $siteSettings->jayson_bio)
+                               {!! nl2br(e($siteSettings->jayson_bio)) !!}
+                           @else
+                               <p class="text-gray-500 italic">Bio coming soon. Contact information for certificates, gear, and job questions available through our contact form.</p>
+                           @endif
+                       </div>
+                   </div>
+
+                   <!-- Kenny Bio -->
+                   <div class="bg-white rounded-lg shadow-lg p-8" data-aos="fade-left">
+                       <div class="flex items-center gap-4 mb-4">
+                           <div class="w-20 h-20 bg-[var(--primary-color)] rounded-full flex items-center justify-center" style="width: 80px; height: 80px;">
+                               <span class="text-white text-2xl font-bold" >K</span>
+                           </div>
+                           <div>
+                               <h3 class="text-[24px] font-bold text-[var(--text-color)] uppercase">Kenny</h3>
+                               <p class="text-gray-600">Lead Instructor</p>
+                           </div>
+                       </div>
+                       <div class="text-gray-700 leading-relaxed">
+                           @if($siteSettings && $siteSettings->kenny_bio)
+                               {!! nl2br(e($siteSettings->kenny_bio)) !!}
+                           @else
+                               <p class="text-gray-500 italic">Bio coming soon. Contact information for certificates, gear, and job questions available through our contact form.</p>
+                           @endif
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Instructor Contact Note -->
+               <div class="bg-blue-50 border-l-4 border-[var(--primary-color)] p-6 rounded max-w-4xl mx-auto" data-aos="fade-up">
+                   <div class="flex items-start gap-4">
+                       <i class="fas fa-info-circle text-[var(--primary-color)] text-2xl mt-1"></i>
+                       <div>
+                           <h4 class="text-[18px] font-bold text-[var(--text-color)] mb-2">Instructor Contact</h4>
+                           <p class="text-gray-700 leading-relaxed">
+                               Our instructors can be contacted for certificates, gear, and job questions. Feel free to reach out through our contact form or by phone.
+                           </p>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Security Services Note -->
+               <div class="mt-8 text-center" data-aos="fade-up" data-aos-delay="200">
+                   <p class="text-[16px] text-gray-700 mb-4">
+                       Companies or individuals needing security services can contact us for more information.
+                   </p>
+                   <a href="{{ route('services') }}" class="btn primary-button inline-block">
+                       View Security Services
+                   </a>
+               </div>
+           </div>
+       </section>
+
        <!-- About Section -->
        <section class="about-section">
            <div class="container mx-auto px-4 lg:px-10">
@@ -132,34 +217,102 @@
                 <span class="text-[var(--primary-color)]">Training</span> & Career Support
             </h2>
 
-            <!-- Cards Grid -->
-            @if($services->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-                    @foreach($services as $index => $service)
-                        <a href="{{ route('service.details', $service->id) }}" class="training-card block cursor-pointer hover:opacity-90 transition-opacity" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
-                            <div class="training-card-img-div">
-                                @if($service->image)
-                                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
-                                @else
-                                    <img src="{{ asset('images/training-img-' . (($index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
-                                @endif
+            <!-- Veteran Owned Badge -->
+            <div class="text-center mb-12" data-aos="fade-up" data-aos-delay="150">
+                <div class="inline-flex items-center gap-3 bg-[var(--primary-color)]/10 px-6 py-3 rounded-full">
+                    <i class="fas fa-flag text-[var(--primary-color)] text-xl"></i>
+                    <span class="text-[18px] font-bold text-[var(--text-color)]">
+                        Veteran Owned and Operated • Established March 2024
+                    </span>
+                </div>
+            </div>
+
+            <!-- Category Sections -->
+            @if($servicesByCategory && $servicesByCategory->count() > 0)
+                <div class="space-y-12">
+                    @foreach($servicesByCategory as $category => $services)
+                        @php
+                            $categoryLabels = [
+                                'security_training' => 'Security Training',
+                                'nra' => 'NRA',
+                                'red_cross' => 'Red Cross',
+                                'handgun_carry' => 'Handgun Carry Permit',
+                                'services' => 'Services'
+                            ];
+                            $categoryLabel = $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category));
+                        @endphp
+                        
+                        <div class="category-section" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                            <h3 class="text-[28px] md:text-[36px] font-bold text-[var(--text-color)] mb-6 uppercase" style="font-family: var(--font-display);">
+                                {{ $categoryLabel }}
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                                @foreach($services as $service)
+                                    <a href="{{ route('service.details', $service->id) }}" 
+                                       class="training-card block cursor-pointer hover:opacity-90 transition-opacity group">
+                                        <div class="training-card-img-div">
+                                            @if($service->image)
+                                                <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                            @else
+                                                <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
+                                            @endif
+                                        </div>
+                                        <div class="p-4">
+                                            <h4 class="training-card-title">{{ $service->title }}</h4>
+                                            @if($service->location)
+                                                <p class="text-sm text-gray-600 mt-2">
+                                                    <i class="fas fa-map-marker-alt mr-1"></i> {{ $service->location }}
+                                                </p>
+                                            @endif
+                                            @if($service->requires_dallas_law || $service->requires_active_shooter)
+                                                <div class="mt-2 flex flex-wrap gap-2">
+                                                    @if($service->requires_dallas_law)
+                                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
+                                                    @endif
+                                                    @if($service->requires_active_shooter)
+                                                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </a>
+                                @endforeach
                             </div>
-                            <h3 class="training-card-title">{{ $service->title }}</h3>
-                        </a>
+                        </div>
                     @endforeach
                 </div>
-            @else
-                <div class="text-center py-12">
-                    <p class="text-gray-600 text-lg">No services available at the moment.</p>
+            @endif
+
+            <!-- Featured Services Grid (for Explore Training Programs) -->
+            @if($featuredServices && $featuredServices->count() > 0)
+                <div class="mt-16" data-aos="fade-up" data-aos-delay="300">
+                    <h3 class="text-[24px] md:text-[32px] font-bold text-[var(--text-color)] mb-8 text-center uppercase" style="font-family: var(--font-display);">
+                        Explore Training Programs
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+                        @foreach($featuredServices as $index => $service)
+                            <a href="{{ route('service.details', $service->id) }}" class="training-card block cursor-pointer hover:opacity-90 transition-opacity" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
+                                <div class="training-card-img-div">
+                                    @if($service->image)
+                                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                    @else
+                                        <img src="{{ asset('images/training-img-' . (($index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
+                                    @endif
+                                </div>
+                                <h3 class="training-card-title">{{ $service->title }}</h3>
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             @endif
 
             <!-- CTA Button -->
             <div class="mt-16 text-center"
                  data-aos="fade-up"
-                 data-aos-delay="200">
+                 data-aos-delay="400">
                 <a href="{{ route('services') }}" class="btn primary-button inline-block !text-[16px]">
-                    Explore Training Programs
+                    View All Training Programs
                 </a>
             </div>
 
@@ -541,24 +694,64 @@
                         </div>
                     </div>
 
-                    <!-- FAQ Item 2 -->
+                    <!-- FAQ Item 2 - Conditional: Dallas Law -->
                     <div class="faq-item"
                          data-aos="fade-up"
                          data-aos-delay="300">
+                        <button class="faq-question">
+                            Do you plan to work around alcohol?
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                <p class="mb-3">If you plan to work around alcohol, you <strong class="text-[var(--primary-color)]">must</strong> take Dallas Law training.</p>
+                                <p>Dallas Law training is required for security officers who will be working in establishments that serve or sell alcohol. This specialized training covers the legal requirements and protocols for security work in alcohol-related environments.</p>
+                                <p class="mt-3">
+                                    <a href="{{ route('services', ['category' => 'security_training', 'subcategory' => 'dallas_law']) }}" class="text-[var(--primary-color)] font-semibold hover:underline">
+                                        View Dallas Law Training Courses →
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 3 - Conditional: Active Shooter -->
+                    <div class="faq-item"
+                         data-aos="fade-up"
+                         data-aos-delay="350">
+                        <button class="faq-question">
+                            Will you work at a school, church, or daycare?
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                <p class="mb-3">If you will work at a school, church, or daycare, you <strong class="text-[var(--primary-color)]">must</strong> take Active Shooter Training.</p>
+                                <p>Active Shooter Training is mandatory for security officers working in educational institutions, places of worship, or childcare facilities. This critical training prepares you to respond effectively in emergency situations.</p>
+                                <p class="mt-3">
+                                    <a href="{{ route('services', ['category' => 'security_training', 'subcategory' => 'active_shooter']) }}" class="text-[var(--primary-color)] font-semibold hover:underline">
+                                        View Active Shooter Training Courses →
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 4 -->
+                    <div class="faq-item"
+                         data-aos="fade-up"
+                         data-aos-delay="400">
                         <button class="faq-question">
                             Do you offer both armed and unarmed security training?
                         </button>
                         <div class="faq-answer">
                             <div class="faq-answer-content">
-                                Yes, we provide comprehensive training for both armed and unarmed security roles, following all state requirements.
+                                Yes, we provide comprehensive training for both armed and unarmed security roles, following all state requirements. This includes our 4-hour Unarmed Guard Training program.
                             </div>
                         </div>
                     </div>
 
-                    <!-- FAQ Item 3 -->
+                    <!-- FAQ Item 5 -->
                     <div class="faq-item"
                          data-aos="fade-up"
-                         data-aos-delay="350">
+                         data-aos-delay="450">
                         <button class="faq-question">
                             Is your training state-compliant?
                         </button>
@@ -569,10 +762,10 @@
                         </div>
                     </div>
 
-                    <!-- FAQ Item 4 -->
+                    <!-- FAQ Item 6 -->
                     <div class="faq-item"
                          data-aos="fade-up"
-                         data-aos-delay="400">
+                         data-aos-delay="500">
                         <button class="faq-question">
                             Do you help with job placement after training?
                         </button>
@@ -583,24 +776,24 @@
                         </div>
                     </div>
 
-                    <!-- FAQ Item 5 -->
+                    <!-- FAQ Item 7 -->
                     <div class="faq-item"
                          data-aos="fade-up"
-                         data-aos-delay="450">
+                         data-aos-delay="550">
                         <button class="faq-question">
                             How long does the training take?
                         </button>
                         <div class="faq-answer">
                             <div class="faq-answer-content">
-                                Training duration varies by program, but most certifications can be completed in just a few days of intensive instruction.
+                                Training duration varies by program. Unarmed Guard Training is 4 hours, while other certifications can be completed in just a few days of intensive instruction.
                             </div>
                         </div>
                     </div>
 
-                    <!-- FAQ Item 6 -->
+                    <!-- FAQ Item 8 -->
                     <div class="faq-item"
                          data-aos="fade-up"
-                         data-aos-delay="500">
+                         data-aos-delay="600">
                         <button class="faq-question">
                             How do I get started?
                         </button>

@@ -104,6 +104,11 @@
                                                             @if($schedule->end_time)
                                                                 <div class="text-xs text-gray-500">to {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</div>
                                                             @endif
+                                                            @if($schedule->location)
+                                                                <div class="text-xs text-[var(--primary-color)] font-semibold mt-1">
+                                                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ $schedule->location }}
+                                                                </div>
+                                                            @endif
                                                         </td>
                                                         <td class="px-4 py-2 whitespace-nowrap">
                                                             <div class="text-sm text-gray-900">

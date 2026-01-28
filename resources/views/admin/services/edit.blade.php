@@ -77,6 +77,81 @@
             @enderror
         </div>
 
+        <!-- Category Section -->
+        <div class="mb-6 border-t pt-4 mt-6">
+            <h3 class="text-lg font-bold mb-4">Category & Organization</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category</label>
+                    <select id="category" 
+                            name="category" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="">Select Category</option>
+                        <option value="security_training" {{ old('category', $service->category) === 'security_training' ? 'selected' : '' }}>Security Training</option>
+                        <option value="nra" {{ old('category', $service->category) === 'nra' ? 'selected' : '' }}>NRA</option>
+                        <option value="red_cross" {{ old('category', $service->category) === 'red_cross' ? 'selected' : '' }}>Red Cross</option>
+                        <option value="handgun_carry" {{ old('category', $service->category) === 'handgun_carry' ? 'selected' : '' }}>Handgun Carry Permit</option>
+                        <option value="services" {{ old('category', $service->category) === 'services' ? 'selected' : '' }}>Services</option>
+                    </select>
+                    @error('category')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="subcategory" class="block text-gray-700 text-sm font-bold mb-2">Subcategory</label>
+                    <input type="text" 
+                           id="subcategory" 
+                           name="subcategory" 
+                           value="{{ old('subcategory', $service->subcategory) }}"
+                           placeholder="e.g., Armed Security, ASP, Force Science"
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    @error('subcategory')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="location" class="block text-gray-700 text-sm font-bold mb-2">Location</label>
+                    <select id="location" 
+                            name="location" 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="">No Specific Location</option>
+                        <option value="Location A" {{ old('location', $service->location) === 'Location A' ? 'selected' : '' }}>Location A</option>
+                        <option value="Location B" {{ old('location', $service->location) === 'Location B' ? 'selected' : '' }}>Location B</option>
+                    </select>
+                    @error('location')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" 
+                               name="requires_dallas_law" 
+                               value="1"
+                               {{ old('requires_dallas_law', $service->requires_dallas_law) ? 'checked' : '' }}
+                               class="mr-2">
+                        <span class="text-sm text-gray-700">Requires Dallas Law Training</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" 
+                               name="requires_active_shooter" 
+                               value="1"
+                               {{ old('requires_active_shooter', $service->requires_active_shooter) ? 'checked' : '' }}
+                               class="mr-2">
+                        <span class="text-sm text-gray-700">Requires Active Shooter Training</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <!-- Pricing Section -->
         <div class="mb-6 border-t pt-4 mt-6">
             <h3 class="text-lg font-bold mb-4">Pricing & Class Configuration</h3>
@@ -149,6 +224,60 @@
                     <span class="text-sm text-gray-700">Testing is in-person (always true)</span>
                 </label>
             </div>
+        </div>
+
+        <!-- Related Services (Linked / Related Trainings) -->
+        @php
+            $linkedIds = old('linked_services', $service->linkedServices->pluck('id')->toArray());
+            $linkedIds = is_array($linkedIds) ? array_map('intval', $linkedIds) : [];
+            $linkedOrdered = $service->linkedServices->keyBy('id');
+            $others = ($allServices ?? collect())->whereNotIn('id', $linkedOrdered->keys());
+            $hasAnyToShow = $service->linkedServices->isNotEmpty() || $others->isNotEmpty();
+        @endphp
+        <div class="mb-6 border-t pt-4 mt-6">
+            <h3 class="text-lg font-bold mb-2">Related Services</h3>
+            <p class="text-sm text-gray-600 mb-3">Choose which trainings to show as related on this service’s page (e.g. Unarmed → Less Lethal, Dallas Law). Order is kept: linked first, then the rest.</p>
+            <div class="max-h-56 overflow-y-auto border rounded p-3 bg-gray-50 space-y-2">
+                @if($hasAnyToShow)
+                    @if($service->linkedServices->isNotEmpty())
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Currently linked (in order)</p>
+                        @foreach($service->linkedServices as $s)
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                                <input type="checkbox"
+                                       name="linked_services[]"
+                                       value="{{ $s->id }}"
+                                       {{ in_array((int)$s->id, $linkedIds) ? 'checked' : '' }}
+                                       class="rounded border-gray-400">
+                                <span class="text-sm text-gray-800">{{ $s->title }}</span>
+                                @if($s->subcategory)
+                                    <span class="text-xs text-gray-500">({{ $s->subcategory }})</span>
+                                @endif
+                            </label>
+                        @endforeach
+                    @endif
+                    @if($others->isNotEmpty())
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-2">Other services — check to add as related</p>
+                        @foreach($others as $s)
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                                <input type="checkbox"
+                                       name="linked_services[]"
+                                       value="{{ $s->id }}"
+                                       {{ in_array((int)$s->id, $linkedIds) ? 'checked' : '' }}
+                                       class="rounded border-gray-400">
+                                <span class="text-sm text-gray-800">{{ $s->title }}</span>
+                                @if($s->subcategory)
+                                    <span class="text-xs text-gray-500">({{ $s->subcategory }})</span>
+                                @endif
+                            </label>
+                        @endforeach
+                    @endif
+                @else
+                    <p class="text-sm text-gray-500 py-2">No other services to link. Create more services first.</p>
+                @endif
+            </div>
+            @error('linked_services.*')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <div class="mb-6">

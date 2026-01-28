@@ -12,6 +12,7 @@ class ServiceBooking extends Model
         'customer_id',
         'service_id',
         'class_schedule_id',
+        'location',
         'booking_date',
         'booking_time',
         'status',

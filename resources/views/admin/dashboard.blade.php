@@ -337,59 +337,6 @@
 </div>
 
 <!-- Upcoming Classes -->
-<div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-bold text-gray-800">Upcoming Classes (Next 7 Days)</h3>
-        <a href="{{ route('admin.class-schedules.index') }}" class="text-blue-600 hover:underline text-sm">
-            View All <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Students</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($upcomingClasses as $schedule)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $schedule->service->title }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">
-                            <div>{{ $schedule->class_date->format('M d, Y') }}</div>
-                            <div class="text-gray-500 text-xs">{{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">
-                            {{ $schedule->current_students }} / {{ $schedule->max_students }}
-                            <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ ($schedule->current_students / $schedule->max_students) * 100 }}%"></div>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">{{ $schedule->room ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm">
-                            @if($schedule->status === 'full')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Full</span>
-                            @elseif($schedule->status === 'scheduled')
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Scheduled</span>
-                            @else
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ ucfirst($schedule->status) }}</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">No upcoming classes</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
 <!-- Quick Actions -->
 <div class="bg-white rounded-lg shadow-lg p-6">
     <h3 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>

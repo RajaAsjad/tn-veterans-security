@@ -39,6 +39,26 @@
 </div>
 @endif
 
+<!-- Location Filter -->
+@php
+    $availableLocations = $schedules->pluck('location')->filter()->unique()->values();
+@endphp
+@if($availableLocations->count() > 1)
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="flex items-center gap-4 flex-wrap">
+            <span class="text-sm font-semibold text-gray-700">Filter by Location:</span>
+            <button onclick="filterByLocation('all')" class="location-filter-btn active px-4 py-2 rounded-lg border-2 border-[var(--primary-color)] bg-[var(--primary-color)] text-white font-semibold" data-location="all">
+                All Locations
+            </button>
+            @foreach($availableLocations as $loc)
+                <button onclick="filterByLocation('{{ $loc }}')" class="location-filter-btn px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:border-[var(--primary-color)] transition-colors" data-location="{{ $loc }}">
+                    {{ $loc }}
+                </button>
+            @endforeach
+        </div>
+    </div>
+@endif
+
 <!-- Available Classes -->
 @if($schedules->count() > 0)
     <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
@@ -47,9 +67,9 @@
             <p class="text-sm text-gray-600 mt-1">Select a class schedule to book</p>
         </div>
         
-        <div class="divide-y divide-gray-200">
+        <div class="divide-y divide-gray-200" id="schedules-container">
             @foreach($schedules as $schedule)
-                <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="schedule-item p-6 hover:bg-gray-50 transition-colors" data-location="{{ $schedule->location ?? 'none' }}">
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <div class="flex-1">
                             <div class="flex items-center gap-4 mb-3">
@@ -90,6 +110,12 @@
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-info-circle text-blue-500"></i>
                                     <span class="text-sm text-gray-600">Min: {{ $schedule->min_students }} students</span>
+                                </div>
+                                @endif
+                                @if($schedule->location)
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-map-marker-alt text-[var(--primary-color)]"></i>
+                                    <span class="text-sm font-semibold text-[var(--primary-color)]">{{ $schedule->location }}</span>
                                 </div>
                                 @endif
                                 @if($schedule->room)
@@ -144,5 +170,34 @@
     <div class="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-6 py-3 rounded-lg shadow-lg z-50">
         {{ session('error') }}
     </div>
+@endif
+
+@if($availableLocations->count() > 1)
+<script>
+function filterByLocation(location) {
+    // Update button states
+    document.querySelectorAll('.location-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-[var(--primary-color)]', 'text-white', 'border-[var(--primary-color)]');
+        btn.classList.add('border-gray-300', 'text-gray-700');
+    });
+    
+    const activeBtn = document.querySelector(`[data-location="${location}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active', 'bg-[var(--primary-color)]', 'text-white', 'border-[var(--primary-color)]');
+        activeBtn.classList.remove('border-gray-300', 'text-gray-700');
+    }
+    
+    // Filter schedule items
+    const scheduleItems = document.querySelectorAll('.schedule-item');
+    scheduleItems.forEach(item => {
+        const itemLocation = item.getAttribute('data-location') || 'none';
+        if (location === 'all' || itemLocation === location) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
 @endif
 @endsection

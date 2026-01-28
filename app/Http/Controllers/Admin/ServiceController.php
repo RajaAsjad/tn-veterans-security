@@ -27,7 +27,8 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        return view('admin.services.create');
+        $allServices = Service::where('is_active', true)->orderBy('order')->orderBy('title')->get();
+        return view('admin.services.create', compact('allServices'));
     }
 
     /**
@@ -42,6 +43,21 @@ class ServiceController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
+            // Category fields
+            'category' => 'nullable|string|max:255',
+            'subcategory' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'requires_dallas_law' => 'boolean',
+            'requires_active_shooter' => 'boolean',
+            // Pricing fields
+            'price' => 'nullable|numeric|min:0',
+            'deposit_amount' => 'nullable|numeric|min:0',
+            // Class configuration
+            'class_type' => 'nullable|in:group,one-on-one',
+            'has_online_parts' => 'boolean',
+            'testing_in_person' => 'boolean',
+            'linked_services' => 'nullable|array',
+            'linked_services.*' => 'integer|exists:services,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -51,8 +67,21 @@ class ServiceController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['has_online_parts'] = $request->has('has_online_parts');
         $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
+        $validated['requires_dallas_law'] = $request->has('requires_dallas_law');
+        $validated['requires_active_shooter'] = $request->has('requires_active_shooter');
 
-        Service::create($validated);
+        $linkedIds = $request->input('linked_services', []);
+        unset($validated['linked_services']);
+
+        $service = Service::create($validated);
+
+        if (! empty($linkedIds)) {
+            $sync = [];
+            foreach (array_values(array_filter($linkedIds)) as $i => $id) {
+                $sync[$id] = ['order' => $i];
+            }
+            $service->linkedServices()->sync($sync);
+        }
 
         return redirect()->route('admin.services.index')
             ->with('success', 'Service created successfully.');
@@ -71,7 +100,9 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        return view('admin.services.edit', compact('service'));
+        $service->load('linkedServices');
+        $allServices = Service::where('is_active', true)->where('id', '!=', $service->id)->orderBy('order')->orderBy('title')->get();
+        return view('admin.services.edit', compact('service', 'allServices'));
     }
 
     /**
@@ -86,6 +117,12 @@ class ServiceController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
+            // Category fields
+            'category' => 'nullable|string|max:255',
+            'subcategory' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'requires_dallas_law' => 'boolean',
+            'requires_active_shooter' => 'boolean',
             // Pricing fields
             'price' => 'nullable|numeric|min:0',
             'deposit_amount' => 'nullable|numeric|min:0',
@@ -93,6 +130,8 @@ class ServiceController extends Controller
             'class_type' => 'nullable|in:group,one-on-one',
             'has_online_parts' => 'boolean',
             'testing_in_person' => 'boolean',
+            'linked_services' => 'nullable|array',
+            'linked_services.*' => 'integer|exists:services,id',
         ]);
 
         if ($request->hasFile('image')) {
@@ -106,10 +145,22 @@ class ServiceController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['has_online_parts'] = $request->has('has_online_parts');
         $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
-        $validated['has_online_parts'] = $request->has('has_online_parts');
-        $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
+        $validated['requires_dallas_law'] = $request->has('requires_dallas_law');
+        $validated['requires_active_shooter'] = $request->has('requires_active_shooter');
+
+        $linkedIds = $request->input('linked_services', []);
+        unset($validated['linked_services']);
 
         $service->update($validated);
+
+        $linkedIds = array_filter(array_map('intval', $linkedIds));
+        $sync = [];
+        foreach (array_values($linkedIds) as $i => $id) {
+            if ($id !== (int) $service->id) {
+                $sync[$id] = ['order' => $i];
+            }
+        }
+        $service->linkedServices()->sync($sync);
 
         return redirect()->route('admin.services.index')
             ->with('success', 'Service updated successfully.');

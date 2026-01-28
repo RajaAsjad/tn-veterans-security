@@ -24,11 +24,11 @@ class AuthenticateCustomer
             return $next($request);
         }
 
-        // Redirect to customer login if not authenticated
+        // Redirect to customer login if not authenticated (guest = store intended URL)
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        return redirect()->route('customer.login');
+        return redirect()->guest(route('customer.login'));
     }
 }

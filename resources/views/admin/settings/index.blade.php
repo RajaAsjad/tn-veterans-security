@@ -362,6 +362,45 @@
             </div>
         </div>
 
+        <!-- Instructor Bios Section -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Instructor Bios</h3>
+            
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Jayson Bio -->
+                <div>
+                    <label for="jayson_bio" class="block text-gray-700 text-sm font-bold mb-2">
+                        <i class="fas fa-user text-[var(--primary-color)] mr-2"></i> Jayson's Bio
+                    </label>
+                    <textarea id="jayson_bio" 
+                              name="jayson_bio" 
+                              rows="6"
+                              placeholder="Enter Jayson's bio and contact information for certificates, gear, and job questions..."
+                              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('jayson_bio', $settings->jayson_bio ?? '') }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">This bio will appear on the main page. Include contact information for certificates, gear, and job questions.</p>
+                    @error('jayson_bio')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Kenny Bio -->
+                <div>
+                    <label for="kenny_bio" class="block text-gray-700 text-sm font-bold mb-2">
+                        <i class="fas fa-user text-[var(--primary-color)] mr-2"></i> Kenny's Bio
+                    </label>
+                    <textarea id="kenny_bio" 
+                              name="kenny_bio" 
+                              rows="6"
+                              placeholder="Enter Kenny's bio and contact information for certificates, gear, and job questions..."
+                              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('kenny_bio', $settings->kenny_bio ?? '') }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">This bio will appear on the main page. Include contact information for certificates, gear, and job questions.</p>
+                    @error('kenny_bio')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Button -->
         <div class="flex gap-4">
             <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">

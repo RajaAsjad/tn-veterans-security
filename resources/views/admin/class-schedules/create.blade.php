@@ -14,7 +14,7 @@
             <select id="service_id" name="service_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 <option value="">Select a Service</option>
                 @foreach($services as $service)
-                    <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                    <option value="{{ $service->id }}" {{ old('service_id', $selectedServiceId ?? null) == $service->id ? 'selected' : '' }}>
                         {{ $service->title }}
                         @if($service->price)
                             - ${{ number_format($service->price, 2) }}
@@ -158,7 +158,46 @@
             </div>
         </div>
 
+        <!-- Location Selection (Multiple) -->
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Location(s) <span class="text-gray-500 text-xs font-normal">(Select one or more)</span></label>
+            <div class="flex flex-wrap gap-4 mt-2">
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="locations[]" 
+                           value="Location A"
+                           {{ in_array('Location A', old('locations', [])) ? 'checked' : '' }}
+                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="text-gray-700">Location A</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="locations[]" 
+                           value="Location B"
+                           {{ in_array('Location B', old('locations', [])) ? 'checked' : '' }}
+                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="text-gray-700">Location B</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="locations[]" 
+                           value=""
+                           {{ in_array('', old('locations', [])) ? 'checked' : '' }}
+                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="text-gray-700">No Specific Location</span>
+                </label>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Select one or more locations. A schedule will be created for each selected location.</p>
+            @error('locations')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+            @error('locations.*')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <!-- Room -->
             <div class="mb-4">
                 <label for="room" class="block text-gray-700 text-sm font-bold mb-2">Room</label>

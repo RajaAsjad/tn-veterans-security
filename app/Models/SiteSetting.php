@@ -32,6 +32,9 @@ class SiteSetting extends Model
         'bank_api_secret',
         'bank_account_id',
         'bank_sync_enabled',
+        // Instructor Bios
+        'jayson_bio',
+        'kenny_bio',
     ];
 
     protected $casts = [

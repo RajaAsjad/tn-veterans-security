@@ -3,8 +3,20 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $services = \App\Models\Service::where('is_active', true)->orderBy('order')->limit(6)->get();
-    return view('welcome', compact('services'));
+    // Get services grouped by category
+    $servicesByCategory = \App\Models\Service::where('is_active', true)
+        ->whereNotNull('category')
+        ->orderBy('order')
+        ->get()
+        ->groupBy('category');
+    
+    // Also get services for the "Explore Training Programs" section (limit 6)
+    $featuredServices = \App\Models\Service::where('is_active', true)
+        ->orderBy('order')
+        ->limit(6)
+        ->get();
+    
+    return view('welcome', compact('servicesByCategory', 'featuredServices'));
 });
 
 Route::get('/about', function () {
@@ -12,19 +24,75 @@ Route::get('/about', function () {
 })->name('about');
 
 Route::get('/training-services', function () {
-    $services = \App\Models\Service::where('is_active', true)->orderBy('order')->orderBy('created_at', 'desc')->get();
-    return view('services', compact('services'));
+    $category = request()->query('category');
+    $subcategory = request()->query('subcategory');
+    
+    $query = \App\Models\Service::where('is_active', true);
+    
+    if ($category) {
+        $query->where('category', $category);
+    }
+    
+    if ($subcategory) {
+        $query->where('subcategory', $subcategory);
+    }
+    
+    $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
+    
+    // Get all categories for filtering
+    $categories = \App\Models\Service::where('is_active', true)
+        ->whereNotNull('category')
+        ->distinct()
+        ->pluck('category')
+        ->filter();
+    
+    return view('services', compact('services', 'categories', 'category', 'subcategory'));
 })->name('services');
 
 Route::get('/training-services/{id}', function ($id) {
-    $service = \App\Models\Service::where('is_active', true)->findOrFail($id);
-    $relatedServices = \App\Models\Service::where('is_active', true)
-        ->where('id', '!=', $id)
-        ->orderBy('order')
-        ->limit(3)
-        ->get();
-    return view('service-details', compact('service', 'relatedServices'));
+    $service = \App\Models\Service::with('linkedServices')->where('is_active', true)->findOrFail($id);
+    $linkedServices = $service->linkedServices->where('is_active', true);
+    $relatedServices = $linkedServices->isNotEmpty()
+        ? $linkedServices
+        : \App\Models\Service::where('is_active', true)->where('id', '!=', $id)->orderBy('order')->limit(3)->get();
+    // For booking form: locations and available dates from class schedules
+    $bookingLocations = \App\Models\ClassSchedule::where('service_id', $service->id)
+        ->where('status', 'scheduled')
+        ->where('class_date', '>=', now()->toDateString())
+        ->whereRaw('current_students < max_students')
+        ->distinct()
+        ->orderBy('location')
+        ->pluck('location')
+        ->map(fn ($loc) => $loc ?: 'No Specific Location')
+        ->unique()
+        ->values();
+    $availableDates = \App\Models\ClassSchedule::where('service_id', $service->id)
+        ->where('status', 'scheduled')
+        ->where('class_date', '>=', now()->toDateString())
+        ->whereRaw('current_students < max_students')
+        ->orderBy('class_date')
+        ->get()
+        ->pluck('class_date')
+        ->map(fn ($d) => $d->format('Y-m-d'))
+        ->unique()
+        ->values()
+        ->toArray();
+    return view('service-details', compact('service', 'relatedServices', 'linkedServices', 'bookingLocations', 'availableDates'));
 })->name('service.details');
+
+Route::post('/training-services/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email',
+        'phone' => 'nullable|string|max:50',
+        'number_of_students' => 'nullable|integer|min:1|max:20',
+        'location' => 'nullable|string|max:255',
+        'preferred_date' => 'nullable|date|after_or_equal:today',
+    ]);
+    session()->put('booking_inquiry_' . $service->id, $validated);
+    return redirect()->route('customer.services.checkout', $service->id)
+        ->with('success', 'Review your booking and complete payment.');
+})->name('service.booking.inquiry');
 
 Route::get('/get-certified', function () {
     return view('certified');
@@ -38,6 +106,21 @@ Route::get('/contact-us', function () {
     return view('contact');
 })->name('contact');
 
+Route::get('/private-protective-services', function () {
+    // Get services in the "services" category (Private Protective Services)
+    $services = \App\Models\Service::where('is_active', true)
+        ->where('category', 'services')
+        ->orderBy('order')
+        ->get();
+    
+    // Get security company links from database
+    $companyLinks = \App\Models\SecurityCompanyLink::where('is_active', true)
+        ->orderBy('order')
+        ->get();
+    
+    return view('private-protective-services', compact('services', 'companyLinks'));
+})->name('private-protective-services');
+
 // Customer Routes
 Route::prefix('customer')->name('customer.')->group(function () {
     // Auth Routes (Public)
@@ -49,7 +132,10 @@ Route::prefix('customer')->name('customer.')->group(function () {
     
     // Public Routes - View available classes (no login required)
     Route::get('/services/{serviceId}/available-classes', [App\Http\Controllers\Customer\BookingController::class, 'showAvailableClasses'])->name('available-classes');
-    
+
+    // Checkout (public – shows summary; login required to complete payment)
+    Route::get('/services/{serviceId}/checkout', [App\Http\Controllers\Customer\BookingController::class, 'showCheckout'])->name('services.checkout');
+
     // Protected Customer Routes
     Route::middleware([\App\Http\Middleware\AuthenticateCustomer::class])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
@@ -64,7 +150,10 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('/services/{serviceId}/book', [App\Http\Controllers\Customer\BookingController::class, 'create'])->name('booking.create');
         Route::get('/services/{serviceId}/book/{scheduleId}', [App\Http\Controllers\Customer\BookingController::class, 'create'])->name('booking.create.schedule');
         Route::post('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'store'])->name('booking.store');
-        
+
+        // Checkout – create booking from inquiry and go to payment
+        Route::post('/services/{serviceId}/checkout', [App\Http\Controllers\Customer\BookingController::class, 'processCheckout'])->name('services.checkout.process');
+
         // Payment Routes
         Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'showPayment'])->name('booking.payment');
         Route::post('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'processPayment'])->name('booking.payment.process');
@@ -82,9 +171,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::resource('services', App\Http\Controllers\Admin\ServiceController::class);
-        
-        // Class Schedules Routes
-        Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class);
+        Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class)->names('class-schedules');
         
         // Bookings Routes
         Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings.index');
@@ -101,6 +188,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         
         Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+        
+        // Security Company Links
+        Route::resource('security-company-links', App\Http\Controllers\Admin\SecurityCompanyLinkController::class);
+        
         Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'show'])->name('profile.show');
         Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
     });

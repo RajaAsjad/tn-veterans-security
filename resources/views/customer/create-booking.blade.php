@@ -25,6 +25,14 @@
                         <span class="text-gray-500"> - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}</span>
                     @endif
                 </div>
+                @if($schedule->location)
+                <div>
+                    <span class="text-sm text-gray-600">Location:</span>
+                    <span class="font-semibold text-[var(--primary-color)] ml-2">
+                        <i class="fas fa-map-marker-alt mr-1"></i>{{ $schedule->location }}
+                    </span>
+                </div>
+                @endif
                 <div>
                     <span class="text-sm text-gray-600">Available Spots:</span>
                     <span class="font-semibold text-green-600 ml-2">{{ $schedule->getAvailableSpots() }}</span>
@@ -90,6 +98,7 @@
                             @foreach($schedules as $scheduleOption)
                                 <option value="{{ $scheduleOption->id }}" {{ old('class_schedule_id') == $scheduleOption->id ? 'selected' : '' }}>
                                     {{ $scheduleOption->class_date->format('F d, Y') }} at {{ \Carbon\Carbon::parse($scheduleOption->start_time)->format('h:i A') }}
+                                    @if($scheduleOption->location) - {{ $scheduleOption->location }}@endif
                                     ({{ $scheduleOption->getAvailableSpots() }} spots available)
                                 </option>
                             @endforeach
