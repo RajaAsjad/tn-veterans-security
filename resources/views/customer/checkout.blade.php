@@ -14,7 +14,7 @@
     <p class="text-gray-600">{{ $service->title }}</p>
 </div>
 
-@if(session('error'))
+<!-- @if(session('error'))
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
         {{ session('error') }}
     </div>
@@ -24,7 +24,7 @@
     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
         {{ session('success') }}
     </div>
-@endif
+@endif -->
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Booking summary -->
