@@ -521,9 +521,9 @@ $catLabels = ['security_training' => 'Security Training', 'nra' => 'NRA', 'red_c
                             <p class="text-gray-500 text-xs sm:text-sm mt-1">per student</p>
                             @endif
                             @if($service->deposit_amount)
-                            <div class="mt-3 sm:mt-4 p-3 sm:p-4 rounded-xl bg-emerald-50 border border-emerald-100 sd-cta-box" style="width: 200px;">
+                            <div class="mt-3 sm:mt-4 p-3 sm:p-4 rounded-xl bg-emerald-50 border border-emerald-100 sd-cta-box" style="width: 210px;">
                                 <p class="text-xs text-gray-600 uppercase tracking-wider text-white">Deposit</p>
-                                <p class="text-lg sm:text-xl font-bold text-emerald-700">${{ number_format($service->deposit_amount, 2) }} <span class="text-sm font-normal text-white">/ student</span></p>
+                                <p class="text-lg sm:text-xl font-bold text-white">${{ number_format($service->deposit_amount, 2) }} <span class="text-sm font-normal text-white">/ student</span></p>
                             </div>
                             @endif
                             @if(!$service->price && !$service->deposit_amount)
