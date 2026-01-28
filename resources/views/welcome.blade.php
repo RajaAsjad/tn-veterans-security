@@ -286,7 +286,7 @@
 
             <!-- Featured Services Grid (for Explore Training Programs) -->
             @if($featuredServices && $featuredServices->count() > 0)
-                <div class="mt-16" data-aos="fade-up" data-aos-delay="300">
+                <!-- <div class="mt-16" data-aos="fade-up" data-aos-delay="300">
                     <h3 class="text-[24px] md:text-[32px] font-bold text-[var(--text-color)] mb-8 text-center uppercase" style="font-family: var(--font-display);">
                         Explore Training Programs
                     </h3>
@@ -304,17 +304,17 @@
                             </a>
                         @endforeach
                     </div>
-                </div>
+                </div> -->
             @endif
 
             <!-- CTA Button -->
-            <div class="mt-16 text-center"
+            <!-- <div class="mt-16 text-center"
                  data-aos="fade-up"
                  data-aos-delay="400">
                 <a href="{{ route('services') }}" class="btn primary-button inline-block !text-[16px]">
                     View All Training Programs
                 </a>
-            </div>
+            </div> -->
 
         </div>
     </section>
