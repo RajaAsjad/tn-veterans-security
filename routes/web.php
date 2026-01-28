@@ -90,8 +90,37 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
         'preferred_date' => 'nullable|date|after_or_equal:today',
     ]);
     session()->put('booking_inquiry_' . $service->id, $validated);
+
+    // Create customer account if guest, so they don't need to sign up separately
+    $wasNewCustomer = false;
+    if (! \Illuminate\Support\Facades\Auth::guard('customer')->check()) {
+        $customer = \App\Models\Customer::firstOrCreate(
+            ['email' => $validated['email']],
+            [
+                'name' => $validated['name'],
+                'phone' => $validated['phone'] ?? null,
+                'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(24)),
+            ]
+        );
+        if ($customer->wasRecentlyCreated) {
+            $wasNewCustomer = true;
+            \Illuminate\Support\Facades\Auth::guard('customer')->login($customer);
+            $request->session()->regenerate();
+        } else {
+            // Update name/phone for existing customer
+            $customer->update([
+                'name' => $validated['name'],
+                'phone' => $validated['phone'] ?? $customer->phone,
+            ]);
+        }
+    }
+
+    $message = $wasNewCustomer
+        ? 'Account created. Review your booking and proceed to payment.'
+        : 'Review your booking and complete payment.';
+
     return redirect()->route('customer.services.checkout', $service->id)
-        ->with('success', 'Review your booking and complete payment.');
+        ->with('success', $message);
 })->name('service.booking.inquiry');
 
 Route::get('/get-certified', function () {

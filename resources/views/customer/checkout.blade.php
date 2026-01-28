@@ -14,7 +14,7 @@
     <p class="text-gray-600">{{ $service->title }}</p>
 </div>
 
-<!-- @if(session('error'))
+@if(session('error'))
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
         {{ session('error') }}
     </div>
@@ -24,7 +24,7 @@
     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
         {{ session('success') }}
     </div>
-@endif -->
+@endif
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Booking summary -->
@@ -85,15 +85,12 @@
                         <i class="fas fa-lock"></i> Proceed to payment
                     </button>
                 </form>
-                <p class="text-xs text-gray-500 mt-3">You will complete payment on the next step.</p>
+                <p class="text-xs text-gray-500 mt-3">Complete payment on the next step. You can set a password later in Profile to log in next time.</p>
             @else
-                <p class="text-gray-600 text-sm mb-4">Log in or register to complete payment for this booking.</p>
+                <p class="text-gray-600 text-sm mb-4">You already have an account with this email. Log in to complete payment.</p>
                 <div class="space-y-3">
                     <a href="{{ route('customer.login') }}" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-center transition-colors">
                         Log in to pay
-                    </a>
-                    <a href="{{ route('customer.register') }}" class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg text-center transition-colors">
-                        Create account
                     </a>
                 </div>
                 <p class="text-xs text-gray-500 mt-3">After logging in you will return here to complete payment.</p>

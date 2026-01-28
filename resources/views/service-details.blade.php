@@ -530,8 +530,9 @@ $catLabels = ['security_training' => 'Security Training', 'nra' => 'NRA', 'red_c
                             <p class="text-gray-500 text-sm">Pricing available on class schedules.</p>
                             @endif
 
-                            {{-- Simple booking form --}}
-                            <form action="{{ route('service.booking.inquiry', $service) }}" method="POST" class="mt-6 pt-5 border-t border-gray-200 space-y-4">
+                            {{-- Simple booking form (account created automatically if new) --}}
+                            <p class="text-xs text-gray-500 mt-4 mb-2">No account? We'll create one for you when you book.</p>
+                            <form action="{{ route('service.booking.inquiry', $service) }}" method="POST" class="mt-2 pt-4 border-t border-gray-200 space-y-4">
                                 @csrf
                                 <div>
                                     <label for="booking_name" class="sd-form-label">Name <span class="text-red-500">*</span></label>
