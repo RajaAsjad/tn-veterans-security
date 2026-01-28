@@ -423,7 +423,7 @@ $catLabels = ['security_training' => 'Security Training', 'nra' => 'NRA', 'red_c
             <div class="flex flex-col lg:flex-row flex-wrap gap-6 sm:gap-8 lg:gap-14">
 
                 {{-- Main column --}}
-                <div class="w-full lg:flex-[2_1_0] lg:min-w-0 space-y-5 sm:space-y-6 lg:space-y-8 order-2 lg:order-1">
+                <div class="w-full lg:flex-[1_1_0] lg:min-w-0 space-y-5 sm:space-y-6 lg:space-y-8 order-2 lg:order-1">
                     {{-- About --}}
                     @if($service->description || $service->short_description)
                     <div class="sd-card p-5 sm:p-6 lg:p-8">
