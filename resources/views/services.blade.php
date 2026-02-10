@@ -28,7 +28,7 @@
                 
                 <!-- Category Tabs -->
                 @if(isset($categories) && $categories->count() > 0)
-                    <div class="mb-8 flex flex-wrap gap-4 justify-center" data-aos="fade-up">
+                    <!-- <div class="mb-8 flex flex-wrap gap-4 justify-center" data-aos="fade-up">
                         <a href="{{ route('services') }}" 
                            class="px-6 py-3 rounded-full font-semibold transition-all {{ !$category ? 'bg-[var(--primary-color)] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
                             All Services
@@ -49,11 +49,11 @@
                                 {{ $catLabel }}
                             </a>
                         @endforeach
-                    </div>
+                    </div> -->
                 @endif
 
                 <!-- Active Filter Display -->
-                @if($category)
+                <!-- @if($category)
                     <div class="mb-6 text-center" data-aos="fade-up" data-aos-delay="100">
                         <p class="text-gray-600">
                             Showing: <span class="font-bold text-[var(--primary-color)]">{{ ucfirst(str_replace('_', ' ', $category)) }}</span>
@@ -62,7 +62,7 @@
                             @endif
                         </p>
                     </div>
-                @endif
+                @endif -->
                 
                 @if($services->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">

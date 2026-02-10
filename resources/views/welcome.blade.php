@@ -227,62 +227,66 @@
                 </div>
             </div>
 
-            <!-- Category Sections -->
-            @if($servicesByCategory && $servicesByCategory->count() > 0)
-                <div class="space-y-12">
-                    @foreach($servicesByCategory as $category => $services)
-                        @php
-                            $categoryLabels = [
-                                'security_training' => 'Security Training',
-                                'nra' => 'NRA',
-                                'red_cross' => 'Red Cross',
-                                'handgun_carry' => 'Handgun Carry Permit',
-                                'services' => 'Services'
-                            ];
-                            $categoryLabel = $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category));
-                        @endphp
-                        
-                        <div class="category-section" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                            <h3 class="text-[28px] md:text-[36px] font-bold text-[var(--text-color)] mb-6 uppercase" style="font-family: var(--font-display);">
-                                {{ $categoryLabel }}
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                                @foreach($services as $service)
-                                    <a href="{{ route('service.details', $service->id) }}" 
-                                       class="training-card block cursor-pointer hover:opacity-90 transition-opacity group">
-                                        <div class="training-card-img-div">
-                                            @if($service->image)
-                                                <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
-                                            @else
-                                                <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
-                                            @endif
-                                        </div>
-                                        <div class="p-4">
-                                            <h4 class="training-card-title">{{ $service->title }}</h4>
-                                            @if($service->location)
-                                                <p class="text-sm text-gray-600 mt-2">
-                                                    <i class="fas fa-map-marker-alt mr-1"></i> {{ $service->location }}
-                                                </p>
-                                            @endif
-                                            @if($service->requires_dallas_law || $service->requires_active_shooter)
-                                                <div class="mt-2 flex flex-wrap gap-2">
-                                                    @if($service->requires_dallas_law)
-                                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
-                                                    @endif
-                                                    @if($service->requires_active_shooter)
-                                                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </a>
-                                @endforeach
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap justify-center gap-3 mb-12" data-aos="fade-up" data-aos-delay="150">
+                <button class="tab-btn active" onclick="filterServices('all', this)">All</button>
+                <button class="tab-btn" onclick="filterServices('category:nra', this)">NRA</button>
+                <button class="tab-btn" onclick="filterServices('category:red_cross', this)">Red Cross</button>
+                <button class="tab-btn" onclick="filterServices('subcategory:ASP (Batons & Restraints)', this)">ASP Less than Lethal</button>
+                <button class="tab-btn" onclick="filterServices('subcategory:Homeland Security', this)">Homeland Security</button>
+                <button class="tab-btn" onclick="filterServices('subcategory:Active Shooter', this)">Active Shooter</button>
+                <button class="tab-btn" onclick="filterServices('category:security_training', this)">Security</button>
+                <button class="tab-btn" onclick="filterServices('subcategory:Force Science', this)">Force Science</button>
+                <button class="tab-btn" onclick="filterServices('subcategory:Dallas Law', this)">Dallas Law</button>
+                <button class="tab-btn" onclick="filterServices('subcategory:Renewals', this)">Renewals</button>
+            </div>
+
+            <!-- Services Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 min-h-[400px]" id="services-grid">
+                @php
+                    $allServices = $servicesByCategory->flatten();
+                @endphp
+                
+                @foreach($allServices as $service)
+                    <div class="service-item" 
+                         data-category="{{ $service->category }}" 
+                         data-subcategory="{{ $service->subcategory }}"
+                         data-aos="fade-up" 
+                         data-aos-delay="{{ ($loop->index % 6) * 100 }}">
+                        <a href="{{ route('service.details', $service->id) }}" 
+                           class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
+                            <div class="training-card-img-div">
+                                @if($service->image)
+                                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                @else
+                                    <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
+                                @endif
                             </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+                            <div class="p-4">
+                                <h4 class="training-card-title">{{ $service->title }}</h4>
+                                @if($service->location)
+                                    <p class="text-sm text-gray-600 mt-2">
+                                        <i class="fas fa-map-marker-alt mr-1"></i> {{ $service->location }}
+                                    </p>
+                                @endif
+                                @if($service->requires_dallas_law || $service->requires_active_shooter)
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        @if($service->requires_dallas_law)
+                                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
+                                        @endif
+                                        @if($service->requires_active_shooter)
+                                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+
+          
+
 
             <!-- Featured Services Grid (for Explore Training Programs) -->
             @if($featuredServices && $featuredServices->count() > 0)
@@ -840,3 +844,60 @@
        </script>
    </main>
 @endsection
+
+
+  <style>
+                .tab-btn {
+                    padding: 8px 20px;
+                    border: 1px solid var(--primary-color);
+                    border-radius: 4px;
+                    color: var(--text-color);
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                    background: transparent;
+                }
+                .tab-btn.active, .tab-btn:hover {
+                    background: var(--primary-color);
+                    color: white;
+                }
+                .service-item.hidden {
+                    display: none;
+                }
+            </style>
+
+            
+            <script>
+                function filterServices(filter, btn) {
+                    // Update active button
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const grid = document.getElementById('services-grid');
+                    const items = grid.querySelectorAll('.service-item');
+
+                    if (filter === 'all') {
+                        items.forEach(item => {
+                            item.classList.remove('hidden');
+                            item.setAttribute('data-aos', 'fade-up');
+                        });
+                    } else {
+                        const [type, value] = filter.split(':');
+                        items.forEach(item => {
+                            const itemValue = item.getAttribute(`data-${type}`);
+                            if (itemValue === value) {
+                                item.classList.remove('hidden');
+                                item.setAttribute('data-aos', 'zoom-in');
+                            } else {
+                                item.classList.add('hidden');
+                            }
+                        });
+                    }
+                    
+                    // Refresh AOS to reflect visibility changes
+                    if (typeof AOS !== 'undefined') {
+                        AOS.refresh();
+                    }
+                }
+            </script>
