@@ -67,7 +67,11 @@
                 @if($services->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
                         @foreach($services as $index => $service)
-                            <a href="{{ route('service.details', $service->id) }}" class="group block">
+                            @if($service->title === 'Unarmed Guard Training')
+                            <div class="group block cursor-pointer" onclick="document.getElementById('unarmed-modal').classList.remove('hidden')">
+                            @else
+                            <a href="{{ $service->title === 'Enhanced Handgun Carry Permit' ? route('handgun.subcategories') : route('service.details', $service->id) }}" class="group block">
+                            @endif
                                 <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
                                     <!-- Image Section -->
                                     <div class="relative h-[280px] overflow-hidden">
@@ -133,7 +137,11 @@
                                         </div>
                                     </div>
                                 </div>
+                            @if($service->title === 'Unarmed Guard Training')
+                            </div>
+                            @else
                             </a>
+                            @endif
                         @endforeach
                     </div>
                 @else
@@ -152,6 +160,26 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Unarmed Guard Training Modal -->
+                <div id="unarmed-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/50" onclick="if(event.target===this) document.getElementById('unarmed-modal').classList.add('hidden')">
+                    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] overflow-y-auto m-4 sm:m-6 relative" onclick="event.stopPropagation()">
+                        <button type="button" onclick="document.getElementById('unarmed-modal').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                        <div class="p-6 lg:p-8 pt-12">
+                            <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">Choose Your Path</h3>
+                            <div class="space-y-4">
+                                <a href="{{ route('services', ['category' => 'dallas_law']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                                    <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you are working where Alcohol is distributed you must have Dallas Law.</p>
+                                </a>
+                                <a href="{{ route('services', ['category' => 'asp_less_than_lethal']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                                    <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you want to carry anything such as OC Spray, Baton, Restraints, or Taser you must have Less Than Lethal Training.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </section>

@@ -235,7 +235,7 @@
                 <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP 4 Hours (Less than Lethal)</button>
                 <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Homeland Security (6 Hours)</button>
                 <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter (8 Hours)</button>
-                <button class="tab-btn" onclick="filterServices('category:security_guard', this)">Security</button>
+                <button class="tab-btn" onclick="filterServices('category:security_training', this)">Security</button>
                 <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science (De-Escalation)</button>
                 <button class="tab-btn" onclick="filterServices('category:dallas_law', this)">Dallas Law</button>
                 <button class="tab-btn" onclick="filterServices('category:renewals', this)">Renewals</button>
