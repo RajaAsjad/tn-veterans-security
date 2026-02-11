@@ -125,7 +125,7 @@
 }
 
 .about-text {
-    @apply text-[#333333] text-[16px] md:text-[20px] font-normal leading-relaxed mb-6;
+    @apply text-[#333333] text-[16px] md:text-[18px] font-normal leading-tight mb-2;
 }
 
 .about-vertical-line {

@@ -1,4 +1,64 @@
 <!-- Premium Header Section -->
+@php
+    $trainingCategories = [
+        ['name' => 'NRA', 'url' => route('services', ['category' => 'nra'])],
+        ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross'])],
+        ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('services', ['category' => 'asp_less_than_lethal'])],
+        ['name' => 'Homeland Security 6 Hours', 'url' => route('services', ['category' => 'homeland_security'])],
+        ['name' => 'Active Shooter 8 Hours', 'url' => route('services', ['category' => 'active_shooter'])],
+        ['name' => 'Security', 'url' => route('services', ['category' => 'security_training'])],
+        ['name' => 'Force Science (De-Escalation)', 'url' => route('services', ['category' => 'force_science'])],
+        ['name' => 'Dallas Law', 'url' => route('services', ['category' => 'dallas_law'])],
+        ['name' => 'Renewals', 'url' => route('services', ['category' => 'renewals'])],
+    ];
+@endphp
+
+<style>
+    .dropdown-simple {
+        position: absolute;
+        left: 0;
+        top: 100%;
+        width: 280px;
+        padding-top: 0.5rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease-out;
+        z-index: 100;
+        pointer-events: none;
+    }
+    .nav-group:hover .dropdown-simple {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+    .category-item {
+        color: #333333;
+        padding: 0.75rem 1.5rem;
+        display: block;
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .category-item:last-child {
+        border-bottom: none;
+    }
+    .category-item:hover {
+        background-color: #f9f9f9;
+        padding-left: 2rem;
+        color: var(--primary-color);
+    }
+    .mobile-sub-menu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out;
+    }
+    .mobile-sub-menu.active {
+        max-height: 1000px;
+        transition: max-height 0.5s ease-in;
+    }
+</style>
+
 <header class="relative w-full z-50 ">
     <div class="container mx-auto px-4 lg:px-10">
         <div class="flex items-center justify-between h-20 lg:h-24">
@@ -24,7 +84,30 @@
             <nav class="desktop-nav hidden lg:flex items-center space-x-10 text-[18px] font-medium text-[#333333]">
                 <a href="{{ url('/') }}" class="destop-nav-link">Home</a>
                 <a href="{{ route('about') }}" class="destop-nav-link">About Us</a>
-                <a href="{{ route('services') }}" class="destop-nav-link">Training Services</a>
+                
+                <!-- Training Services with Mega Menu -->
+                <div class="relative nav-group h-full flex items-center">
+                    <a href="{{ route('services') }}" class="destop-nav-link flex items-center gap-1 py-8">
+                        Training Services
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </a>
+                    
+                    <div class="dropdown-simple">
+                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                            @foreach($trainingCategories as $cat)
+                                <a href="{{ $cat['url'] }}" class="category-item">
+                                    {{ $cat['name'] }}
+                                </a>
+                            @endforeach
+                            <a href="{{ route('services') }}" class="category-item font-bold text-(--primary-color) border-t-2 border-gray-50">
+                                View All Services →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('certified') }}" class="destop-nav-link">Get Certified</a>
                 <a href="{{ route('testimonials') }}" class="destop-nav-link">Testimonials</a>
                 <a href="{{ route('contact') }}" class="destop-nav-link">Contact Us</a>
@@ -55,10 +138,32 @@
 
     <!-- Mobile Menu Vertical List -->
     <div id="mobileMenu" class="hidden lg:hidden   overflow-hidden transition-all duration-300">
-        <nav class="mobile-nav-links flex flex-col p-6 space-y-1 mt-[60px]">
+        <nav class="flex flex-col p-6 space-y-1 mt-[60px]">
             <a href="{{ url('/') }}" class="mobile-nav-links">Home</a>
             <a href="{{ route('about') }}" class="mobile-nav-links">About Us</a>
-            <a href="{{ route('services') }}" class="mobile-nav-links">Training Services</a>
+            
+            <!-- Mobile Training Services Accordion -->
+            <div class="mobile-nav-group">
+                <button id="mobileServiceToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none">
+                    <span>Training Services</span>
+                    <svg id="mobileServiceIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="mobileServiceMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
+                    <div class="p-4 grid grid-cols-1 gap-2">
+                        @foreach($trainingCategories as $cat)
+                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">
+                                {{ $cat['name'] }}
+                            </a>
+                        @endforeach
+                        <a href="{{ route('services') }}" class="mobile-nav-links text-[16px]! py-3 px-4 font-bold text-(--primary-color)">
+                            View All Services →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <a href="{{ route('certified') }}" class="mobile-nav-links">Get Certified</a>
             <a href="{{ route('testimonials') }}" class="mobile-nav-links">Testimonials</a>
             <a href="{{ route('contact') }}" class="mobile-nav-links">Contact Us</a>
@@ -73,7 +178,7 @@
                 <a href="{{ route('customer.register') }}" class="mobile-nav-links">Sign Up</a>
             @endauth
             <div class="pt-6">
-                <a href="{{ route('contact') }}" class="block w-full bg-[var(--primary-color)] text-white text-center py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">
+                <a href="{{ route('contact') }}" class="block w-full bg-(--primary-color) text-white text-center py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">
                     Contact Us
                 </a>
             </div>
@@ -98,14 +203,27 @@
         });
 
         // Close menu when a link is clicked
-        const links = mobileMenu.querySelectorAll('nav a');
+        const links = mobileMenu.querySelectorAll('nav > a');
         links.forEach(link => {
             link.addEventListener('click', () => {
                 mobileMenu.classList.add('hidden');
                 menuIcon.innerText = "☰";
             });
         });
+
+        // Mobile Service Sub-menu Toggle
+        const mobileServiceToggle = document.getElementById("mobileServiceToggle");
+        const mobileServiceMenu = document.getElementById("mobileServiceMenu");
+        const mobileServiceIcon = document.getElementById("mobileServiceIcon");
+
+        if (mobileServiceToggle) {
+            mobileServiceToggle.addEventListener("click", () => {
+                mobileServiceMenu.classList.toggle("active");
+                mobileServiceIcon.classList.toggle("rotate-180");
+            });
+        }
     });
 </script>
+
 
 

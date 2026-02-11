@@ -87,6 +87,13 @@
                         <option value="red_cross" {{ old('category') === 'red_cross' ? 'selected' : '' }}>Red Cross</option>
                         <option value="handgun_carry" {{ old('category') === 'handgun_carry' ? 'selected' : '' }}>Handgun Carry Permit</option>
                         <option value="services" {{ old('category') === 'services' ? 'selected' : '' }}>Services</option>
+                        <option value="asp_less_than_lethal" {{ old('category') === 'asp_less_than_lethal' ? 'selected' : '' }}>ASP Less than Lethal</option>
+                        <option value="homeland_security" {{ old('category') === 'homeland_security' ? 'selected' : '' }}>Homeland Security </option>
+                        <option value="active_shooter" {{ old('category') === 'active_shooter' ? 'selected' : '' }}>Active Shooter</option>
+                        <option value="security_guard" {{ old('category') === 'security_guard' ? 'selected' : '' }}>Security Guard</option>
+                        <option value="force_science" {{ old('category') === 'force_science' ? 'selected' : '' }}>Force Science (De-Escalation)</option>
+                        <option value="dallas_law" {{ old('category') === 'dallas_law' ? 'selected' : '' }}>Dallas Law</option>
+                        <option value="renewals" {{ old('category') === 'renewals' ? 'selected' : '' }}>Renewals</option>
                     </select>
                     @error('category')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

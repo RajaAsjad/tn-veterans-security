@@ -169,7 +169,7 @@
                        
                        <div class="lg:absolute lg:top-0 lg:-right-15 p-6 lg:max-w-[300px] z-20 mt-6 lg:mt-0" data-aos="fade-left" data-aos-delay="200">
                            <p class="text-[16px] md:text-[20px] font-bold text-[var(--text-color)] leading-snug">
-                               Our mission is to provide veteran-friendly training and make sure every student is ready for the demands of the security industry, offering them a clear path to success.
+                             Our mission is to provide professional, efficient, cost-effective security guard training solutions for our customers and partners through continuous improvement driven by integrity, teamwork, and innovation.
                            </p>
                        </div>
                    </div>
@@ -185,12 +185,12 @@
                        </h2>
                        
                        <p class="about-text" data-aos="fade-up" data-aos-delay="200">
-                           We are committed to offering high-quality security training to individuals interested in pursuing a rewarding career in security.
+                          Tennessee’s leading veteran-led institution for five-star-rated security guard registration training. We specialize in preparing students for both the Armed and Unarmed Security Guard Licenses in Nashville, Tennessee. Our graduates receive expert training that exceeds state requirements. If you’re considering a career as an armed or unarmed security guard in Tennessee, our comprehensive security registration training is the ideal starting point. Our classes are designed to equip individuals with all the necessary skills for a successful career in security.
                        </p>
                        
-                       <div class="space-y-4" data-aos="fade-up" data-aos-delay="400">
+                       <div class="" data-aos="fade-up" data-aos-delay="400">
                            <p class="about-text">
-                               Whether you want to work as an armed or unarmed security officer, or you need to obtain your handgun carry permit, our expert instructors will ensure you are fully prepared.   We also assist you in securing employment by connecting you with reputable security companies in the region.
+                              We offer Blended classes online with in-person testing for Dallas Law Active Shooter Classification Certification programs, providing unmatched convenience and flexibility. At Tn Veterans Security Services and Training, we understand the importance of training security guards in Tennessee and take pride in preparing our students for real-world situations. Our graduates are well-regarded for providing reliable security, maintaining strong customer relations, and enhancing overall productivity for businesses across the Volunteer State.
                            </p>
                        </div>
 
@@ -227,62 +227,66 @@
                 </div>
             </div>
 
-            <!-- Category Sections -->
-            @if($servicesByCategory && $servicesByCategory->count() > 0)
-                <div class="space-y-12">
-                    @foreach($servicesByCategory as $category => $services)
-                        @php
-                            $categoryLabels = [
-                                'security_training' => 'Security Training',
-                                'nra' => 'NRA',
-                                'red_cross' => 'Red Cross',
-                                'handgun_carry' => 'Handgun Carry Permit',
-                                'services' => 'Services'
-                            ];
-                            $categoryLabel = $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category));
-                        @endphp
-                        
-                        <div class="category-section" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                            <h3 class="text-[28px] md:text-[36px] font-bold text-[var(--text-color)] mb-6 uppercase" style="font-family: var(--font-display);">
-                                {{ $categoryLabel }}
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                                @foreach($services as $service)
-                                    <a href="{{ route('service.details', $service->id) }}" 
-                                       class="training-card block cursor-pointer hover:opacity-90 transition-opacity group">
-                                        <div class="training-card-img-div">
-                                            @if($service->image)
-                                                <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
-                                            @else
-                                                <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
-                                            @endif
-                                        </div>
-                                        <div class="p-4">
-                                            <h4 class="training-card-title">{{ $service->title }}</h4>
-                                            @if($service->location)
-                                                <p class="text-sm text-gray-600 mt-2">
-                                                    <i class="fas fa-map-marker-alt mr-1"></i> {{ $service->location }}
-                                                </p>
-                                            @endif
-                                            @if($service->requires_dallas_law || $service->requires_active_shooter)
-                                                <div class="mt-2 flex flex-wrap gap-2">
-                                                    @if($service->requires_dallas_law)
-                                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
-                                                    @endif
-                                                    @if($service->requires_active_shooter)
-                                                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </a>
-                                @endforeach
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap justify-center gap-3 mb-12" data-aos="fade-up" data-aos-delay="150">
+                <button class="tab-btn active" onclick="filterServices('all', this)">All</button>
+                <button class="tab-btn" onclick="filterServices('category:nra', this)">NRA</button>
+                <button class="tab-btn" onclick="filterServices('category:red_cross', this)">Red Cross</button>
+                <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP 4 Hours (Less than Lethal)</button>
+                <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Homeland Security (6 Hours)</button>
+                <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter (8 Hours)</button>
+                <button class="tab-btn" onclick="filterServices('category:security_guard', this)">Security</button>
+                <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science (De-Escalation)</button>
+                <button class="tab-btn" onclick="filterServices('category:dallas_law', this)">Dallas Law</button>
+                <button class="tab-btn" onclick="filterServices('category:renewals', this)">Renewals</button>
+            </div>
+
+            <!-- Services Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 min-h-[400px]" id="services-grid">
+                @php
+                    $allServices = $servicesByCategory->flatten();
+                @endphp
+                
+                @foreach($allServices as $service)
+                    <div class="service-item" 
+                         data-category="{{ $service->category }}" 
+                         data-subcategory="{{ $service->subcategory }}"
+                         data-aos="fade-up" 
+                         data-aos-delay="{{ ($loop->index % 6) * 100 }}">
+                        <a href="{{ route('service.details', $service->id) }}" 
+                           class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
+                            <div class="training-card-img-div">
+                                @if($service->image)
+                                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                @else
+                                    <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
+                                @endif
                             </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+                            <div class="p-4">
+                                <h4 class="training-card-title">{{ $service->title }}</h4>
+                                @if($service->location)
+                                    <p class="text-sm text-gray-600 mt-2">
+                                        <i class="fas fa-map-marker-alt mr-1"></i> {{ $service->location }}
+                                    </p>
+                                @endif
+                                @if($service->requires_dallas_law || $service->requires_active_shooter)
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        @if($service->requires_dallas_law)
+                                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">Dallas Law Required</span>
+                                        @endif
+                                        @if($service->requires_active_shooter)
+                                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Active Shooter Required</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+
+          
+
 
             <!-- Featured Services Grid (for Explore Training Programs) -->
             @if($featuredServices && $featuredServices->count() > 0)
@@ -840,3 +844,65 @@
        </script>
    </main>
 @endsection
+
+
+  <style>
+                .tab-btn {
+                    padding: 8px 20px;
+                    border: 1px solid var(--primary-color);
+                    border-radius: 4px;
+                    color: var(--text-color);
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                    background: transparent;
+                }
+                .tab-btn.active, .tab-btn:hover {
+                    background: var(--primary-color);
+                    color: white;
+                }
+                .service-item.hidden {
+                    display: none;
+                }
+            </style>
+
+            
+            <script>
+                function filterServices(filter, btn) {
+    document.querySelectorAll('.tab-btn')
+        .forEach(b => b.classList.remove('active'));
+
+    btn.classList.add('active');
+
+    const grid = document.getElementById('services-grid');
+    const items = grid.querySelectorAll('.service-item');
+
+    if (filter === 'all') {
+        items.forEach(item => {
+            item.classList.remove('hidden');
+            item.setAttribute('data-aos', 'fade-up');
+        });
+    } else {
+        const [type, value] = filter.split(':');
+
+        items.forEach(item => {
+            const itemValue = item.getAttribute(`data-${type}`);
+
+            if (
+                itemValue &&
+                itemValue.toLowerCase().trim() === value.toLowerCase().trim()
+            ) {
+                item.classList.remove('hidden');
+                item.setAttribute('data-aos', 'zoom-in');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    }
+
+    if (typeof AOS !== 'undefined') {
+        AOS.refresh();
+    }
+}
+            </script>
