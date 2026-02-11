@@ -93,6 +93,18 @@
                         <option value="red_cross" {{ old('category', $service->category) === 'red_cross' ? 'selected' : '' }}>Red Cross</option>
                         <option value="handgun_carry" {{ old('category', $service->category) === 'handgun_carry' ? 'selected' : '' }}>Handgun Carry Permit</option>
                         <option value="services" {{ old('category', $service->category) === 'services' ? 'selected' : '' }}>Services</option>
+                        <option value="asp_less_than_lethal" {{ old('category', $service->category) === 'asp_less_than_lethal' ? 'selected' : '' }}>ASP Less than Lethal</option>
+                        <option value="homeland_security" {{ old('category', $service->category) === 'homeland_security' ? 'selected' : '' }}>Homeland Security </option>
+                        <option value="active_shooter" {{ old('category', $service->category) === 'active_shooter' ? 'selected' : '' }}>Active Shooter</option>
+                        <option value="security_guard" {{ old('category', $service->category) === 'security_guard' ? 'selected' : '' }}>Security Guard</option>
+                        <option value="force_science" {{ old('category', $service->category) === 'force_science' ? 'selected' : '' }}>Force Science (De-Escalation)</option>
+                        <option value="dallas_law" {{ old('category', $service->category) === 'dallas_law' ? 'selected' : '' }}>Dallas Law</option>
+                        <option value="renewals" {{ old('category', $service->category) === 'renewals' ? 'selected' : '' }}>Renewals</option>
+
+
+
+
+
                     </select>
                     @error('category')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

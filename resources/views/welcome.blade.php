@@ -232,13 +232,13 @@
                 <button class="tab-btn active" onclick="filterServices('all', this)">All</button>
                 <button class="tab-btn" onclick="filterServices('category:nra', this)">NRA</button>
                 <button class="tab-btn" onclick="filterServices('category:red_cross', this)">Red Cross</button>
-                <button class="tab-btn" onclick="filterServices('subcategory:ASP (Batons & Restraints)', this)">ASP Less than Lethal</button>
-                <button class="tab-btn" onclick="filterServices('subcategory:Homeland Security', this)">Homeland Security</button>
-                <button class="tab-btn" onclick="filterServices('subcategory:Active Shooter', this)">Active Shooter</button>
-                <button class="tab-btn" onclick="filterServices('category:security_training', this)">Security</button>
-                <button class="tab-btn" onclick="filterServices('subcategory:Force Science', this)">Force Science</button>
-                <button class="tab-btn" onclick="filterServices('subcategory:Dallas Law', this)">Dallas Law</button>
-                <button class="tab-btn" onclick="filterServices('subcategory:Renewals', this)">Renewals</button>
+                <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP Less than Lethal</button>
+                <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Homeland Security</button>
+                <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter</button>
+                <button class="tab-btn" onclick="filterServices('category:security_guard', this)">Security</button>
+                <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science</button>
+                <button class="tab-btn" onclick="filterServices('category:dallas_law', this)">Dallas Law</button>
+                <button class="tab-btn" onclick="filterServices('category:renewals', this)">Renewals</button>
             </div>
 
             <!-- Services Grid -->
@@ -870,34 +870,39 @@
             
             <script>
                 function filterServices(filter, btn) {
-                    // Update active button
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
+    document.querySelectorAll('.tab-btn')
+        .forEach(b => b.classList.remove('active'));
 
-                    const grid = document.getElementById('services-grid');
-                    const items = grid.querySelectorAll('.service-item');
+    btn.classList.add('active');
 
-                    if (filter === 'all') {
-                        items.forEach(item => {
-                            item.classList.remove('hidden');
-                            item.setAttribute('data-aos', 'fade-up');
-                        });
-                    } else {
-                        const [type, value] = filter.split(':');
-                        items.forEach(item => {
-                            const itemValue = item.getAttribute(`data-${type}`);
-                            if (itemValue === value) {
-                                item.classList.remove('hidden');
-                                item.setAttribute('data-aos', 'zoom-in');
-                            } else {
-                                item.classList.add('hidden');
-                            }
-                        });
-                    }
-                    
-                    // Refresh AOS to reflect visibility changes
-                    if (typeof AOS !== 'undefined') {
-                        AOS.refresh();
-                    }
-                }
+    const grid = document.getElementById('services-grid');
+    const items = grid.querySelectorAll('.service-item');
+
+    if (filter === 'all') {
+        items.forEach(item => {
+            item.classList.remove('hidden');
+            item.setAttribute('data-aos', 'fade-up');
+        });
+    } else {
+        const [type, value] = filter.split(':');
+
+        items.forEach(item => {
+            const itemValue = item.getAttribute(`data-${type}`);
+
+            if (
+                itemValue &&
+                itemValue.toLowerCase().trim() === value.toLowerCase().trim()
+            ) {
+                item.classList.remove('hidden');
+                item.setAttribute('data-aos', 'zoom-in');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    }
+
+    if (typeof AOS !== 'undefined') {
+        AOS.refresh();
+    }
+}
             </script>
