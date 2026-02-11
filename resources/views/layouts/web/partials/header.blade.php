@@ -3,13 +3,13 @@
     $trainingCategories = [
         ['name' => 'NRA', 'url' => route('services', ['category' => 'nra'])],
         ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross'])],
-        ['name' => 'ASP Less than Lethal', 'url' => route('services', ['subcategory' => 'ASP (Batons & Restraints)'])],
-        ['name' => 'Homeland Security', 'url' => route('services', ['subcategory' => 'Homeland Security'])],
-        ['name' => 'Active Shooter', 'url' => route('services', ['subcategory' => 'Active Shooter'])],
+        ['name' => 'ASP Less than Lethal', 'url' => route('services', ['category' => 'asp_less_than_lethal'])],
+        ['name' => 'Homeland Security', 'url' => route('services', ['category' => 'homeland_security'])],
+        ['name' => 'Active Shooter', 'url' => route('services', ['category' => 'active_shooter'])],
         ['name' => 'Security', 'url' => route('services', ['category' => 'security_training'])],
-        ['name' => 'Force Science (De-Escalation)', 'url' => route('services', ['subcategory' => 'Force Science'])],
-        ['name' => 'Dallas Law', 'url' => route('services', ['subcategory' => 'Dallas Law'])],
-        ['name' => 'Renewals', 'url' => route('services', ['subcategory' => 'Renewals'])],
+        ['name' => 'Force Science (De-Escalation)', 'url' => route('services', ['category' => 'force_science'])],
+        ['name' => 'Dallas Law', 'url' => route('services', ['category' => 'dallas_law'])],
+        ['name' => 'Renewals', 'url' => route('services', ['category' => 'renewals'])],
     ];
 @endphp
 
