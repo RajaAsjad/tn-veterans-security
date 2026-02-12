@@ -24,6 +24,17 @@ Route::get('/about', function () {
     return view('about');
 })->name('about');
 
+Route::get('/all-services', function () {
+    // Get all services grouped by category
+    $allServices = \App\Models\Service::where('is_active', true)
+        ->orderBy('order')
+        ->get();
+    
+    $servicesByCategory = $allServices->groupBy('category');
+    
+    return view('all-services', compact('servicesByCategory', 'allServices'));
+})->name('all-services');
+
 Route::get('/training-services', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
