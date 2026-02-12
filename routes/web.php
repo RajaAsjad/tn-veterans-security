@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\QuickBooksController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -193,6 +194,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         // Payment Routes
         Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'showPayment'])->name('booking.payment');
         Route::post('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'processPayment'])->name('booking.payment.process');
+        Route::post('/bookings/{bookingId}/payment/square', [App\Http\Controllers\Customer\BookingController::class, 'processSquarePayment'])->name('booking.payment.square');
     });
 });
 
@@ -232,3 +234,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
     });
 });
+
+
+Route::get('/admin/quickbooks/connect', [QuickBooksController::class, 'connect'])
+    ->name('quickbooks.connect');
+
+    Route::get('/admin/quickbooks/callback', [QuickBooksController::class, 'callback'])
+    ->name('quickbooks.callback');

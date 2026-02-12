@@ -2,6 +2,12 @@
 
 @section('title', 'Payment - Booking #' . $booking->id)
 
+@if(!empty($squareEnabled) && $squareEnabled)
+@push('head')
+<script src="{{ $squareScriptUrl ?? 'https://sandbox.web.squarecdn.com/v1/square.js' }}" type="text/javascript"></script>
+@endpush
+@endif
+
 @section('content')
 <div class="mb-6">
     <a href="{{ route('customer.bookings.show', $booking->id) }}" class="text-blue-600 hover:underline inline-flex items-center gap-2 mb-4">
@@ -52,11 +58,12 @@
                                    name="payment_method" 
                                    value="credit_card" 
                                    required
-                                   class="mr-3"
+                                   class="mr-3 payment-method-radio"
+                                   data-method="credit_card"
                                    {{ old('payment_method') === 'credit_card' ? 'checked' : '' }}>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900">Credit/Debit Card</div>
-                                <div class="text-sm text-gray-500">Pay securely with card</div>
+                                <div class="text-sm text-gray-500">Pay securely with card {{ !empty($squareEnabled) && $squareEnabled ? '(Square)' : '' }}</div>
                             </div>
                             <i class="fas fa-credit-card text-gray-400 text-xl"></i>
                         </label>
@@ -66,7 +73,8 @@
                                    name="payment_method" 
                                    value="bank_transfer" 
                                    required
-                                   class="mr-3"
+                                   class="mr-3 payment-method-radio"
+                                   data-method="bank_transfer"
                                    {{ old('payment_method') === 'bank_transfer' ? 'checked' : '' }}>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900">Bank Transfer</div>
@@ -80,7 +88,8 @@
                                    name="payment_method" 
                                    value="cash" 
                                    required
-                                   class="mr-3"
+                                   class="mr-3 payment-method-radio"
+                                   data-method="cash"
                                    {{ old('payment_method') === 'cash' ? 'checked' : '' }}>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900">Cash Payment</div>
@@ -94,7 +103,21 @@
                     @enderror
                 </div>
                 
-                <!-- Transaction ID (Optional for card/transfer) -->
+                <!-- Square Card Form (when Square enabled and Credit Card selected) -->
+                @php $squareChargeAmount = ($booking->deposit_amount > 0) ? $booking->deposit_amount : $booking->total_amount; @endphp
+                @if(!empty($squareEnabled) && $squareEnabled && !empty($squareAppId) && !empty($squareLocationId) && $squareChargeAmount > 0)
+                <div class="mb-6" id="square-card-container" style="display: none;">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Card Details</label>
+                    <div id="card-container" class="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[120px]"></div>
+                    <div id="card-errors" class="text-red-500 text-sm mt-2" role="alert"></div>
+                    <form id="square-payment-form" method="POST" action="{{ route('customer.booking.payment.square', $booking->id) }}" style="display: none;">
+                        @csrf
+                        <input type="hidden" name="nonce" id="card-nonce">
+                    </form>
+                </div>
+                @endif
+
+                <!-- Transaction ID (Optional for card/transfer when Square NOT used) -->
                 <div class="mb-6" id="transaction-id-field" style="display: none;">
                     <label for="transaction_id" class="block text-gray-700 text-sm font-bold mb-2">
                         Transaction ID / Reference Number
@@ -138,9 +161,18 @@
                 </div>
                 
                 <!-- Submit Button -->
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                    <i class="fas fa-lock mr-2"></i> Pay Deposit & Confirm Booking
-                </button>
+                <div id="submit-regular">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                        <i class="fas fa-lock mr-2"></i> Pay Deposit & Confirm Booking
+                    </button>
+                </div>
+                @if(!empty($squareEnabled) && $squareEnabled && !empty($squareAppId) && !empty($squareLocationId) && $squareChargeAmount > 0)
+                <div id="submit-square" style="display: none;">
+                    <button type="button" id="square-pay-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                        <i class="fas fa-lock mr-2"></i> Pay ${{ number_format($squareChargeAmount, 2) }} with Card
+                    </button>
+                </div>
+                @endif
             </form>
         </div>
     </div>
@@ -188,22 +220,78 @@
 document.addEventListener('DOMContentLoaded', function() {
     const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
     const transactionIdField = document.getElementById('transaction-id-field');
-    
-    paymentMethods.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'credit_card' || this.value === 'bank_transfer') {
-                transactionIdField.style.display = 'block';
-            } else {
-                transactionIdField.style.display = 'none';
+    const squareCardContainer = document.getElementById('square-card-container');
+    const submitRegular = document.getElementById('submit-regular');
+    const submitSquare = document.getElementById('submit-square');
+    const squareEnabled = {{ (!empty($squareEnabled) && $squareEnabled && !empty($squareAppId) && !empty($squareLocationId) && ($squareChargeAmount ?? 0) > 0) ? 'true' : 'false' }};
+
+    function updatePaymentUI() {
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        if (!selected) return;
+
+        if (squareEnabled && selected.value === 'credit_card') {
+            if (transactionIdField) transactionIdField.style.display = 'none';
+            if (squareCardContainer) squareCardContainer.style.display = 'block';
+            if (submitRegular) submitRegular.style.display = 'none';
+            if (submitSquare) submitSquare.style.display = 'block';
+        } else {
+            if (squareCardContainer) squareCardContainer.style.display = 'none';
+            if (submitSquare) submitSquare.style.display = 'none';
+            if (submitRegular) submitRegular.style.display = 'block';
+            if (transactionIdField) {
+                transactionIdField.style.display = (selected.value === 'credit_card' || selected.value === 'bank_transfer') ? 'block' : 'none';
             }
-        });
-    });
-    
-    // Show field if credit_card or bank_transfer is already selected
-    const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
-    if (selectedMethod && (selectedMethod.value === 'credit_card' || selectedMethod.value === 'bank_transfer')) {
-        transactionIdField.style.display = 'block';
+        }
     }
+
+    paymentMethods.forEach(radio => {
+        radio.addEventListener('change', updatePaymentUI);
+    });
+    updatePaymentUI();
 });
 </script>
+@if(!empty($squareEnabled) && $squareEnabled && !empty($squareAppId) && !empty($squareLocationId) && ($squareChargeAmount ?? 0) > 0)
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    if (typeof Square === 'undefined') return;
+    const appId = '{{ $squareAppId }}';
+    const locationId = '{{ $squareLocationId }}';
+    const payments = Square.payments(appId, locationId);
+    let card;
+
+    try {
+        card = await payments.card();
+        await card.attach('#card-container');
+    } catch (e) {
+        console.error('Square card init error:', e);
+        document.getElementById('card-errors').textContent = 'Unable to load payment form. Please refresh the page.';
+        return;
+    }
+
+    document.getElementById('square-pay-btn')?.addEventListener('click', async function() {
+        const btn = this;
+        const errorsEl = document.getElementById('card-errors');
+        errorsEl.textContent = '';
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            const result = await card.tokenize();
+            if (result.status === 'OK') {
+                document.getElementById('card-nonce').value = result.token;
+                document.getElementById('square-payment-form').submit();
+            } else {
+                errorsEl.textContent = result.errors?.length ? result.errors[0].message : 'Tokenization failed.';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock mr-2"></i> Pay ${{ number_format($squareChargeAmount ?? $booking->deposit_amount, 2) }} with Card';
+            }
+        } catch (e) {
+            errorsEl.textContent = e.message || 'An error occurred. Please try again.';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock mr-2"></i> Pay ${{ number_format($booking->deposit_amount, 2) }} with Card';
+        }
+    });
+});
+</script>
+@endif
 @endsection
