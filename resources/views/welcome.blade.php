@@ -248,7 +248,7 @@
                 @endphp
                 
                 @foreach($allServices as $service)
-                    <div class="service-item" 
+                    <div class="service-item {{ $loop->index >= 9 ? 'hidden' : '' }}" 
                          data-category="{{ $service->category }}" 
                          data-subcategory="{{ $service->subcategory }}"
                          data-aos="fade-up" 
@@ -283,6 +283,13 @@
                         </a>
                     </div>
                 @endforeach
+            </div>
+
+            <!-- View All Services Button -->
+            <div class="mt-12 text-center">
+                <a href="{{ route('all-services') }}" id="view-all-services-btn" class="btn primary-button" style="display: {{ count($allServices) > 9 ? 'inline-block' : 'none' }};">
+                    View All Services
+                </a>
             </div>
 
           
@@ -870,39 +877,44 @@
             
             <script>
                 function filterServices(filter, btn) {
-    document.querySelectorAll('.tab-btn')
-        .forEach(b => b.classList.remove('active'));
+                    if (btn) {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    }
 
-    btn.classList.add('active');
+                    const grid = document.getElementById('services-grid');
+                    const items = grid.querySelectorAll('.service-item');
+                    const viewAllBtn = document.getElementById('view-all-services-btn');
 
-    const grid = document.getElementById('services-grid');
-    const items = grid.querySelectorAll('.service-item');
+                    if (filter === 'all') {
+                        items.forEach((item, index) => {
+                            if (index < 9) {
+                                item.classList.remove('hidden');
+                                item.setAttribute('data-aos', 'fade-up');
+                            } else {
+                                item.classList.add('hidden');
+                            }
+                        });
+                        
+                        if (viewAllBtn) {
+                            viewAllBtn.style.display = 'inline-block';
+                        }
+                    } else {
+                        if (viewAllBtn) viewAllBtn.style.display = 'none';
+                        const [type, value] = filter.split(':');
+                        items.forEach(item => {
+                            const itemValue = item.getAttribute(`data-${type}`);
+                            if (itemValue && itemValue.toLowerCase().trim() === value.toLowerCase().trim()) {
+                                item.classList.remove('hidden');
+                                item.setAttribute('data-aos', 'zoom-in');
+                            } else {
+                                item.classList.add('hidden');
+                            }
+                        });
+                    }
 
-    if (filter === 'all') {
-        items.forEach(item => {
-            item.classList.remove('hidden');
-            item.setAttribute('data-aos', 'fade-up');
-        });
-    } else {
-        const [type, value] = filter.split(':');
-
-        items.forEach(item => {
-            const itemValue = item.getAttribute(`data-${type}`);
-
-            if (
-                itemValue &&
-                itemValue.toLowerCase().trim() === value.toLowerCase().trim()
-            ) {
-                item.classList.remove('hidden');
-                item.setAttribute('data-aos', 'zoom-in');
-            } else {
-                item.classList.add('hidden');
-            }
-        });
-    }
-
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
-    }
-}
+                    if (typeof AOS !== 'undefined') {
+                        AOS.refresh();
+                    }
+                }
             </script>
