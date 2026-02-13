@@ -253,8 +253,13 @@
                          data-subcategory="{{ $service->subcategory }}"
                          data-aos="fade-up" 
                          data-aos-delay="{{ ($loop->index % 6) * 100 }}">
-                        <a href="{{ route('service.details', $service->id) }}" 
+                        @if($service->title === 'Unarmed  Security')
+                        <div onclick="document.getElementById('unarmed-modal').classList.remove('hidden')" 
+                             class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
+                        @else
+                        <a href="{{ $service->title === 'Enhanced Armed Guard Security' ? route('handgun.subcategories') : route('service.details', $service->id) }}" 
                            class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
+                        @endif
                             <div class="training-card-img-div">
                                 @if($service->image)
                                     <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
@@ -280,9 +285,33 @@
                                     </div>
                                 @endif
                             </div>
+                        @if($service->title === 'Unarmed  Security')
+                        </div>
+                        @else
                         </a>
+                        @endif
                     </div>
                 @endforeach
+            </div>
+
+            <!-- Unarmed Security Modal -->
+            <div id="unarmed-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/50" onclick="if(event.target===this) document.getElementById('unarmed-modal').classList.add('hidden')">
+                <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] overflow-y-auto m-4 sm:m-6 relative" onclick="event.stopPropagation()">
+                    <button type="button" onclick="document.getElementById('unarmed-modal').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                    <div class="p-6 lg:p-8 pt-12">
+                        <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">Choose Your Path</h3>
+                        <div class="space-y-4">
+                            <a href="{{ route('services', ['category' => 'dallas_law']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                                <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you are working where Alcohol is distributed you must have Dallas Law.</p>
+                            </a>
+                            <a href="{{ route('services', ['category' => 'asp_less_than_lethal']) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-[var(--primary-color)] hover:bg-gray-50 transition-all text-left group">
+                                <p class="text-[var(--text-color)] font-medium group-hover:text-[var(--primary-color)]">If you want to carry anything such as OC Spray, Baton, Restraints, or Taser you must have Less Than Lethal Training.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- View All Services Button -->

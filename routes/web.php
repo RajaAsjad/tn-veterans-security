@@ -68,11 +68,11 @@ Route::get('/training-services', function () {
     return view('services', compact('services', 'categories', 'category', 'subcategory'));
 })->name('services');
 
-Route::get('/training-services/enhanced-handgun-subcategories', function () {
+Route::get('/training-services/enhanced-armed-guard-security-subcategories', function () {
     $rifleService = \App\Models\Service::where('is_active', true)->find(34);
     $shotgunService = \App\Models\Service::where('is_active', true)->find(35);
     $services = collect([$rifleService, $shotgunService])->filter();
-    return view('handgun-subcategories', compact('services'));
+    return view('enhanced-armed-guard-subcategories', compact('services'));
 })->name('handgun.subcategories');
 
 Route::get('/training-services/{id}', function ($id) {
