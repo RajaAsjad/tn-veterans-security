@@ -67,10 +67,10 @@
                 @if($services->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
                         @foreach($services as $index => $service)
-                            @if($service->title === 'Unarmed Guard Training')
+                            @if($service->title === 'Unarmed  Security')
                             <div class="group block cursor-pointer" onclick="document.getElementById('unarmed-modal').classList.remove('hidden')">
                             @else
-                            <a href="{{ $service->title === 'Enhanced Handgun Carry Permit' ? route('handgun.subcategories') : route('service.details', $service->id) }}" class="group block">
+                            <a href="{{ $service->title === 'Enhanced Armed Guard Security' ? route('handgun.subcategories') : route('service.details', $service->id) }}" class="group block">
                             @endif
                                 <div class="service-detail-card bg-white rounded-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
                                     <!-- Image Section -->
@@ -137,7 +137,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            @if($service->title === 'Unarmed Guard Training')
+                            @if($service->title === 'Unarmed  Security')
                             </div>
                             @else
                             </a>
@@ -161,7 +161,7 @@
                     </div>
                 @endif
 
-                <!-- Unarmed Guard Training Modal -->
+                <!-- Unarmed  Security Modal -->
                 <div id="unarmed-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/50" onclick="if(event.target===this) document.getElementById('unarmed-modal').classList.add('hidden')">
                     <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] overflow-y-auto m-4 sm:m-6 relative" onclick="event.stopPropagation()">
                         <button type="button" onclick="document.getElementById('unarmed-modal').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
