@@ -43,8 +43,9 @@ class ServiceController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
-            // Category fields
-            'category' => 'nullable|string|max:255',
+            // Category fields (multiple)
+            'categories' => 'nullable|array',
+            'categories.*' => 'string|in:' . implode(',', array_keys(config('service_categories', []))),
             'subcategory' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'requires_dallas_law' => 'boolean',
@@ -72,6 +73,8 @@ class ServiceController extends Controller
 
         $linkedIds = $request->input('linked_services', []);
         unset($validated['linked_services']);
+
+        $validated['categories'] = array_values(array_filter($request->input('categories', [])));
 
         $service = Service::create($validated);
 
@@ -117,8 +120,9 @@ class ServiceController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
-            // Category fields
-            'category' => 'nullable|string|max:255',
+            // Category fields (multiple)
+            'categories' => 'nullable|array',
+            'categories.*' => 'string|in:' . implode(',', array_keys(config('service_categories', []))),
             'subcategory' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'requires_dallas_law' => 'boolean',
@@ -150,6 +154,8 @@ class ServiceController extends Controller
 
         $linkedIds = $request->input('linked_services', []);
         unset($validated['linked_services']);
+
+        $validated['categories'] = array_values(array_filter($request->input('categories', [])));
 
         $service->update($validated);
 

@@ -460,8 +460,8 @@ $catLabels = ['security_training' => 'Security Training', 'nra' => 'NRA', 'red_c
                     <div class="w-full lg:flex-[2_1_0] lg:min-w-0 sd-card p-5 sm:p-6 lg:p-8 mt-6 sm:mt-8 lg:mt-10">
                         <h2 class="sd-section-title text-gray-900 font-bold uppercase tracking-wide mb-4 sm:mb-6 pb-3 border-b-2 border-[var(--primary-color)]" style="font-family: var(--font-display);">All service details</h2>
                         <div class="sd-detail-grid">
-                            @if($service->category)
-                            <div class="sd-detail-row"><span class="sd-detail-label">Category</span><span class="sd-detail-value">{{ $catLabels[$service->category] ?? $service->category }}</span></div>
+                            @if($service->categories && count($service->categories) > 0)
+                            <div class="sd-detail-row"><span class="sd-detail-label">Categories</span><span class="sd-detail-value">{{ collect($service->categories)->map(fn($c) => $catLabels[$c] ?? ucfirst(str_replace('_', ' ', $c)))->implode(', ') }}</span></div>
                             @endif
                             @if($service->subcategory)
                             <div class="sd-detail-row"><span class="sd-detail-label">Subcategory</span><span class="sd-detail-value">{{ $service->subcategory }}</span></div>
@@ -630,8 +630,8 @@ $catLabels = ['security_training' => 'Security Training', 'nra' => 'NRA', 'red_c
                         <p class="text-gray-500 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 flex-1 line-clamp-3">{{ Str::limit($rel->short_description, 110) }}</p>
                         @endif
                         <div class="space-y-1 text-xs sm:text-sm mb-3 sm:mb-4">
-                            @if($rel->category)
-                            <p class="text-gray-400"><span class="text-gray-600 font-medium">Category:</span> {{ $catLabels[$rel->category] ?? $rel->category }}</p>
+                            @if($rel->categories && count($rel->categories) > 0)
+                            <p class="text-gray-400"><span class="text-gray-600 font-medium">Categories:</span> {{ collect($rel->categories)->map(fn($c) => $catLabels[$c] ?? ucfirst(str_replace('_', ' ', $c)))->implode(', ') }}</p>
                             @endif
                             @if($rel->price)
                             <p class="sd-rel-price">${{ number_format($rel->price, 2) }} <span class="text-gray-400 font-normal text-xs">/ student</span></p>

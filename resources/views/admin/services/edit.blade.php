@@ -82,31 +82,31 @@
             <h3 class="text-lg font-bold mb-4">Category & Organization</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category</label>
-                    <select id="category" 
-                            name="category" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="">Select Category</option>
-                        <option value="security_training" {{ old('category', $service->category) === 'security_training' ? 'selected' : '' }}>Security Training</option>
-                        <option value="nra" {{ old('category', $service->category) === 'nra' ? 'selected' : '' }}>NRA</option>
-                        <option value="red_cross" {{ old('category', $service->category) === 'red_cross' ? 'selected' : '' }}>Red Cross</option>
-                        <option value="handgun_carry" {{ old('category', $service->category) === 'handgun_carry' ? 'selected' : '' }}>Handgun Carry Permit</option>
-                        <option value="services" {{ old('category', $service->category) === 'services' ? 'selected' : '' }}>Services</option>
-                        <option value="asp_less_than_lethal" {{ old('category', $service->category) === 'asp_less_than_lethal' ? 'selected' : '' }}>ASP Less than Lethal</option>
-                        <option value="homeland_security" {{ old('category', $service->category) === 'homeland_security' ? 'selected' : '' }}>Homeland Security </option>
-                        <option value="active_shooter" {{ old('category', $service->category) === 'active_shooter' ? 'selected' : '' }}>Active Shooter</option>
-                        <option value="security_guard" {{ old('category', $service->category) === 'security_guard' ? 'selected' : '' }}>Security Guard</option>
-                        <option value="force_science" {{ old('category', $service->category) === 'force_science' ? 'selected' : '' }}>Force Science (De-Escalation)</option>
-                        <option value="dallas_law" {{ old('category', $service->category) === 'dallas_law' ? 'selected' : '' }}>Dallas Law</option>
-                        <option value="renewals" {{ old('category', $service->category) === 'renewals' ? 'selected' : '' }}>Renewals</option>
-
-
-
-
-
-                    </select>
-                    @error('category')
+                <div class="md:col-span-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Categories</label>
+                    <!-- Selected tags (shown at top) -->
+                    <div id="selected-categories-display" class="min-h-[52px] mb-3 p-3 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex flex-wrap gap-2 items-center">
+                        <span id="no-selection-hint" class="text-sm text-gray-400">No categories selected — choose below</span>
+                    </div>
+                    <!-- Checkbox list -->
+                    <p class="text-xs text-gray-600 font-medium mb-2">Select categories</p>
+                    <div class="max-h-36 overflow-y-auto border rounded-lg p-3 bg-white space-y-1.5">
+                        @php
+                            $selectedCategories = old('categories', $service->categories ?? []);
+                            $selectedCategories = is_array($selectedCategories) ? $selectedCategories : [];
+                        @endphp
+                        @foreach(config('service_categories', []) as $slug => $label)
+                            <label class="flex items-center gap-2 cursor-pointer hover:bg-green-50 p-2 rounded transition-colors category-checkbox-label" data-slug="{{ $slug }}" data-label="{{ $label }}">
+                                <input type="checkbox"
+                                       name="categories[]"
+                                       value="{{ $slug }}"
+                                       {{ in_array($slug, $selectedCategories) ? 'checked' : '' }}
+                                       class="rounded border-gray-400 text-green-600 focus:ring-green-500 category-checkbox">
+                                <span class="text-sm text-gray-800">{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('categories')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -354,6 +354,31 @@
             var descriptionInput = document.getElementById('description');
             descriptionInput.value = quill.root.innerHTML;
         });
+
+        // Category selection UI: update selected tags display
+        function updateSelectedCategories() {
+            var container = document.getElementById('selected-categories-display');
+            var hint = document.getElementById('no-selection-hint');
+            var checkboxes = document.querySelectorAll('.category-checkbox:checked');
+            var existingTags = container.querySelectorAll('.selected-tag');
+            existingTags.forEach(function(t) { t.remove(); });
+            if (checkboxes.length === 0) {
+                hint.style.display = 'inline';
+            } else {
+                hint.style.display = 'none';
+                checkboxes.forEach(function(cb) {
+                    var labelEl = document.querySelector('.category-checkbox-label[data-slug="' + cb.value + '"]');
+                    var chip = document.createElement('span');
+                    chip.className = 'selected-tag inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white';
+                    chip.textContent = labelEl ? labelEl.getAttribute('data-label') : cb.value;
+                    container.appendChild(chip);
+                });
+            }
+        }
+        document.querySelectorAll('.category-checkbox').forEach(function(cb) {
+            cb.addEventListener('change', updateSelectedCategories);
+        });
+        updateSelectedCategories();
     });
 </script>
 <style>

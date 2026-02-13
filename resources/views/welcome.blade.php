@@ -244,12 +244,12 @@
             <!-- Services Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 min-h-[400px]" id="services-grid">
                 @php
-                    $allServices = $servicesByCategory->flatten();
+                    $allServices = $allServices ?? $servicesByCategory->flatten()->unique('id');
                 @endphp
                 
                 @foreach($allServices as $service)
                     <div class="service-item {{ $loop->index >= 9 ? 'hidden' : '' }}" 
-                         data-category="{{ $service->category }}" 
+                         data-category="{{ implode(',', $service->categories ?? []) }}" 
                          data-subcategory="{{ $service->subcategory }}"
                          data-aos="fade-up" 
                          data-aos-delay="{{ ($loop->index % 6) * 100 }}">
@@ -904,7 +904,8 @@
                         const [type, value] = filter.split(':');
                         items.forEach(item => {
                             const itemValue = item.getAttribute(`data-${type}`);
-                            if (itemValue && itemValue.toLowerCase().trim() === value.toLowerCase().trim()) {
+                            const cats = (itemValue || '').split(',').map(s => s.trim()).filter(Boolean);
+                            if (cats.length && cats.some(c => c.toLowerCase() === value.toLowerCase())) {
                                 item.classList.remove('hidden');
                                 item.setAttribute('data-aos', 'zoom-in');
                             } else {
