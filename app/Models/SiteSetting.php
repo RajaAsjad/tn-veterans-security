@@ -32,6 +32,12 @@ class SiteSetting extends Model
         'bank_api_secret',
         'bank_account_id',
         'bank_sync_enabled',
+        // Square Payment
+        'square_application_id',
+        'square_access_token',
+        'square_location_id',
+        'square_environment',
+        'square_enabled',
         // Instructor Bios
         'jayson_bio',
         'kenny_bio',
@@ -40,5 +46,6 @@ class SiteSetting extends Model
     protected $casts = [
         'quickbooks_enabled' => 'boolean',
         'bank_sync_enabled' => 'boolean',
+        'square_enabled' => 'boolean',
     ];
 }

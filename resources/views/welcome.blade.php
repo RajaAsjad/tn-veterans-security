@@ -169,7 +169,7 @@
                        
                        <div class="lg:absolute lg:top-0 lg:-right-15 p-6 lg:max-w-[300px] z-20 mt-6 lg:mt-0" data-aos="fade-left" data-aos-delay="200">
                            <p class="text-[16px] md:text-[20px] font-bold text-[var(--text-color)] leading-snug">
-                               Our mission is to provide veteran-friendly training and make sure every student is ready for the demands of the security industry, offering them a clear path to success.
+                             Our mission is to provide professional, efficient, cost-effective security guard training solutions for our customers and partners through continuous improvement driven by integrity, teamwork, and innovation.
                            </p>
                        </div>
                    </div>
@@ -185,12 +185,12 @@
                        </h2>
                        
                        <p class="about-text" data-aos="fade-up" data-aos-delay="200">
-                           We are committed to offering high-quality security training to individuals interested in pursuing a rewarding career in security.
+                          Tennessee’s leading veteran-led institution for five-star-rated security guard registration training. We specialize in preparing students for both the Armed and Unarmed Security Guard Licenses in Nashville, Tennessee. Our graduates receive expert training that exceeds state requirements. If you’re considering a career as an armed or unarmed security guard in Tennessee, our comprehensive security registration training is the ideal starting point. Our classes are designed to equip individuals with all the necessary skills for a successful career in security.
                        </p>
                        
-                       <div class="space-y-4" data-aos="fade-up" data-aos-delay="400">
+                       <div class="" data-aos="fade-up" data-aos-delay="400">
                            <p class="about-text">
-                               Whether you want to work as an armed or unarmed security officer, or you need to obtain your handgun carry permit, our expert instructors will ensure you are fully prepared.   We also assist you in securing employment by connecting you with reputable security companies in the region.
+                              We offer Blended classes online with in-person testing for Dallas Law Active Shooter Classification Certification programs, providing unmatched convenience and flexibility. At Tn Veterans Security Services and Training, we understand the importance of training security guards in Tennessee and take pride in preparing our students for real-world situations. Our graduates are well-regarded for providing reliable security, maintaining strong customer relations, and enhancing overall productivity for businesses across the Volunteer State.
                            </p>
                        </div>
 
@@ -232,11 +232,11 @@
                 <button class="tab-btn active" onclick="filterServices('all', this)">All</button>
                 <button class="tab-btn" onclick="filterServices('category:nra', this)">NRA</button>
                 <button class="tab-btn" onclick="filterServices('category:red_cross', this)">Red Cross</button>
-                <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP Less than Lethal</button>
-                <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Homeland Security</button>
-                <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter</button>
-                <button class="tab-btn" onclick="filterServices('category:security_guard', this)">Security</button>
-                <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science</button>
+                <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP 4 Hours (Less than Lethal)</button>
+                <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Homeland Security (6 Hours)</button>
+                <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter (8 Hours)</button>
+                <button class="tab-btn" onclick="filterServices('category:security_training', this)">Security</button>
+                <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science (De-Escalation)</button>
                 <button class="tab-btn" onclick="filterServices('category:dallas_law', this)">Dallas Law</button>
                 <button class="tab-btn" onclick="filterServices('category:renewals', this)">Renewals</button>
             </div>
@@ -244,12 +244,12 @@
             <!-- Services Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 min-h-[400px]" id="services-grid">
                 @php
-                    $allServices = $servicesByCategory->flatten();
+                    $allServices = $allServices ?? $servicesByCategory->flatten()->unique('id');
                 @endphp
                 
                 @foreach($allServices as $service)
-                    <div class="service-item" 
-                         data-category="{{ $service->category }}" 
+                    <div class="service-item {{ $loop->index >= 9 ? 'hidden' : '' }}" 
+                         data-category="{{ implode(',', $service->categories ?? []) }}" 
                          data-subcategory="{{ $service->subcategory }}"
                          data-aos="fade-up" 
                          data-aos-delay="{{ ($loop->index % 6) * 100 }}">
@@ -283,6 +283,13 @@
                         </a>
                     </div>
                 @endforeach
+            </div>
+
+            <!-- View All Services Button -->
+            <div class="mt-12 text-center">
+                <a href="{{ route('all-services') }}" id="view-all-services-btn" class="btn primary-button" style="display: {{ count($allServices) > 9 ? 'inline-block' : 'none' }};">
+                    View All Services
+                </a>
             </div>
 
           
@@ -870,39 +877,45 @@
             
             <script>
                 function filterServices(filter, btn) {
-    document.querySelectorAll('.tab-btn')
-        .forEach(b => b.classList.remove('active'));
+                    if (btn) {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    }
 
-    btn.classList.add('active');
+                    const grid = document.getElementById('services-grid');
+                    const items = grid.querySelectorAll('.service-item');
+                    const viewAllBtn = document.getElementById('view-all-services-btn');
 
-    const grid = document.getElementById('services-grid');
-    const items = grid.querySelectorAll('.service-item');
+                    if (filter === 'all') {
+                        items.forEach((item, index) => {
+                            if (index < 9) {
+                                item.classList.remove('hidden');
+                                item.setAttribute('data-aos', 'fade-up');
+                            } else {
+                                item.classList.add('hidden');
+                            }
+                        });
+                        
+                        if (viewAllBtn) {
+                            viewAllBtn.style.display = 'inline-block';
+                        }
+                    } else {
+                        if (viewAllBtn) viewAllBtn.style.display = 'none';
+                        const [type, value] = filter.split(':');
+                        items.forEach(item => {
+                            const itemValue = item.getAttribute(`data-${type}`);
+                            const cats = (itemValue || '').split(',').map(s => s.trim()).filter(Boolean);
+                            if (cats.length && cats.some(c => c.toLowerCase() === value.toLowerCase())) {
+                                item.classList.remove('hidden');
+                                item.setAttribute('data-aos', 'zoom-in');
+                            } else {
+                                item.classList.add('hidden');
+                            }
+                        });
+                    }
 
-    if (filter === 'all') {
-        items.forEach(item => {
-            item.classList.remove('hidden');
-            item.setAttribute('data-aos', 'fade-up');
-        });
-    } else {
-        const [type, value] = filter.split(':');
-
-        items.forEach(item => {
-            const itemValue = item.getAttribute(`data-${type}`);
-
-            if (
-                itemValue &&
-                itemValue.toLowerCase().trim() === value.toLowerCase().trim()
-            ) {
-                item.classList.remove('hidden');
-                item.setAttribute('data-aos', 'zoom-in');
-            } else {
-                item.classList.add('hidden');
-            }
-        });
-    }
-
-    if (typeof AOS !== 'undefined') {
-        AOS.refresh();
-    }
-}
+                    if (typeof AOS !== 'undefined') {
+                        AOS.refresh();
+                    }
+                }
             </script>

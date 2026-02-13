@@ -8,6 +8,7 @@ use App\Models\ServiceBooking;
 use Illuminate\Support\Facades\Log;
 use QuickBooksOnline\API\DataService\DataService;
 use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2LoginHelper;
+use QuickBooksOnline\API\Core\OAuth\OAuth2\OAuth2AccessToken;
 use QuickBooksOnline\API\Facades\Invoice;
 use QuickBooksOnline\API\Facades\Payment as QuickBooksPayment;
 
@@ -48,13 +49,40 @@ class QuickBooksService
             'baseUrl' => $environment === 'production' ? 'production' : 'development',
         ]);
 
-        // Set access token if available
-        if (!empty($this->settings->quickbooks_access_token)) {
-            $dataService->updateOAuth2Token($this->settings->quickbooks_access_token);
+        // Set access token if available (SDK expects OAuth2AccessToken object, not a string)
+        if (!empty($this->settings->quickbooks_access_token) && !empty($this->settings->quickbooks_refresh_token) && !empty($this->settings->quickbooks_company_id)) {
+            // Refresh token first (access tokens expire in 1 hour); use standalone helper
+            $token = $this->refreshAndPersistToken();
+            $token->setRealmID($this->settings->quickbooks_company_id);
+            $dataService->updateOAuth2Token($token);
         }
 
         $this->dataService = $dataService;
         return $dataService;
+    }
+
+    /**
+     * Refresh OAuth2 access token and save new tokens to settings. Returns the new token.
+     */
+    protected function refreshAndPersistToken(): OAuth2AccessToken
+    {
+        $oauth2Helper = new OAuth2LoginHelper(
+            $this->settings->quickbooks_client_id,
+            $this->settings->quickbooks_client_secret
+        );
+        try {
+            $newToken = $oauth2Helper->refreshAccessTokenWithRefreshToken($this->settings->quickbooks_refresh_token);
+        } catch (\Exception $e) {
+            Log::warning('QuickBooks token refresh failed', ['error' => $e->getMessage()]);
+            throw new \Exception('QuickBooks token expired or invalid. Please reconnect in Site Settings → QuickBooks: ' . $e->getMessage());
+        }
+        // Persist new tokens (QuickBooks may return a new refresh token)
+        $this->settings->update([
+            'quickbooks_access_token' => $newToken->getAccessToken(),
+            'quickbooks_refresh_token' => $newToken->getRefreshToken(),
+        ]);
+        $this->settings->refresh();
+        return $newToken;
     }
 
     /**
@@ -223,9 +251,13 @@ class QuickBooksService
      */
     protected function createPaymentRecord(Payment $payment, $invoice)
     {
+        $customerRefValue = is_object($invoice->CustomerRef) && isset($invoice->CustomerRef->value)
+            ? $invoice->CustomerRef->value
+            : (string) $invoice->CustomerRef;
+
         $qbPayment = QuickBooksPayment::create([
             'CustomerRef' => [
-                'value' => $invoice->CustomerRef->value,
+                'value' => $customerRefValue,
             ],
             'TotalAmt' => $payment->amount,
             'TxnDate' => $payment->payment_date->format('Y-m-d'),

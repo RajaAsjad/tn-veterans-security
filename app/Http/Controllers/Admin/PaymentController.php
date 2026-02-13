@@ -114,18 +114,27 @@ class PaymentController extends Controller
             
             $synced = 0;
             $failed = 0;
-            
+            $firstError = null;
+
             foreach ($payments as $payment) {
                 $result = $quickBooksService->syncPayment($payment);
                 if ($result['success']) {
                     $synced++;
                 } else {
                     $failed++;
+                    if ($firstError === null && !empty($result['message'])) {
+                        $firstError = $result['message'];
+                    }
                 }
             }
-            
+
+            $message = "Synced {$synced} payments to QuickBooks. {$failed} failed.";
+            if ($firstError !== null) {
+                $message .= ' ' . $firstError;
+            }
+
             return redirect()->route('admin.payments.index')
-                ->with('success', "Synced {$synced} payments to QuickBooks. {$failed} failed.");
+                ->with($failed > 0 ? 'error' : 'success', $message);
         } catch (\Exception $e) {
             return redirect()->route('admin.payments.index')
                 ->with('error', 'Failed to sync payments: ' . $e->getMessage());

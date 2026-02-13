@@ -15,8 +15,8 @@ class Service extends Model
         'image',
         'order',
         'is_active',
-        // Category and organization
-        'category',
+        // Category and organization (categories = JSON array for multi-select)
+        'categories',
         'subcategory',
         'location',
         'requires_dallas_law',
@@ -34,6 +34,7 @@ class Service extends Model
     ];
 
     protected $casts = [
+        'categories' => 'array',
         'is_active' => 'boolean',
         'order' => 'integer',
         'price' => 'decimal:2',
@@ -78,6 +79,15 @@ class Service extends Model
             ->withPivot('order')
             ->withTimestamps()
             ->orderByPivot('order');
+    }
+
+    /**
+     * Primary category (first of multiple) for backward compatibility.
+     */
+    public function getCategoryAttribute(): ?string
+    {
+        $cats = $this->categories ?? [];
+        return is_array($cats) && count($cats) > 0 ? $cats[0] : null;
     }
 
     /**

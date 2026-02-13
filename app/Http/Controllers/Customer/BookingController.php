@@ -9,6 +9,7 @@ use App\Models\ClassSchedule;
 use App\Models\Payment;
 use App\Services\QuickBooksService;
 use App\Services\BankIntegrationService;
+use App\Services\SquareService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -89,47 +90,24 @@ class BookingController extends Controller
         $preferredDate = $inquiry['preferred_date'] ?? null;
         $preferredLocation = $inquiry['location'] ?? null;
 
-        $scheduleQuery = ClassSchedule::where('service_id', $service->id)
-            ->where('status', 'scheduled')
-            ->where('class_date', '>=', now()->toDateString())
-            ->whereRaw('current_students < max_students');
-        if ($preferredDate) {
-            $scheduleQuery->where('class_date', $preferredDate);
-        }
-        $schedules = $scheduleQuery->orderBy('class_date')->orderBy('start_time')->get();
-        if ($preferredLocation && $preferredLocation !== 'Any location' && $preferredLocation !== 'No Specific Location') {
-            $schedules = $schedules->filter(function ($s) use ($preferredLocation) {
-                return ($s->location ?: 'No Specific Location') === $preferredLocation;
-            });
-            if ($schedules->isEmpty()) {
-                $schedules = $scheduleQuery->get();
-            }
-        }
-        $schedule = $schedules->first();
-        if (! $schedule) {
-            return redirect()->route('customer.services.checkout', $service->id)
-                ->with('error', 'No available class found for your selected date/location. Please go back and choose another date or location.');
-        }
-
-        $availableSpots = $schedule->getAvailableSpots();
-        if ($numStudents > $availableSpots) {
-            return redirect()->route('customer.services.checkout', $service->id)
-                ->with('error', "Only {$availableSpots} spot(s) available for that class. Please reduce the number of students or choose another date.");
-        }
-
         $totalAmount = ($service->price ?? 0) * $numStudents;
         $depositAmount = ($service->deposit_amount ?? 0) * $numStudents;
         $remainingAmount = $totalAmount - $depositAmount;
+
+        $bookingDate = $preferredDate ? \Carbon\Carbon::parse($preferredDate)->toDateString() : now()->toDateString();
+        $location = ($preferredLocation && $preferredLocation !== 'Any location' && $preferredLocation !== 'No Specific Location')
+            ? $preferredLocation
+            : null;
 
         DB::beginTransaction();
         try {
             $booking = ServiceBooking::create([
                 'customer_id' => $customer->id,
                 'service_id' => $service->id,
-                'class_schedule_id' => $schedule->id,
-                'location' => $schedule->location,
-                'booking_date' => $schedule->class_date,
-                'booking_time' => Carbon::parse($schedule->start_time)->format('H:i:s'),
+                'class_schedule_id' => null,
+                'location' => $location,
+                'booking_date' => $bookingDate,
+                'booking_time' => null,
                 'status' => 'pending',
                 'booking_type' => $service->class_type ?? 'group',
                 'number_of_students' => $numStudents,
@@ -140,10 +118,6 @@ class BookingController extends Controller
                 'remaining_amount' => $remainingAmount,
                 'payment_status' => 'pending',
             ]);
-            $schedule->increment('current_students', $numStudents);
-            if ($schedule->current_students >= $schedule->max_students) {
-                $schedule->update(['status' => 'full']);
-            }
             DB::commit();
             return redirect()->route('customer.booking.payment', $booking->id)
                 ->with('success', 'Please complete payment for your booking.');
@@ -290,7 +264,107 @@ class BookingController extends Controller
                 ->with('info', 'Deposit has already been paid.');
         }
         
-        return view('customer.booking-payment', compact('booking'));
+        $squareService = app(SquareService::class);
+        $squareEnabled = $squareService->isEnabled();
+        $squareAppId = $squareService->getApplicationId();
+        $squareLocationId = $squareService->getLocationId();
+        $squareScriptUrl = $squareService->getWebPaymentsScriptUrl();
+
+        return view('customer.booking-payment', compact(
+            'booking',
+            'squareEnabled',
+            'squareAppId',
+            'squareLocationId',
+            'squareScriptUrl'
+        ));
+    }
+
+    /**
+     * Process deposit payment via Square (card).
+     */
+    public function processSquarePayment(Request $request, $bookingId)
+    {
+        $customer = Auth::guard('customer')->user();
+        $booking = ServiceBooking::where('customer_id', $customer->id)
+            ->findOrFail($bookingId);
+
+        if ($booking->payment_status === 'deposit_paid' || $booking->payment_status === 'fully_paid') {
+            return redirect()->route('customer.bookings.show', $booking->id)
+                ->with('info', 'Deposit has already been paid.');
+        }
+
+        $request->validate(['nonce' => 'required|string']);
+
+        $squareService = app(SquareService::class);
+        if (!$squareService->isEnabled()) {
+            return redirect()->route('customer.booking.payment', $booking->id)
+                ->with('error', 'Card payments are not available. Please try another method.');
+        }
+
+        // When deposit is $0, charge total_amount (full payment) instead
+        $chargeAmount = ($booking->deposit_amount > 0) ? $booking->deposit_amount : $booking->total_amount;
+        if ($chargeAmount <= 0) {
+            return redirect()->route('customer.booking.payment', $booking->id)
+                ->with('error', 'No amount to charge.');
+        }
+
+        $amountCents = (int) round($chargeAmount * 100);
+        $idempotencyKey = 'booking-' . $booking->id . '-' . uniqid();
+
+        $result = $squareService->createPayment(
+            $request->nonce,
+            $amountCents,
+            $idempotencyKey,
+            'Booking#' . $booking->id
+        );
+
+        if (!$result['success']) {
+            return redirect()->route('customer.booking.payment', $booking->id)
+                ->with('error', 'Payment failed: ' . ($result['message'] ?? 'Please try again.'));
+        }
+
+        $isFullPayment = $chargeAmount >= $booking->total_amount;
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'customer_id' => $customer->id,
+            'amount' => $chargeAmount,
+            'payment_type' => $isFullPayment ? 'full_payment' : 'deposit',
+            'payment_method' => 'credit_card',
+            'transaction_id' => $result['square_payment_id'],
+            'payment_gateway' => 'square',
+            'gateway_response' => ['square_payment_id' => $result['square_payment_id']],
+            'status' => 'completed',
+            'payment_date' => now(),
+        ]);
+
+        $booking->update([
+            'payment_status' => $isFullPayment ? 'fully_paid' : 'deposit_paid',
+            'status' => 'confirmed',
+        ]);
+
+        if ($payment->status === 'completed') {
+            try {
+                $quickBooksService = app(QuickBooksService::class);
+                $quickBooksResult = $quickBooksService->syncPayment($payment);
+                if (!$quickBooksResult['success']) {
+                    Log::warning('QuickBooks auto-sync failed', ['payment_id' => $payment->id, 'error' => $quickBooksResult['message']]);
+                }
+            } catch (\Exception $e) {
+                Log::error('QuickBooks auto-sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
+            }
+            try {
+                $bankService = app(BankIntegrationService::class);
+                $bankResult = $bankService->syncPayment($payment);
+                if (!$bankResult['success']) {
+                    Log::warning('Bank auto-sync failed', ['payment_id' => $payment->id, 'error' => $bankResult['message']]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Bank auto-sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return redirect()->route('customer.bookings.show', $booking->id)
+            ->with('success', 'Deposit payment received. Your booking is confirmed!');
     }
 
     /**

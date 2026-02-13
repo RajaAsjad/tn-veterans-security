@@ -43,6 +43,12 @@ class SettingController extends Controller
             'bank_api_secret' => 'nullable|string|max:255',
             'bank_account_id' => 'nullable|string|max:255',
             'bank_sync_enabled' => 'nullable|boolean',
+            // Square Payment
+            'square_application_id' => 'nullable|string|max:255',
+            'square_access_token' => 'nullable|string|max:255',
+            'square_location_id' => 'nullable|string|max:255',
+            'square_environment' => 'nullable|in:sandbox,production',
+            'square_enabled' => 'nullable|boolean',
             // Instructor Bios
             'jayson_bio' => 'nullable|string',
             'kenny_bio' => 'nullable|string',
@@ -75,14 +81,26 @@ class SettingController extends Controller
         // Handle boolean fields
         $validated['quickbooks_enabled'] = $request->has('quickbooks_enabled') ? true : false;
         $validated['bank_sync_enabled'] = $request->has('bank_sync_enabled') ? true : false;
+        $validated['square_enabled'] = $request->has('square_enabled') ? true : false;
         
         // Remove null values to avoid overwriting with null (except for boolean fields)
         $validated = array_filter($validated, function($value, $key) {
-            // Keep boolean false values and empty strings for API keys (to allow clearing)
-            if (in_array($key, ['quickbooks_enabled', 'bank_sync_enabled'])) {
+            // Keep boolean false values
+            if (in_array($key, ['quickbooks_enabled', 'bank_sync_enabled', 'square_enabled'])) {
                 return true;
             }
-            return $value !== null;
+            if ($value === null) {
+                return false;
+            }
+            // Don't overwrite secrets/tokens with empty string (user left password field blank)
+            $secretKeys = [
+                'quickbooks_client_secret', 'quickbooks_access_token', 'quickbooks_refresh_token',
+                'bank_api_secret', 'square_access_token',
+            ];
+            if (in_array($key, $secretKeys) && trim((string) $value) === '') {
+                return false;
+            }
+            return true;
         }, ARRAY_FILTER_USE_BOTH);
 
         if ($settings) {

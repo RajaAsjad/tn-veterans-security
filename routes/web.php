@@ -1,14 +1,23 @@
 <?php
 
+use App\Http\Controllers\QuickBooksController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    // Get services grouped by category
-    $servicesByCategory = \App\Models\Service::where('is_active', true)
-        ->whereNotNull('category')
+    // Get services (grouped structure: each service can appear in multiple categories)
+    $allServices = \App\Models\Service::where('is_active', true)
         ->orderBy('order')
-        ->get()
-        ->groupBy('category');
+        ->get();
+    $servicesByCategory = collect();
+    foreach ($allServices as $service) {
+        $cats = $service->categories ?? [];
+        foreach ($cats as $cat) {
+            if (!$servicesByCategory->has($cat)) {
+                $servicesByCategory->put($cat, collect());
+            }
+            $servicesByCategory->get($cat)->push($service);
+        }
+    }
     
     // Also get services for the "Explore Training Programs" section (limit 6)
     $featuredServices = \App\Models\Service::where('is_active', true)
@@ -16,12 +25,20 @@ Route::get('/', function () {
         ->limit(6)
         ->get();
     
-    return view('welcome', compact('servicesByCategory', 'featuredServices'));
+    return view('welcome', compact('servicesByCategory', 'featuredServices', 'allServices'));
 });
 
 Route::get('/about', function () {
     return view('about');
 })->name('about');
+
+Route::get('/all-services', function () {
+    $allServices = \App\Models\Service::where('is_active', true)
+        ->orderBy('order')
+        ->get();
+    
+    return view('all-services', compact('allServices'));
+})->name('all-services');
 
 Route::get('/training-services', function () {
     $category = request()->query('category');
@@ -30,7 +47,7 @@ Route::get('/training-services', function () {
     $query = \App\Models\Service::where('is_active', true);
     
     if ($category) {
-        $query->where('category', $category);
+        $query->whereJsonContains('categories', $category);
     }
     
     if ($subcategory) {
@@ -39,15 +56,24 @@ Route::get('/training-services', function () {
     
     $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
     
-    // Get all categories for filtering
+    // Get all unique categories from services
     $categories = \App\Models\Service::where('is_active', true)
-        ->whereNotNull('category')
-        ->distinct()
-        ->pluck('category')
-        ->filter();
+        ->get()
+        ->pluck('categories')
+        ->flatten()
+        ->filter()
+        ->unique()
+        ->values();
     
     return view('services', compact('services', 'categories', 'category', 'subcategory'));
 })->name('services');
+
+Route::get('/training-services/enhanced-handgun-subcategories', function () {
+    $rifleService = \App\Models\Service::where('is_active', true)->find(34);
+    $shotgunService = \App\Models\Service::where('is_active', true)->find(35);
+    $services = collect([$rifleService, $shotgunService])->filter();
+    return view('handgun-subcategories', compact('services'));
+})->name('handgun.subcategories');
 
 Route::get('/training-services/{id}', function ($id) {
     $service = \App\Models\Service::with('linkedServices')->where('is_active', true)->findOrFail($id);
@@ -138,7 +164,7 @@ Route::get('/contact-us', function () {
 Route::get('/private-protective-services', function () {
     // Get services in the "services" category (Private Protective Services)
     $services = \App\Models\Service::where('is_active', true)
-        ->where('category', 'services')
+        ->whereJsonContains('categories', 'services')
         ->orderBy('order')
         ->get();
     
@@ -186,6 +212,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         // Payment Routes
         Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'showPayment'])->name('booking.payment');
         Route::post('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'processPayment'])->name('booking.payment.process');
+        Route::post('/bookings/{bookingId}/payment/square', [App\Http\Controllers\Customer\BookingController::class, 'processSquarePayment'])->name('booking.payment.square');
     });
 });
 
@@ -225,3 +252,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
     });
 });
+
+
+Route::get('/admin/quickbooks/connect', [QuickBooksController::class, 'connect'])
+    ->name('quickbooks.connect');
+
+    Route::get('/admin/quickbooks/callback', [QuickBooksController::class, 'callback'])
+    ->name('quickbooks.callback');
