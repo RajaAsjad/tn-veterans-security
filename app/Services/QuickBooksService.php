@@ -45,7 +45,7 @@ class QuickBooksService
             'ClientID' => $this->settings->quickbooks_client_id,
             'ClientSecret' => $this->settings->quickbooks_client_secret,
             'RedirectURI' => $redirectUri,
-            'scope' => 'com.intuit.quickbooks.accounting',
+            'scope' => 'com.intuit.quickbooks.accounting com.intuit.quickbooks.payment',
             'baseUrl' => $environment === 'production' ? 'production' : 'development',
         ]);
 
@@ -276,6 +276,16 @@ class QuickBooksService
 
         $resultingPayment = $this->dataService->Add($qbPayment);
         return $resultingPayment;
+    }
+
+    /**
+     * Refresh token and return the access token string (for Payments API).
+     */
+    public function getValidAccessToken(): string
+    {
+        $this->initializeDataService();
+        $this->settings->refresh();
+        return $this->settings->quickbooks_access_token ?? '';
     }
 
     /**

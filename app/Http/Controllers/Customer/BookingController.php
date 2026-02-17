@@ -8,8 +8,8 @@ use App\Models\ServiceBooking;
 use App\Models\ClassSchedule;
 use App\Models\Payment;
 use App\Services\QuickBooksService;
+use App\Services\QuickBooksPaymentsService;
 use App\Services\BankIntegrationService;
-use App\Services\SquareService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -65,8 +65,8 @@ class BookingController extends Controller
         }
         $numStudents = (int) ($inquiry['number_of_students'] ?? 1);
         $totalAmount = ($service->price ?? 0) * $numStudents;
-        $depositAmount = ($service->deposit_amount ?? 0) * $numStudents;
-        $amountDue = $depositAmount > 0 ? $depositAmount : $totalAmount;
+        $depositAmount = 20; // Fixed $20 deposit
+        $amountDue = $depositAmount;
         $isLoggedIn = Auth::guard('customer')->check();
         if (! $isLoggedIn) {
             session()->put('url.intended', route('customer.services.checkout', $service->id));
@@ -91,7 +91,7 @@ class BookingController extends Controller
         $preferredLocation = $inquiry['location'] ?? null;
 
         $totalAmount = ($service->price ?? 0) * $numStudents;
-        $depositAmount = ($service->deposit_amount ?? 0) * $numStudents;
+        $depositAmount = 20; // Fixed $20 deposit
         $remainingAmount = $totalAmount - $depositAmount;
 
         $bookingDate = $preferredDate ? \Carbon\Carbon::parse($preferredDate)->toDateString() : now()->toDateString();
@@ -199,9 +199,9 @@ class BookingController extends Controller
                 ->with('error', "Minimum {$schedule->min_students} student(s) required for this class.");
         }
         
-        // Calculate amounts
+        // Calculate amounts (fixed $20 deposit)
         $totalAmount = $service->price * $validated['number_of_students'];
-        $depositAmount = $service->deposit_amount * $validated['number_of_students'];
+        $depositAmount = 20;
         $remainingAmount = $totalAmount - $depositAmount;
 
         // Create booking in transaction
@@ -264,25 +264,43 @@ class BookingController extends Controller
                 ->with('info', 'Deposit has already been paid.');
         }
         
-        $squareService = app(SquareService::class);
-        $squareEnabled = $squareService->isEnabled();
-        $squareAppId = $squareService->getApplicationId();
-        $squareLocationId = $squareService->getLocationId();
-        $squareScriptUrl = $squareService->getWebPaymentsScriptUrl();
+        $qbPaymentsService = app(QuickBooksPaymentsService::class);
+        $qbPaymentsEnabled = $qbPaymentsService->isEnabled();
+        $qbEnv = optional(\App\Models\SiteSetting::first())->quickbooks_environment ?? 'sandbox';
 
         return view('customer.booking-payment', compact(
             'booking',
-            'squareEnabled',
-            'squareAppId',
-            'squareLocationId',
-            'squareScriptUrl'
+            'qbPaymentsEnabled',
+            'qbEnv'
         ));
     }
 
     /**
-     * Process deposit payment via Square (card).
+     * Get QuickBooks Payments session token for client-side tokenization.
      */
-    public function processSquarePayment(Request $request, $bookingId)
+    public function getQuickBooksPaymentSession($bookingId)
+    {
+        $customer = Auth::guard('customer')->user();
+        $booking = ServiceBooking::where('customer_id', $customer->id)->findOrFail($bookingId);
+        if ($booking->payment_status === 'deposit_paid' || $booking->payment_status === 'fully_paid') {
+            return response()->json(['error' => 'Deposit already paid.'], 400);
+        }
+        $qbPayments = app(QuickBooksPaymentsService::class);
+        if (!$qbPayments->isEnabled()) {
+            return response()->json(['error' => 'QuickBooks Payments not configured.'], 400);
+        }
+        try {
+            $token = $qbPayments->getAccessToken();
+            return response()->json(['token' => $token]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Process deposit payment via QuickBooks Payments (card).
+     */
+    public function processQuickBooksPayment(Request $request, $bookingId)
     {
         $customer = Auth::guard('customer')->user();
         $booking = ServiceBooking::where('customer_id', $customer->id)
@@ -293,29 +311,26 @@ class BookingController extends Controller
                 ->with('info', 'Deposit has already been paid.');
         }
 
-        $request->validate(['nonce' => 'required|string']);
+        $validated = $request->validate([
+            'card_number' => 'required|string|min:13|max:19',
+            'exp_month' => 'required|string|min:1|max:2',
+            'exp_year' => 'required|string|min:2|max:4',
+            'cvc' => 'required|string|min:3|max:4',
+        ]);
 
-        $squareService = app(SquareService::class);
-        if (!$squareService->isEnabled()) {
+        $qbPayments = app(QuickBooksPaymentsService::class);
+        if (!$qbPayments->isEnabled()) {
             return redirect()->route('customer.booking.payment', $booking->id)
-                ->with('error', 'Card payments are not available. Please try another method.');
+                ->with('error', 'QuickBooks Payments is not configured.');
         }
 
-        // When deposit is $0, charge total_amount (full payment) instead
-        $chargeAmount = ($booking->deposit_amount > 0) ? $booking->deposit_amount : $booking->total_amount;
-        if ($chargeAmount <= 0) {
-            return redirect()->route('customer.booking.payment', $booking->id)
-                ->with('error', 'No amount to charge.');
-        }
-
-        $amountCents = (int) round($chargeAmount * 100);
-        $idempotencyKey = 'booking-' . $booking->id . '-' . uniqid();
-
-        $result = $squareService->createPayment(
-            $request->nonce,
-            $amountCents,
-            $idempotencyKey,
-            'Booking#' . $booking->id
+        $chargeAmount = 20;
+        $result = $qbPayments->createChargeFromCard(
+            $validated['card_number'],
+            $validated['exp_month'],
+            $validated['exp_year'],
+            $validated['cvc'],
+            $chargeAmount
         );
 
         if (!$result['success']) {
@@ -330,9 +345,9 @@ class BookingController extends Controller
             'amount' => $chargeAmount,
             'payment_type' => $isFullPayment ? 'full_payment' : 'deposit',
             'payment_method' => 'credit_card',
-            'transaction_id' => $result['square_payment_id'],
-            'payment_gateway' => 'square',
-            'gateway_response' => ['square_payment_id' => $result['square_payment_id']],
+            'transaction_id' => $result['charge_id'],
+            'payment_gateway' => 'quickbooks_payments',
+            'gateway_response' => ['charge_id' => $result['charge_id']],
             'status' => 'completed',
             'payment_date' => now(),
         ]);
@@ -347,19 +362,19 @@ class BookingController extends Controller
                 $quickBooksService = app(QuickBooksService::class);
                 $quickBooksResult = $quickBooksService->syncPayment($payment);
                 if (!$quickBooksResult['success']) {
-                    Log::warning('QuickBooks auto-sync failed', ['payment_id' => $payment->id, 'error' => $quickBooksResult['message']]);
+                    Log::warning('QuickBooks sync failed', ['payment_id' => $payment->id, 'error' => $quickBooksResult['message']]);
                 }
             } catch (\Exception $e) {
-                Log::error('QuickBooks auto-sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
+                Log::error('QuickBooks sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
             }
             try {
                 $bankService = app(BankIntegrationService::class);
                 $bankResult = $bankService->syncPayment($payment);
                 if (!$bankResult['success']) {
-                    Log::warning('Bank auto-sync failed', ['payment_id' => $payment->id, 'error' => $bankResult['message']]);
+                    Log::warning('Bank sync failed', ['payment_id' => $payment->id, 'error' => $bankResult['message']]);
                 }
             } catch (\Exception $e) {
-                Log::error('Bank auto-sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
+                Log::error('Bank sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
             }
         }
 
@@ -377,7 +392,7 @@ class BookingController extends Controller
             ->findOrFail($bookingId);
         
         $validated = $request->validate([
-            'payment_method' => 'required|in:credit_card,bank_transfer,cash',
+            'payment_method' => 'required|in:credit_card',
             'transaction_id' => 'nullable|string|max:255',
         ]);
 

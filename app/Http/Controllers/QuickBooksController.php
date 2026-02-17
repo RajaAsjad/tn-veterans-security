@@ -18,7 +18,7 @@ class QuickBooksController extends Controller
         $url = "https://appcenter.intuit.com/connect/oauth2?" . http_build_query([
             'client_id' => $clientId,
             'response_type' => 'code',
-            'scope' => 'com.intuit.quickbooks.accounting',
+            'scope' => 'com.intuit.quickbooks.accounting com.intuit.quickbooks.payment',
             'redirect_uri' => $redirectUri,
             'state' => csrf_token(),
         ]);
@@ -34,11 +34,18 @@ class QuickBooksController extends Controller
             return redirect()->route('admin.settings.index')->with('error', 'Site settings not found.');
         }
 
-        $code = $request->code;
-        $realmId = $request->realmId;
+        $code = $request->query('code') ?? $request->code;
+        $realmId = $request->query('realmId') ?? $request->realmId;
+        $error = $request->query('error');
+
+        if ($error) {
+            $errorDesc = $request->query('error_description', $error);
+            return redirect()->route('admin.settings.index')->with('error', 'QuickBooks: ' . $errorDesc);
+        }
 
         if (!$code) {
-            return redirect()->route('admin.settings.index')->with('error', 'QuickBooks authorization code missing.');
+            $callbackUrl = route('quickbooks.callback');
+            return redirect()->route('admin.settings.index')->with('error', 'QuickBooks authorization code missing. Ensure APP_URL in .env is http://localhost:8000 and add this exact Redirect URI in Intuit Developer: ' . $callbackUrl);
         }
 
         $clientId = $settings->quickbooks_client_id;
