@@ -365,79 +365,12 @@
                 </div>
             </div>
 
-            <!-- Square Payment Integration -->
-            <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200 mt-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h4 class="text-lg font-semibold text-gray-800">
-                        <i class="fas fa-credit-card text-blue-600 mr-2"></i> Square Payment (Merchant)
-                    </h4>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" 
-                               name="square_enabled" 
-                               value="1"
-                               {{ old('square_enabled', $settings->square_enabled ?? false) ? 'checked' : '' }}
-                               class="sr-only peer">
-                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        <span class="ml-3 text-sm font-medium text-gray-700">Enable Square Payments</span>
-                    </label>
-                </div>
-                <p class="text-sm text-gray-600 mb-4">Accept card payments from customers during checkout. Get your keys from the <a href="https://developer.squareup.com/apps" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Square Developer Dashboard</a>.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="square_application_id" class="block text-gray-700 text-sm font-bold mb-2">Application ID</label>
-                        <input type="text" 
-                               id="square_application_id" 
-                               name="square_application_id" 
-                               value="{{ old('square_application_id', $settings->square_application_id ?? '') }}"
-                               placeholder="sandbox-sq0idb-xxx or sq0idp-xxx"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <p class="text-xs text-gray-500 mt-1">Used for Web Payments SDK (client-side)</p>
-                        @error('square_application_id')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="square_access_token" class="block text-gray-700 text-sm font-bold mb-2">Access Token</label>
-                        <input type="password" 
-                               id="square_access_token" 
-                               name="square_access_token" 
-                               value="{{ old('square_access_token', $settings->square_access_token ?? '') }}"
-                               placeholder="EAAA..."
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <button type="button" onclick="togglePassword('square_access_token')" class="text-xs text-gray-500 mt-1">
-                            <i class="fas fa-eye" id="eye-square_access_token"></i> Show/Hide
-                        </button>
-                        <p class="text-xs text-gray-500 mt-1">Keep this secret. Used for server-side API calls.</p>
-                        @error('square_access_token')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="square_location_id" class="block text-gray-700 text-sm font-bold mb-2">Location ID</label>
-                        <input type="text" 
-                               id="square_location_id" 
-                               name="square_location_id" 
-                               value="{{ old('square_location_id', $settings->square_location_id ?? '') }}"
-                               placeholder="L..."
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <p class="text-xs text-gray-500 mt-1">From Square Dashboard → Locations</p>
-                        @error('square_location_id')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="square_environment" class="block text-gray-700 text-sm font-bold mb-2">Environment</label>
-                        <select id="square_environment" 
-                                name="square_environment" 
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="sandbox" {{ old('square_environment', $settings->square_environment ?? 'sandbox') === 'sandbox' ? 'selected' : '' }}>Sandbox (Test)</option>
-                            <option value="production" {{ old('square_environment', $settings->square_environment ?? '') === 'production' ? 'selected' : '' }}>Production</option>
-                        </select>
-                        @error('square_environment')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
+            <!-- QuickBooks Payments Info -->
+            <div class="mb-8 p-4 bg-green-50 rounded-lg border border-green-200 mt-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-2">
+                    <i class="fas fa-credit-card text-green-600 mr-2"></i> QuickBooks Payments
+                </h4>
+                <p class="text-sm text-gray-600">The $20 deposit is collected via QuickBooks Payments. Connect QuickBooks above and ensure your app has Payments scope. Reconnect QuickBooks if needed to enable card payments.</p>
             </div>
         </div>
 

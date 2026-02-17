@@ -63,7 +63,6 @@
                         </p>
                     </div>
                 @endif -->
-                
                 @if($services->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
                         @foreach($services as $index => $service)

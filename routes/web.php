@@ -212,7 +212,8 @@ Route::prefix('customer')->name('customer.')->group(function () {
         // Payment Routes
         Route::get('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'showPayment'])->name('booking.payment');
         Route::post('/bookings/{bookingId}/payment', [App\Http\Controllers\Customer\BookingController::class, 'processPayment'])->name('booking.payment.process');
-        Route::post('/bookings/{bookingId}/payment/square', [App\Http\Controllers\Customer\BookingController::class, 'processSquarePayment'])->name('booking.payment.square');
+        Route::get('/bookings/{bookingId}/payment/quickbooks-session', [App\Http\Controllers\Customer\BookingController::class, 'getQuickBooksPaymentSession'])->name('booking.payment.quickbooks.session');
+        Route::post('/bookings/{bookingId}/payment/quickbooks', [App\Http\Controllers\Customer\BookingController::class, 'processQuickBooksPayment'])->name('booking.payment.quickbooks');
     });
 });
 
