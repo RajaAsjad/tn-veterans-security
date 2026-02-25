@@ -221,6 +221,25 @@ class QuickBooksService
     }
 
     /**
+     * Get a valid income account Id for the connected company (sandbox or production).
+     * Required for creating Service items; avoids hardcoded "1" which may not exist.
+     */
+    protected function getDefaultIncomeAccountId(): string
+    {
+        try {
+            $queryString = "SELECT * FROM Account WHERE AccountType = 'Income' OR AccountType = 'Other Income'";
+            $accounts = $this->dataService->Query($queryString, null, 1);
+            $accountsArray = is_array($accounts) ? $accounts : ($accounts ? [$accounts] : []);
+            if (!empty($accountsArray) && isset($accountsArray[0]->Id)) {
+                return (string) $accountsArray[0]->Id;
+            }
+        } catch (\Exception $e) {
+            Log::warning('QuickBooks could not query income account', ['error' => $e->getMessage()]);
+        }
+        return '1';
+    }
+
+    /**
      * Get or create service item in QuickBooks
      */
     protected function getOrCreateServiceItem($service)
@@ -233,12 +252,14 @@ class QuickBooksService
             return $items[0];
         }
 
+        $incomeAccountId = $this->getDefaultIncomeAccountId();
+
         // Create new item
         $item = \QuickBooksOnline\API\Facades\Item::create([
             'Name' => $service->title,
             'Type' => 'Service',
             'IncomeAccountRef' => [
-                'value' => '1', // Default income account - should be configured
+                'value' => $incomeAccountId,
             ],
         ]);
 
@@ -296,7 +317,7 @@ class QuickBooksService
         try {
             $this->initializeDataService();
             $companyInfo = $this->dataService->getCompanyInfo();
-            
+
             return [
                 'success' => true,
                 'message' => 'Connection successful.',
@@ -306,6 +327,55 @@ class QuickBooksService
             return [
                 'success' => false,
                 'message' => 'Connection failed: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Fetch Payment entities from QuickBooks (sandbox or production).
+     * Use this to verify test payments in sandbox or view synced payments in QB.
+     *
+     * @param int $maxResults Maximum number of payments to return (default 50)
+     * @return array ['success' => bool, 'message' => string, 'payments' => array, 'environment' => string]
+     */
+    public function fetchPaymentsFromQuickBooks(int $maxResults = 50): array
+    {
+        try {
+            $this->initializeDataService();
+            $environment = $this->settings->quickbooks_environment ?? 'sandbox';
+
+            // Query Payment entities; SDK uses QBO query syntax
+            $queryString = 'SELECT * FROM Payment ORDER BY TxnDate DESC';
+            $payments = $this->dataService->Query($queryString, null, max(1, min(100, $maxResults)));
+
+            $list = [];
+            $paymentsArray = is_array($payments) ? $payments : ($payments ? [$payments] : []);
+            foreach ($paymentsArray as $qbPayment) {
+                    $list[] = [
+                        'id' => $qbPayment->Id ?? null,
+                        'total_amt' => $qbPayment->TotalAmt ?? 0,
+                        'txn_date' => $qbPayment->TxnDate ?? null,
+                        'customer_ref' => isset($qbPayment->CustomerRef->value) ? $qbPayment->CustomerRef->value : ($qbPayment->CustomerRef ?? null),
+                        'customer_name' => isset($qbPayment->CustomerRef->name) ? $qbPayment->CustomerRef->name : null,
+                        'payment_method' => isset($qbPayment->PaymentMethodRef->name) ? $qbPayment->PaymentMethodRef->name : null,
+                        'unapplied_amt' => $qbPayment->UnappliedAmt ?? 0,
+                    ];
+            }
+
+            return [
+                'success' => true,
+                'message' => count($list) . ' payment(s) found in QuickBooks.',
+                'payments' => $list,
+                'environment' => $environment,
+            ];
+        } catch (\Exception $e) {
+            Log::error('QuickBooks fetch payments error', ['error' => $e->getMessage()]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to fetch payments from QuickBooks: ' . $e->getMessage(),
+                'payments' => [],
+                'environment' => $this->settings->quickbooks_environment ?? 'sandbox',
             ];
         }
     }

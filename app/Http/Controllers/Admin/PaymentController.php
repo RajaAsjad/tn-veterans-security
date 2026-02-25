@@ -170,4 +170,20 @@ class PaymentController extends Controller
                 ->with('error', 'Failed to sync payments: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Show payments fetched from QuickBooks (sandbox or production).
+     * Use this to verify test payments in sandbox.
+     */
+    public function quickbooksPayments(QuickBooksService $quickBooksService)
+    {
+        $result = $quickBooksService->fetchPaymentsFromQuickBooks(50);
+
+        return view('admin.payments.quickbooks-payments', [
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'payments' => $result['payments'],
+            'environment' => $result['environment'],
+        ]);
+    }
 }

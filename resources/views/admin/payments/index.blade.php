@@ -7,6 +7,9 @@
 <div class="mb-6 flex justify-between items-center">
     <h3 class="text-xl font-semibold">All Payments</h3>
     <div class="flex gap-4">
+        <a href="{{ route('admin.payments.quickbooks-list') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm" title="View payments in QuickBooks (sandbox/production)">
+            <i class="fab fa-quickbooks mr-1"></i> View in QuickBooks
+        </a>
         <!-- Bulk Sync Buttons -->
         <form method="POST" action="{{ route('admin.payments.sync-all-quickbooks') }}" class="inline">
             @csrf
