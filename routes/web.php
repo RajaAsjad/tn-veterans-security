@@ -68,6 +68,10 @@ Route::get('/training-services', function () {
     return view('services', compact('services', 'categories', 'category', 'subcategory'));
 })->name('services');
 
+Route::get('/affiliated-services', function () {
+    return view('affiliated-services');
+})->name('affiliated-services');
+
 Route::get('/training-services/enhanced-armed-guard-security-subcategories', function () {
     $rifleService = \App\Models\Service::where('is_active', true)->find(34);
     $shotgunService = \App\Models\Service::where('is_active', true)->find(35);
@@ -149,9 +153,9 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
         ->with('success', $message);
 })->name('service.booking.inquiry');
 
-Route::get('/get-certified', function () {
-    return view('certified');
-})->name('certified');
+Route::get('/security-training', function () {
+    return view('security-training');
+})->name('security-training');
 
 Route::get('/testimonials', function () {
     return view('testimonials');

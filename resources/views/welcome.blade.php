@@ -56,8 +56,8 @@
 
                     <!-- CTA Button -->
                     <div class="mb-10 md:mb-16" data-aos="fade-up" data-aos-delay="600" data-aos-duration="1000">
-                        <a href="{{ route('certified') }}" class="btn primary-button ">
-                            Get Certified Today
+                        <a href="{{ route('security-training') }}" class="btn primary-button ">
+                            Get Security Training Today
                         </a>
                     </div>
                 </div>
@@ -233,7 +233,7 @@
                 <button class="tab-btn" onclick="filterServices('category:nra', this)">NRA</button>
                 <button class="tab-btn" onclick="filterServices('category:red_cross', this)">Red Cross</button>
                 <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP 4 Hours (Less than Lethal)</button>
-                <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Homeland Security (6 Hours)</button>
+                <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Handgun Carry Permit</button>
                 <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter (8 Hours)</button>
                 <button class="tab-btn" onclick="filterServices('category:security_training', this)">Security</button>
                 <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science (De-Escalation)</button>
@@ -433,8 +433,8 @@
                 </p>
 
                 <div data-aos="fade-up" data-aos-delay="500">
-                    <a href="{{ route('certified') }}" class="btn primary-button inline-block !text-[16px]">
-                        Get Certified Today
+                    <a href="{{ route('security-training') }}" class="btn primary-button inline-block !text-[16px]">
+                        Get Security Training Today
                     </a>
                 </div>
 
@@ -687,7 +687,7 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-start md:justify-center lg:justify-start"
                  data-aos="fade-up"
                  data-aos-delay="420">
-                <a href="{{ route('certified') }}" class="btn primary-button !text-center">
+                <a href="{{ route('security-training') }}" class="btn primary-button !text-center">
                     Start Your Training
                 </a>
                 <a href="{{ route('contact') }}" class="btn secondary-button !text-center">

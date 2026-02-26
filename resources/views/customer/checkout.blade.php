@@ -78,9 +78,23 @@
                 @endif
             </div>
 
+            {{-- UPDATE: Policy text displayed before payment --}}
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 text-sm text-gray-700">
+                <div class="font-semibold text-gray-800 mb-2">Policy</div>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>All deposits are non-refundable.</li>
+                    <li>If you need to reschedule your class, you must notify us at least 24 hours prior to the scheduled class date.</li>
+                </ul>
+            </div>
+
             @if($isLoggedIn)
-                <form method="POST" action="{{ route('customer.services.checkout.process', $service->id) }}">
+                <form method="POST" action="{{ route('customer.services.checkout.process', $service->id) }}" id="checkout-form">
                     @csrf
+                    {{-- UPDATE: Required policy acknowledgment checkbox - user must check before completing payment --}}
+                    <label class="flex items-start gap-3 mb-4 cursor-pointer">
+                        <input type="checkbox" name="policy_acknowledged" value="1" required class="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <span class="text-sm text-gray-700">I acknowledge that deposits are non-refundable and agree to the 24-hour rescheduling policy.</span>
+                    </label>
                     <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
                         <i class="fas fa-lock"></i> Proceed to payment
                     </button>

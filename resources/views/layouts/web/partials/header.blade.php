@@ -4,12 +4,18 @@
         ['name' => 'NRA', 'url' => route('services', ['category' => 'nra'])],
         ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross'])],
         ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('services', ['category' => 'asp_less_than_lethal'])],
-        ['name' => 'Homeland Security 6 Hours', 'url' => route('services', ['category' => 'homeland_security'])],
+        ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'homeland_security'])],
         ['name' => 'Active Shooter 8 Hours', 'url' => route('services', ['category' => 'active_shooter'])],
         ['name' => 'Security', 'url' => route('services', ['category' => 'security_training'])],
         ['name' => 'Force Science (De-Escalation)', 'url' => route('services', ['category' => 'force_science'])],
         ['name' => 'Dallas Law', 'url' => route('services', ['category' => 'dallas_law'])],
         ['name' => 'Renewals', 'url' => route('services', ['category' => 'renewals'])],
+    ];
+    $servicesAffiliates = [
+        ['name' => 'NRA', 'url' => '#', 'external' => true],
+        ['name' => 'ASP', 'url' => '#', 'external' => true],
+        ['name' => 'Red Cross', 'url' => '#', 'external' => true],
+        ['name' => 'US Law Shield', 'url' => '#', 'external' => true],
     ];
 @endphp
 
@@ -81,14 +87,14 @@
             </div>
 
             <!-- Desktop Navigation Links (Middle/Right) -->
-            <nav class="desktop-nav hidden lg:flex items-center space-x-10 text-[18px] font-medium text-[#333333]">
+            <nav class="desktop-nav hidden lg:flex items-center space-x-6 text-[15px] font-medium text-[var(--text-color)]">
                 <a href="{{ url('/') }}" class="destop-nav-link">Home</a>
                 <a href="{{ route('about') }}" class="destop-nav-link">About Us</a>
                 
                 <!-- Training Services with Mega Menu -->
                 <div class="relative nav-group h-full flex items-center">
                     <a href="{{ route('services') }}" class="destop-nav-link flex items-center gap-1 py-8">
-                        Training Services
+                        Training & Classes
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
@@ -108,7 +114,29 @@
                     </div>
                 </div>
 
-                <a href="{{ route('certified') }}" class="destop-nav-link">Get Certified</a>
+                <!-- Services dropdown (NRA, ASP, Red Cross, US Law Shield) -->
+                <div class="relative nav-group h-full flex items-center">
+                    <a href="{{ route('affiliated-services') }}" class="destop-nav-link">
+                    <span class="destop-nav-link flex items-center gap-1 py-8 cursor-default">
+                        Services
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </span>
+                    </a>
+                    <div class="dropdown-simple">
+                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                            @foreach($servicesAffiliates as $aff)
+                            <!-- add target="_blank" rel="noopener noreferrer" if external is true -->
+                                <a href="{{ $aff['url'] }}" class="category-item" @if(!empty($aff['external']))  rel="noopener noreferrer" @endif>
+                                    {{ $aff['name'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ route('security-training') }}" class="destop-nav-link">Security Training</a>
                 <a href="{{ route('testimonials') }}" class="destop-nav-link">Testimonials</a>
                 <a href="{{ route('contact') }}" class="destop-nav-link">Contact Us</a>
             </nav>
@@ -164,7 +192,27 @@
                 </div>
             </div>
 
-            <a href="{{ route('certified') }}" class="mobile-nav-links">Get Certified</a>
+            <!-- Mobile Services (affiliates) accordion -->
+            <div class="mobile-nav-group">
+
+                <button id="mobileServicesToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none">
+                    <span>Services</span>
+                    <svg id="mobileServicesIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="mobileServicesMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
+                    <div class="p-4 grid grid-cols-1 gap-2">
+                        @foreach($servicesAffiliates as $aff)
+                            <a href="{{ $aff['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
+                                {{ $aff['name'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <a href="{{ route('security-training') }}" class="mobile-nav-links">Security & Classes</a>
             <a href="{{ route('testimonials') }}" class="mobile-nav-links">Testimonials</a>
             <a href="{{ route('contact') }}" class="mobile-nav-links">Contact Us</a>
             @auth('customer')
@@ -220,6 +268,17 @@
             mobileServiceToggle.addEventListener("click", () => {
                 mobileServiceMenu.classList.toggle("active");
                 mobileServiceIcon.classList.toggle("rotate-180");
+            });
+        }
+
+        // Mobile Services (affiliates) sub-menu toggle
+        const mobileServicesToggle = document.getElementById("mobileServicesToggle");
+        const mobileServicesMenu = document.getElementById("mobileServicesMenu");
+        const mobileServicesIcon = document.getElementById("mobileServicesIcon");
+        if (mobileServicesToggle) {
+            mobileServicesToggle.addEventListener("click", () => {
+                mobileServicesMenu.classList.toggle("active");
+                mobileServicesIcon.classList.toggle("rotate-180");
             });
         }
     });

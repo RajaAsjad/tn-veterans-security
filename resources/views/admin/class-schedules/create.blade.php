@@ -168,7 +168,7 @@
                            value="Location A"
                            {{ in_array('Location A', old('locations', [])) ? 'checked' : '' }}
                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700">Location A</span>
+                    <span class="text-gray-700 max-w-xs leading-tight">Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</span>
                 </label>
                 <label class="flex items-center">
                     <input type="checkbox" 
@@ -176,7 +176,7 @@
                            value="Location B"
                            {{ in_array('Location B', old('locations', [])) ? 'checked' : '' }}
                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-gray-700">Location B</span>
+                    <span class="text-gray-700 max-w-[300px] leading-tight">Guns and Leather 2216 US-41, Greenbrier, Tn 37073</span>
                 </label>
                 <label class="flex items-center">
                     <input type="checkbox" 
