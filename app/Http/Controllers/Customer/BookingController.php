@@ -357,15 +357,18 @@ class BookingController extends Controller
             'status' => 'confirmed',
         ]);
 
+        $quickBooksSyncError = null;
         if ($payment->status === 'completed') {
             try {
                 $quickBooksService = app(QuickBooksService::class);
                 $quickBooksResult = $quickBooksService->syncPayment($payment);
                 if (!$quickBooksResult['success']) {
-                    Log::warning('QuickBooks sync failed', ['payment_id' => $payment->id, 'error' => $quickBooksResult['message']]);
+                    $quickBooksSyncError = $quickBooksResult['message'];
+                    Log::warning('QuickBooks sync failed', ['payment_id' => $payment->id, 'error' => $quickBooksSyncError]);
                 }
             } catch (\Exception $e) {
-                Log::error('QuickBooks sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
+                $quickBooksSyncError = $e->getMessage();
+                Log::error('QuickBooks sync exception', ['payment_id' => $payment->id, 'error' => $quickBooksSyncError]);
             }
             try {
                 $bankService = app(BankIntegrationService::class);
@@ -378,8 +381,12 @@ class BookingController extends Controller
             }
         }
 
-        return redirect()->route('customer.bookings.show', $booking->id)
+        $redirect = redirect()->route('customer.bookings.show', $booking->id)
             ->with('success', 'Deposit payment received. Your booking is confirmed!');
+        if ($quickBooksSyncError !== null) {
+            $redirect->with('warning', 'QuickBooks sync failed: ' . $quickBooksSyncError . ' You can retry from Admin → Payments → Sync to QuickBooks.');
+        }
+        return $redirect;
     }
 
     /**

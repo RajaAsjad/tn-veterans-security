@@ -71,6 +71,12 @@
                     </div>
                 @endif
 
+                @if(session('warning'))
+                    <div class="bg-amber-100 border border-amber-400 text-amber-800 px-4 py-3 rounded mb-4">
+                        {{ session('warning') }}
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>

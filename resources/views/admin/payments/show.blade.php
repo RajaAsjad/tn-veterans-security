@@ -158,6 +158,7 @@
                 @endif
                 @if(!$payment->synced_to_quickbooks && $payment->status === 'completed')
                 <div class="pt-3 border-t">
+                    <p class="text-sm text-gray-600 mb-2">Transaction will appear in QuickBooks (sandbox) only after sync.</p>
                     <form method="POST" action="{{ route('admin.payments.sync-quickbooks', $payment) }}">
                         @csrf
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
@@ -165,6 +166,9 @@
                         </button>
                     </form>
                 </div>
+                @endif
+                @if($payment->synced_to_quickbooks)
+                <p class="mt-3 pt-3 border-t text-xs text-gray-500">To see this in Intuit: developer.intuit.com → My Hub → Sandboxes → your company → Sales → Payments.</p>
                 @endif
             </div>
         </div>
