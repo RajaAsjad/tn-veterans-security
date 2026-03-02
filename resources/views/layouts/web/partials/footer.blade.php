@@ -11,8 +11,8 @@
                 <ul class="footer-ul">
                     <li><a href="{{ url('/') }}" class="footer-link">Home</a></li>
                     <li><a href="{{ route('about') }}" class="footer-link">About Us</a></li>
-                    <li><a href="{{ route('services') }}" class="footer-link">Training Services</a></li>
-                <li><a href="{{ route('certified') }}" class="footer-link">Get Certified</a></li>
+                    <li><a href="{{ route('services') }}" class="footer-link">Training & Classes</a></li>
+                    <li><a href="{{ route('security-training') }}" class="footer-link">Security Training</a></li>
                     <li><a href="{{ route('testimonials') }}" class="footer-link">Testimonials</a></li>
                     <li><a href="{{ route('contact') }}" class="footer-link">Contact Us</a></li>
                 </ul>

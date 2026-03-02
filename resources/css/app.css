@@ -267,7 +267,7 @@ a.training-card:hover {
 
 @media (min-width: 1024px) and (max-width: 1200px) {
     .desktop-nav {
-        font-size: 12px;
+       @apply text-[12px] space-x-4;
     }
 }
 
