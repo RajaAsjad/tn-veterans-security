@@ -29,7 +29,7 @@ class BookingController extends Controller
             ->orderBy('booking_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
         return view('customer.bookings', compact('bookings'));
     }
 
@@ -39,7 +39,7 @@ class BookingController extends Controller
     public function showAvailableClasses($serviceId)
     {
         $service = Service::where('is_active', true)->findOrFail($serviceId);
-        
+
         // Get available class schedules
         $schedules = ClassSchedule::where('service_id', $service->id)
             ->where('status', 'scheduled')
@@ -48,7 +48,7 @@ class BookingController extends Controller
             ->orderBy('class_date', 'asc')
             ->orderBy('start_time', 'asc')
             ->get();
-        
+
         return view('customer.available-classes', compact('service', 'schedules'));
     }
 
@@ -135,20 +135,20 @@ class BookingController extends Controller
     {
         $service = Service::where('is_active', true)->findOrFail($serviceId);
         $customer = Auth::guard('customer')->user();
-        
+
         $schedule = null;
         if ($scheduleId) {
             $schedule = ClassSchedule::where('service_id', $service->id)
                 ->where('id', $scheduleId)
                 ->firstOrFail();
-            
+
             // Check if schedule has available spots
             if (!$schedule->hasAvailableSpots()) {
                 return redirect()->route('customer.available-classes', $service->id)
                     ->with('error', 'This class is full. Please select another schedule.');
             }
         }
-        
+
         // Get available schedules if no specific schedule selected
         if (!$schedule) {
             $schedules = ClassSchedule::where('service_id', $service->id)
@@ -161,90 +161,138 @@ class BookingController extends Controller
         } else {
             $schedules = collect([$schedule]);
         }
-        
+
         return view('customer.create-booking', compact('service', 'schedules', 'schedule', 'customer'));
     }
 
     /**
      * Store a new booking.
      */
+    // public function store(Request $request)
+    // {
+    //     $customer = Auth::guard('customer')->user();
+
+    //     $validated = $request->validate([
+    //         'service_id' => 'required|exists:services,id',
+    //         'class_schedule_id' => 'required|exists:class_schedules,id',
+    //         'number_of_students' => 'required|integer|min:1|max:10',
+    //         'group_name' => 'nullable|string|max:255',
+    //         'notes' => 'nullable|string|max:1000',
+    //     ]);
+
+    //     // Get service and schedule
+    //     $service = Service::findOrFail($validated['service_id']);
+    //     $schedule = ClassSchedule::findOrFail($validated['class_schedule_id']);
+
+    //     // Validate capacity
+    //     $availableSpots = $schedule->getAvailableSpots();
+    //     if ($validated['number_of_students'] > $availableSpots) {
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->with('error', "Only {$availableSpots} spot(s) available. Please adjust the number of students.");
+    //     }
+
+    //     // Validate minimum students if it's a group booking
+    //     if ($service->class_type === 'group' && $validated['number_of_students'] < $schedule->min_students) {
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->with('error', "Minimum {$schedule->min_students} student(s) required for this class.");
+    //     }
+
+    //     // Calculate amounts (fixed $20 deposit)
+    //     $totalAmount = $service->price * $validated['number_of_students'];
+    //     $depositAmount = 20;
+    //     $remainingAmount = $totalAmount - $depositAmount;
+
+    //     // Create booking in transaction
+    //     DB::beginTransaction();
+    //     try {
+    //         // Create booking
+    //         $booking = ServiceBooking::create([
+    //             'customer_id' => $customer->id,
+    //             'service_id' => $service->id,
+    //             'class_schedule_id' => $schedule->id,
+    //             'location' => $schedule->location, // Store location from schedule
+    //             'booking_date' => $schedule->class_date,
+    //             'booking_time' => Carbon::parse($schedule->start_time)->format('H:i:s'),
+    //             'status' => 'pending',
+    //             'booking_type' => $service->class_type,
+    //             'number_of_students' => $validated['number_of_students'],
+    //             'group_name' => $validated['group_name'] ?? null,
+    //             'notes' => $validated['notes'] ?? null,
+    //             'total_amount' => $totalAmount,
+    //             'deposit_amount' => $depositAmount,
+    //             'remaining_amount' => $remainingAmount,
+    //             'payment_status' => 'pending',
+    //         ]);
+
+    //         // Update schedule student count
+    //         $schedule->increment('current_students', $validated['number_of_students']);
+
+    //         // Check if class is now full
+    //         if ($schedule->current_students >= $schedule->max_students) {
+    //             $schedule->update(['status' => 'full']);
+    //         }
+
+    //         DB::commit();
+
+    //         // Redirect to payment page
+    //         return redirect()->route('customer.booking.payment', $booking->id)
+    //             ->with('success', 'Booking created successfully. Please complete your deposit payment.');
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->with('error', 'An error occurred. Please try again.');
+    //     }
+    // }
+
     public function store(Request $request)
     {
         $customer = Auth::guard('customer')->user();
-        
-        $validated = $request->validate([
-            'service_id' => 'required|exists:services,id',
-            'class_schedule_id' => 'required|exists:class_schedules,id',
-            'number_of_students' => 'required|integer|min:1|max:10',
-            'group_name' => 'nullable|string|max:255',
-            'notes' => 'nullable|string|max:1000',
-        ]);
 
-        // Get service and schedule
-        $service = Service::findOrFail($validated['service_id']);
-        $schedule = ClassSchedule::findOrFail($validated['class_schedule_id']);
-        
-        // Validate capacity
-        $availableSpots = $schedule->getAvailableSpots();
-        if ($validated['number_of_students'] > $availableSpots) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "Only {$availableSpots} spot(s) available. Please adjust the number of students.");
-        }
-        
-        // Validate minimum students if it's a group booking
-        if ($service->class_type === 'group' && $validated['number_of_students'] < $schedule->min_students) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "Minimum {$schedule->min_students} student(s) required for this class.");
-        }
-        
-        // Calculate amounts (fixed $20 deposit)
-        $totalAmount = $service->price * $validated['number_of_students'];
-        $depositAmount = 20;
-        $remainingAmount = $totalAmount - $depositAmount;
-
-        // Create booking in transaction
         DB::beginTransaction();
+
         try {
-            // Create booking
+
+            $service = Service::lockForUpdate()->findOrFail($request->service_id);
+
+            $availableSpots = $service->max_students - $service->current_students;
+
+            $validated = $request->validate([
+                'service_id' => 'required|exists:services,id',
+                'number_of_students' => [
+                    'required',
+                    'integer',
+                    'min:' . $service->min_students,
+                    'max:' . $availableSpots,
+                ],
+                'group_name' => 'nullable|string|max:255',
+                'notes' => 'nullable|string|max:1000',
+            ]);
+
+            if ($validated['number_of_students'] > $availableSpots) {
+                throw new \Exception("Only {$availableSpots} seats left.");
+            }
+
             $booking = ServiceBooking::create([
                 'customer_id' => $customer->id,
                 'service_id' => $service->id,
-                'class_schedule_id' => $schedule->id,
-                'location' => $schedule->location, // Store location from schedule
-                'booking_date' => $schedule->class_date,
-                'booking_time' => Carbon::parse($schedule->start_time)->format('H:i:s'),
-                'status' => 'pending',
-                'booking_type' => $service->class_type,
                 'number_of_students' => $validated['number_of_students'],
-                'group_name' => $validated['group_name'] ?? null,
-                'notes' => $validated['notes'] ?? null,
-                'total_amount' => $totalAmount,
-                'deposit_amount' => $depositAmount,
-                'remaining_amount' => $remainingAmount,
+                'status' => 'pending',
                 'payment_status' => 'pending',
             ]);
 
-            // Update schedule student count
-            $schedule->increment('current_students', $validated['number_of_students']);
-            
-            // Check if class is now full
-            if ($schedule->current_students >= $schedule->max_students) {
-                $schedule->update(['status' => 'full']);
-            }
-
+            dd($service->fresh());
             DB::commit();
-            
-            // Redirect to payment page
-            return redirect()->route('customer.booking.payment', $booking->id)
-                ->with('success', 'Booking created successfully. Please complete your deposit payment.');
-                
+
+            return redirect()->route('customer.booking.payment', $booking->id);
         } catch (\Exception $e) {
+
             DB::rollBack();
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'An error occurred. Please try again.');
+
+            return back()->withInput()->with('error', $e->getMessage());
         }
     }
 
@@ -257,13 +305,13 @@ class BookingController extends Controller
         $booking = ServiceBooking::where('customer_id', $customer->id)
             ->with(['service', 'classSchedule'])
             ->findOrFail($bookingId);
-        
+
         // Check if deposit already paid
         if ($booking->payment_status === 'deposit_paid' || $booking->payment_status === 'fully_paid') {
             return redirect()->route('customer.bookings.show', $booking->id)
                 ->with('info', 'Deposit has already been paid.');
         }
-        
+
         $qbPaymentsService = app(QuickBooksPaymentsService::class);
         $qbPaymentsEnabled = $qbPaymentsService->isEnabled();
         $qbEnv = optional(\App\Models\SiteSetting::first())->quickbooks_environment ?? 'sandbox';
@@ -352,40 +400,44 @@ class BookingController extends Controller
             'payment_date' => now(),
         ]);
 
-        $booking->update([
-            'payment_status' => $isFullPayment ? 'fully_paid' : 'deposit_paid',
-            'status' => 'confirmed',
-        ]);
+        // $booking->update([
+        //     'payment_status' => $isFullPayment ? 'fully_paid' : 'deposit_paid',
+        //     'status' => 'confirmed',
+        // ]);
 
-        $quickBooksSyncError = null;
-        if ($payment->status === 'completed') {
-            try {
-                $quickBooksService = app(QuickBooksService::class);
-                $quickBooksResult = $quickBooksService->syncPayment($payment);
-                if (!$quickBooksResult['success']) {
-                    $quickBooksSyncError = $quickBooksResult['message'];
-                    Log::warning('QuickBooks sync failed', ['payment_id' => $payment->id, 'error' => $quickBooksSyncError]);
-                }
-            } catch (\Exception $e) {
-                $quickBooksSyncError = $e->getMessage();
-                Log::error('QuickBooks sync exception', ['payment_id' => $payment->id, 'error' => $quickBooksSyncError]);
+        DB::beginTransaction();
+
+        try {
+
+            $service = Service::lockForUpdate()->findOrFail($booking->service_id);
+
+            $availableSpots = $service->max_students - $service->current_students;
+
+            if ($booking->number_of_students > $availableSpots) {
+                throw new \Exception("Seats no longer available.");
             }
-            try {
-                $bankService = app(BankIntegrationService::class);
-                $bankResult = $bankService->syncPayment($payment);
-                if (!$bankResult['success']) {
-                    Log::warning('Bank sync failed', ['payment_id' => $payment->id, 'error' => $bankResult['message']]);
-                }
-            } catch (\Exception $e) {
-                Log::error('Bank sync exception', ['payment_id' => $payment->id, 'error' => $e->getMessage()]);
-            }
+
+            // increment seats AFTER payment success
+            $service->increment('current_students', $booking->number_of_students);
+
+            $booking->update([
+                'payment_status' => $isFullPayment ? 'fully_paid' : 'deposit_paid',
+                'status' => 'confirmed',
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return redirect()->route('customer.booking.payment', $booking->id)
+                ->with('error', $e->getMessage());
         }
-
         $redirect = redirect()->route('customer.bookings.show', $booking->id)
             ->with('success', 'Deposit payment received. Your booking is confirmed!');
-        if ($quickBooksSyncError !== null) {
-            $redirect->with('warning', 'QuickBooks sync failed: ' . $quickBooksSyncError . ' You can retry from Admin → Payments → Sync to QuickBooks.');
-        }
+        // if ($quickBooksSyncError !== null) {
+        //     $redirect->with('warning', 'QuickBooks sync failed: ' . $quickBooksSyncError . ' You can retry from Admin → Payments → Sync to QuickBooks.');
+        // }
         return $redirect;
     }
 
@@ -397,7 +449,7 @@ class BookingController extends Controller
         $customer = Auth::guard('customer')->user();
         $booking = ServiceBooking::where('customer_id', $customer->id)
             ->findOrFail($bookingId);
-        
+
         $validated = $request->validate([
             'payment_method' => 'required|in:credit_card',
             'transaction_id' => 'nullable|string|max:255',
@@ -471,7 +523,7 @@ class BookingController extends Controller
         $booking = ServiceBooking::where('customer_id', $customer->id)
             ->with(['service', 'classSchedule', 'payments'])
             ->findOrFail($id);
-        
+
         return view('customer.booking-details', compact('booking'));
     }
 }
