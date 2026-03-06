@@ -71,6 +71,25 @@
             @enderror
         </div>
 
+        <div class="mb-4">
+            <label for="min_students" class="block text-gray-700 text-sm font-bold mb-2">Min Students</label>
+            <input type="number" 
+                   id="min_students" 
+                   name="min_students" 
+                   value="{{ old('min_students', 1) }}"
+                   min="1"
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        <div class="mb-4">
+            <label for="max_students" class="block text-gray-700 text-sm font-bold mb-2">Max Students</label>
+            <input type="number" 
+                   id="max_students" 
+                   name="max_students" 
+                   value="{{ old('max_students', 10) }}"
+                   min="1"
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
         <!-- Category Section -->
         <div class="mb-6 border-t pt-4 mt-6">
             <h3 class="text-lg font-bold mb-4">Category & Organization</h3>

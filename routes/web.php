@@ -18,13 +18,13 @@ Route::get('/', function () {
             $servicesByCategory->get($cat)->push($service);
         }
     }
-    
+
     // Also get services for the "Explore Training Programs" section (limit 6)
     $featuredServices = \App\Models\Service::where('is_active', true)
         ->orderBy('order')
         ->limit(6)
         ->get();
-    
+
     return view('welcome', compact('servicesByCategory', 'featuredServices', 'allServices'));
 });
 
@@ -36,26 +36,26 @@ Route::get('/all-services', function () {
     $allServices = \App\Models\Service::where('is_active', true)
         ->orderBy('order')
         ->get();
-    
+
     return view('all-services', compact('allServices'));
 })->name('all-services');
 
 Route::get('/training-services', function () {
     $category = request()->query('category');
     $subcategory = request()->query('subcategory');
-    
+
     $query = \App\Models\Service::where('is_active', true);
-    
+
     if ($category) {
         $query->whereJsonContains('categories', $category);
     }
-    
+
     if ($subcategory) {
         $query->where('subcategory', $subcategory);
     }
-    
+
     $services = $query->orderBy('order')->orderBy('created_at', 'desc')->get();
-    
+
     // Get all unique categories from services
     $categories = \App\Models\Service::where('is_active', true)
         ->get()
@@ -64,7 +64,7 @@ Route::get('/training-services', function () {
         ->filter()
         ->unique()
         ->values();
-    
+
     return view('services', compact('services', 'categories', 'category', 'subcategory'));
 })->name('services');
 
@@ -93,9 +93,10 @@ Route::get('/training-services/{id}', function ($id) {
         ->distinct()
         ->orderBy('location')
         ->pluck('location')
-        ->map(fn ($loc) => $loc ?: 'No Specific Location')
+        ->map(fn($loc) => $loc ?: 'No Specific Location')
         ->unique()
         ->values();
+
     $availableDates = \App\Models\ClassSchedule::where('service_id', $service->id)
         ->where('status', 'scheduled')
         ->where('class_date', '>=', now()->toDateString())
@@ -103,11 +104,17 @@ Route::get('/training-services/{id}', function ($id) {
         ->orderBy('class_date')
         ->get()
         ->pluck('class_date')
-        ->map(fn ($d) => $d->format('Y-m-d'))
+        ->map(fn($d) => $d->format('Y-m-d'))
         ->unique()
         ->values()
         ->toArray();
-    return view('service-details', compact('service', 'relatedServices', 'linkedServices', 'bookingLocations', 'availableDates'));
+    $schedule = \App\Models\ClassSchedule::where('service_id', $service->id)
+        ->where('status', 'scheduled')
+        ->where('class_date', '>=', now()->toDateString())
+        ->whereRaw('current_students < max_students')
+        ->orderBy('class_date')
+        ->first();
+    return view('service-details', compact('service', 'relatedServices', 'linkedServices', 'bookingLocations', 'availableDates', 'schedule'));
 })->name('service.details');
 
 Route::post('/training-services/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
@@ -182,12 +189,12 @@ Route::get('/private-protective-services', function () {
         ->whereJsonContains('categories', 'services')
         ->orderBy('order')
         ->get();
-    
+
     // Get security company links from database
     $companyLinks = \App\Models\SecurityCompanyLink::where('is_active', true)
         ->orderBy('order')
         ->get();
-    
+
     return view('private-protective-services', compact('services', 'companyLinks'));
 })->name('private-protective-services');
 
@@ -199,7 +206,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/register', [App\Http\Controllers\Customer\AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [App\Http\Controllers\Customer\AuthController::class, 'register']);
     Route::post('/logout', [App\Http\Controllers\Customer\AuthController::class, 'logout'])->name('logout');
-    
+
     // Public Routes - View available classes (no login required)
     Route::get('/services/{serviceId}/available-classes', [App\Http\Controllers\Customer\BookingController::class, 'showAvailableClasses'])->name('available-classes');
 
@@ -211,11 +218,11 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Customer\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'show'])->name('profile');
         Route::post('/profile', [App\Http\Controllers\Customer\ProfileController::class, 'update'])->name('profile.update');
-        
+
         // Booking Routes
         Route::get('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'index'])->name('bookings');
         Route::get('/bookings/{id}', [App\Http\Controllers\Customer\BookingController::class, 'show'])->name('bookings.show');
-        
+
         // Booking Creation (requires login)
         Route::get('/services/{serviceId}/book', [App\Http\Controllers\Customer\BookingController::class, 'create'])->name('booking.create');
         Route::get('/services/{serviceId}/book/{scheduleId}', [App\Http\Controllers\Customer\BookingController::class, 'create'])->name('booking.create.schedule');
@@ -239,18 +246,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [App\Http\Controllers\Admin\AuthController::class, 'login']);
     Route::post('/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
-    
+
     // Protected Admin Routes
     Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::resource('services', App\Http\Controllers\Admin\ServiceController::class);
         Route::resource('class-schedules', App\Http\Controllers\Admin\ClassScheduleController::class)->names('class-schedules');
-        
+
         // Bookings Routes
         Route::get('/bookings', [App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{booking}', [App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
         Route::put('/bookings/{booking}/status', [App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('bookings.update-status');
-        
+
         // Payments Routes
         Route::get('/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments-from-quickbooks', [App\Http\Controllers\Admin\PaymentController::class, 'quickbooksPayments'])->name('payments.quickbooks-list');
@@ -259,13 +266,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/payments/{payment}/sync-bank', [App\Http\Controllers\Admin\PaymentController::class, 'syncBank'])->name('payments.sync-bank');
         Route::post('/payments/sync-all-quickbooks', [App\Http\Controllers\Admin\PaymentController::class, 'syncAllQuickBooks'])->name('payments.sync-all-quickbooks');
         Route::post('/payments/sync-all-bank', [App\Http\Controllers\Admin\PaymentController::class, 'syncAllBank'])->name('payments.sync-all-bank');
-        
+
         Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
-        
+
         // Security Company Links
         Route::resource('security-company-links', App\Http\Controllers\Admin\SecurityCompanyLinkController::class);
-        
+
         Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'show'])->name('profile.show');
         Route::post('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
     });
@@ -275,5 +282,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::get('/admin/quickbooks/connect', [QuickBooksController::class, 'connect'])
     ->name('quickbooks.connect');
 
-    Route::get('/admin/quickbooks/callback', [QuickBooksController::class, 'callback'])
+Route::get('/admin/quickbooks/callback', [QuickBooksController::class, 'callback'])
     ->name('quickbooks.callback');

@@ -42,6 +42,8 @@ class ServiceController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
+            'min_students' => 'nullable|integer|min:1',
+            'max_students' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             // Category fields (multiple)
             'categories' => 'nullable|array',
@@ -119,6 +121,8 @@ class ServiceController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
+            'min_students' => 'nullable|integer|min:1',
+            'max_students' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
             // Category fields (multiple)
             'categories' => 'nullable|array',
