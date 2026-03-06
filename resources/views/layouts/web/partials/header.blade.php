@@ -118,7 +118,7 @@
                 <div class="relative nav-group h-full flex items-center">
                     <a href="{{ route('affiliated-services') }}" class="destop-nav-link">
                     <span class="destop-nav-link flex items-center gap-1 py-8 cursor-default">
-                        Services
+                    Affiliated
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
@@ -136,7 +136,22 @@
                     </div>
                 </div>
 
-                <a href="{{ route('security-training') }}" class="destop-nav-link">Security Training</a>
+                <!-- Security Training with dropdown (Initial Security, Renewals) -->
+                <div class="relative nav-group h-full flex items-center">
+                    <a href="{{ route('security-training') }}" class="destop-nav-link flex items-center gap-1 py-8 cursor-default">
+                        Security Training
+
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </a>
+                    <div class="dropdown-simple">
+                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                            <a href="{{ route('intial-security') }}" class="category-item">Initial Security</a>
+                            <a href="{{ route('renewals') }}" class="category-item">Renewals</a>
+                        </div>
+                    </div>
+                </div>
                 <a href="{{ route('testimonials') }}" class="destop-nav-link">Testimonials</a>
                 <a href="{{ route('contact') }}" class="destop-nav-link">Contact Us</a>
             </nav>
@@ -212,7 +227,21 @@
                 </div>
             </div>
 
-            <a href="{{ route('security-training') }}" class="mobile-nav-links">Security & Classes</a>
+            <!-- Mobile Security Training accordion -->
+            <div class="mobile-nav-group">
+                <button id="mobileSecurityTrainingToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none">
+                    <span>Security Training</span>
+                    <svg id="mobileSecurityTrainingIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="mobileSecurityTrainingMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
+                    <div class="p-4 grid grid-cols-1 gap-2">
+                        <a href="{{ route('security-training') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Initial Security</a>
+                        <a href="{{ route('services', ['category' => 'renewals']) }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Renewals</a>
+                    </div>
+                </div>
+            </div>
             <a href="{{ route('testimonials') }}" class="mobile-nav-links">Testimonials</a>
             <a href="{{ route('contact') }}" class="mobile-nav-links">Contact Us</a>
             @auth('customer')
@@ -279,6 +308,17 @@
             mobileServicesToggle.addEventListener("click", () => {
                 mobileServicesMenu.classList.toggle("active");
                 mobileServicesIcon.classList.toggle("rotate-180");
+            });
+        }
+
+        // Mobile Security Training sub-menu toggle
+        const mobileSecurityTrainingToggle = document.getElementById("mobileSecurityTrainingToggle");
+        const mobileSecurityTrainingMenu = document.getElementById("mobileSecurityTrainingMenu");
+        const mobileSecurityTrainingIcon = document.getElementById("mobileSecurityTrainingIcon");
+        if (mobileSecurityTrainingToggle) {
+            mobileSecurityTrainingToggle.addEventListener("click", () => {
+                mobileSecurityTrainingMenu.classList.toggle("active");
+                mobileSecurityTrainingIcon.classList.toggle("rotate-180");
             });
         }
     });

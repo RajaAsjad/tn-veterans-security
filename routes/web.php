@@ -156,6 +156,17 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
 Route::get('/security-training', function () {
     return view('security-training');
 })->name('security-training');
+// Renewals
+Route::get('/intial-security', function () {
+    return view('intial-security');
+})->name('intial-security');
+Route::get('/renewals', function () {
+    return view('renewals');
+})->name('renewals');
+
+
+
+
 
 Route::get('/testimonials', function () {
     return view('testimonials');
@@ -211,6 +222,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::post('/bookings', [App\Http\Controllers\Customer\BookingController::class, 'store'])->name('booking.store');
 
         // Checkout – create booking from inquiry and go to payment
+        
         Route::post('/services/{serviceId}/checkout', [App\Http\Controllers\Customer\BookingController::class, 'processCheckout'])->name('services.checkout.process');
 
         // Payment Routes
