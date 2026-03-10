@@ -22,6 +22,20 @@
         </div>
 
         <div class="mb-4">
+            <label for="slug" class="block text-gray-700 text-sm font-bold mb-2">Direct page slug (optional)</label>
+            <input type="text" 
+                   id="slug" 
+                   name="slug" 
+                   value="{{ old('slug') }}"
+                   placeholder="e.g. asp, active-shooter, dallas-law"
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <p class="text-xs text-gray-500 mt-1">Leave empty if using categories. If set, this service will have a direct page at <strong>/service/{slug}</strong> (e.g. /service/asp). Use lowercase letters, numbers and hyphens only. No category needed for direct-page services.</p>
+            @error('slug')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mb-4">
             <label for="short_description" class="block text-gray-700 text-sm font-bold mb-2">Short Description</label>
             <textarea id="short_description" 
                       name="short_description" 
@@ -31,6 +45,26 @@
                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('short_description') }}</textarea>
             <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
             @error('short_description')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Sub titles (show below banner on service page)</label>
+            <p class="text-xs text-gray-500 mb-2">Add items like "Flashlight", "OC Spray", "Baton", "Restraints". These appear in a list below the hero banner on the left.</p>
+            <div id="sub-titles-container" class="space-y-2">
+                @foreach(old('sub_titles', []) as $idx => $st)
+                    <div class="sub-title-row flex gap-2 items-center">
+                        <input type="text" name="sub_titles[]" value="{{ $st }}" maxlength="255" placeholder="e.g. Flashlight"
+                            class="shadow appearance-none border rounded flex-1 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" class="sub-title-remove px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm font-medium">Remove</button>
+                    </div>
+                @endforeach
+            </div>
+            <button type="button" id="add-sub-title" class="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium">
+                <i class="fas fa-plus mr-1"></i> Add sub title
+            </button>
+            @error('sub_titles.*')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
         </div>
@@ -93,10 +127,10 @@
         <!-- Category Section -->
         <div class="mb-6 border-t pt-4 mt-6">
             <h3 class="text-lg font-bold mb-4">Category & Organization</h3>
-            
+            <p class="text-sm text-gray-600 mb-3">Categories are optional. If you leave all unchecked and set a <strong>Direct page slug</strong> above, this service will appear only on its direct page (e.g. /service/asp).</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div class="md:col-span-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Categories</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Categories (optional)</label>
                     <!-- Selected tags (shown at top) -->
                     <div id="selected-categories-display" class="min-h-[52px] mb-3 p-3 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex flex-wrap gap-2 items-center">
                         <span id="no-selection-hint" class="text-sm text-gray-400">No categories selected — choose below</span>
@@ -352,6 +386,24 @@
             cb.addEventListener('change', updateSelectedCategories);
         });
         updateSelectedCategories();
+
+        // Sub titles: add / remove rows
+        var subTitlesContainer = document.getElementById('sub-titles-container');
+        var addSubTitleBtn = document.getElementById('add-sub-title');
+        if (!subTitlesContainer.querySelector('.sub-title-row') && addSubTitleBtn) {
+            addSubTitleBtn.click();
+        }
+        addSubTitleBtn.addEventListener('click', function() {
+            var row = document.createElement('div');
+            row.className = 'sub-title-row flex gap-2 items-center';
+            row.innerHTML = '<input type="text" name="sub_titles[]" maxlength="255" placeholder="e.g. Flashlight" class="shadow appearance-none border rounded flex-1 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">' +
+                '<button type="button" class="sub-title-remove px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm font-medium">Remove</button>';
+            subTitlesContainer.appendChild(row);
+            row.querySelector('.sub-title-remove').addEventListener('click', function() { row.remove(); });
+        });
+        subTitlesContainer.querySelectorAll('.sub-title-remove').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.closest('.sub-title-row').remove(); });
+        });
     });
 </script>
 <style>

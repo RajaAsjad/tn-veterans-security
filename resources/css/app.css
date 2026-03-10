@@ -339,3 +339,226 @@ a.training-card:hover {
 .testimonial-page-card h4 {
     font-family: var(--font-display);
 }
+
+
+/* services page styles */
+
+/* ASP page (Services/asp.blade.php) - Tailwind-based */
+.asp-sd-page {
+    --sd-radius: 20px;
+    --sd-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.12);
+    --sd-primary: var(--primary-color);
+}
+
+.asp-sd-card {
+    @apply bg-white overflow-hidden;
+    border-radius: var(--sd-radius);
+    box-shadow: var(--sd-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.asp-sd-section-title {
+    @apply text-lg font-bold uppercase tracking-wider text-slate-900 mb-4 pb-3 border-b-2;
+    font-family: var(--font-display);
+    border-color: var(--primary-color);
+}
+
+.asp-sd-badge {
+    @apply inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-semibold;
+}
+
+.asp-sd-badge-primary {
+    background: rgba(58, 166, 44, 0.12);
+    color: var(--primary-color);
+}
+
+.asp-sd-badge-green {
+    @apply bg-emerald-100 text-emerald-700;
+}
+
+.asp-sd-badge-blue {
+    @apply bg-blue-100 text-blue-700;
+}
+
+.asp-sd-detail-grid {
+    @apply grid gap-0 border border-slate-200 rounded-lg overflow-hidden;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+    .asp-sd-detail-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.asp-sd-detail-row {
+    @apply flex justify-between items-center gap-3 py-2.5 px-4 border-b border-slate-100 text-sm;
+}
+
+.asp-sd-detail-row:last-child {
+    @apply border-b-0;
+}
+
+.asp-sd-detail-label {
+    @apply text-slate-500 flex-shrink-0;
+}
+
+.asp-sd-detail-value {
+    @apply font-semibold text-slate-900 text-right;
+}
+
+.asp-sd-cta-box {
+    @apply p-8 text-white rounded-xl;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--btn-hover-color, #2d8a3e) 100%);
+}
+
+.asp-sd-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold no-underline transition-colors duration-200;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.asp-sd-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+/* ASP page - Pricing & booking form (same as service-details) */
+.asp-sd-form-label {
+    @apply block text-sm font-semibold text-gray-700 mb-1;
+}
+
+.asp-sd-form-input {
+    @apply w-full py-2 px-3 border border-gray-300 rounded-lg text-gray-900;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.asp-sd-form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(58, 166, 44, 0.15);
+}
+
+select.asp-sd-form-input {
+    @apply cursor-pointer appearance-auto;
+}
+
+.asp-sd-price-main {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-color), var(--btn-hover-color, #2d8a3e));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.asp-sd-btn {
+    @apply inline-flex items-center justify-center gap-2 w-full py-3 sm:py-4 text-sm sm:text-base font-bold uppercase tracking-wide text-white rounded-xl border-0 cursor-pointer transition-all duration-200;
+    background: linear-gradient(135deg, var(--primary-color), var(--btn-hover-color, #2d8a3e));
+    box-shadow: 0 8px 24px -4px rgba(58, 166, 44, 0.35);
+}
+
+.asp-sd-btn:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -4px rgba(58, 166, 44, 0.45);
+}
+
+/* ASP page - Hero (same as service-details) */
+.asp-sd-hero {
+    position: relative;
+    min-height: 420px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.asp-sd-hero-bg {
+    position: absolute;
+    inset: 0;
+}
+
+.asp-sd-hero-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.asp-sd-hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0.85) 100%);
+}
+
+.asp-sd-hero-cap {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 3rem 0 2.5rem;
+}
+
+.asp-sd-hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.asp-sd-hero-desc {
+    font-size: 1rem;
+    opacity: 0.95;
+    max-width: 36rem;
+    margin-top: 0.5rem;
+}
+
+/* ASP page - Related/Other services cards */
+.asp-sd-rel-card {
+    @apply block w-full bg-white overflow-hidden transition-all duration-400;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.asp-sd-rel-card:hover {
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.18);
+    transform: translateY(-4px);
+    border-color: rgba(58, 166, 44, 0.15);
+}
+
+.asp-sd-rel-card .asp-sd-rel-img {
+    height: 200px;
+    overflow: hidden;
+    @apply bg-slate-100;
+}
+
+.asp-sd-rel-card .asp-sd-rel-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.asp-sd-rel-card:hover .asp-sd-rel-img img {
+    transform: scale(1.06);
+}
+
+.asp-sd-rel-card .asp-sd-rel-body {
+    @apply p-5 flex flex-col flex-1;
+}
+
+.asp-sd-rel-card .asp-sd-rel-title {
+    font-family: var(--font-display);
+    @apply text-base font-bold text-slate-900 mb-2;
+}
+
+.asp-sd-rel-card a:hover .asp-sd-rel-title {
+    color: var(--primary-color);
+}
+
+.asp-sd-rel-price {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}

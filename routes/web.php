@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\QuickBooksController;
+use App\Http\Controllers\ServicePageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -71,6 +72,11 @@ Route::get('/training-services', function () {
 Route::get('/affiliated-services', function () {
     return view('affiliated-services');
 })->name('affiliated-services');
+// Services by Page
+
+
+
+
 
 Route::get('/training-services/enhanced-armed-guard-security-subcategories', function () {
     $rifleService = \App\Models\Service::where('is_active', true)->find(34);
@@ -79,43 +85,8 @@ Route::get('/training-services/enhanced-armed-guard-security-subcategories', fun
     return view('enhanced-armed-guard-subcategories', compact('services'));
 })->name('handgun.subcategories');
 
-Route::get('/training-services/{id}', function ($id) {
-    $service = \App\Models\Service::with('linkedServices')->where('is_active', true)->findOrFail($id);
-    $linkedServices = $service->linkedServices->where('is_active', true);
-    $relatedServices = $linkedServices->isNotEmpty()
-        ? $linkedServices
-        : \App\Models\Service::where('is_active', true)->where('id', '!=', $id)->orderBy('order')->limit(3)->get();
-    // For booking form: locations and available dates from class schedules
-    $bookingLocations = \App\Models\ClassSchedule::where('service_id', $service->id)
-        ->where('status', 'scheduled')
-        ->where('class_date', '>=', now()->toDateString())
-        ->whereRaw('current_students < max_students')
-        ->distinct()
-        ->orderBy('location')
-        ->pluck('location')
-        ->map(fn($loc) => $loc ?: 'No Specific Location')
-        ->unique()
-        ->values();
-
-    $availableDates = \App\Models\ClassSchedule::where('service_id', $service->id)
-        ->where('status', 'scheduled')
-        ->where('class_date', '>=', now()->toDateString())
-        ->whereRaw('current_students < max_students')
-        ->orderBy('class_date')
-        ->get()
-        ->pluck('class_date')
-        ->map(fn($d) => $d->format('Y-m-d'))
-        ->unique()
-        ->values()
-        ->toArray();
-    $schedule = \App\Models\ClassSchedule::where('service_id', $service->id)
-        ->where('status', 'scheduled')
-        ->where('class_date', '>=', now()->toDateString())
-        ->whereRaw('current_students < max_students')
-        ->orderBy('class_date')
-        ->first();
-    return view('service-details', compact('service', 'relatedServices', 'linkedServices', 'bookingLocations', 'availableDates', 'schedule'));
-})->name('service.details');
+Route::get('/training-services/{id}', [ServicePageController::class, 'showById'])->name('service.details');
+Route::get('/service/{slug}', [ServicePageController::class, 'showBySlug'])->name('service.by.slug')->where('slug', '[a-z0-9\-]+');
 
 Route::post('/training-services/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
     $validated = $request->validate([

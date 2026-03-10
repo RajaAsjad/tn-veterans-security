@@ -232,12 +232,10 @@
                 <button class="tab-btn active" onclick="filterServices('all', this)">All</button>
                 <button class="tab-btn" onclick="filterServices('category:nra', this)">NRA</button>
                 <button class="tab-btn" onclick="filterServices('category:red_cross', this)">Red Cross</button>
-                <button class="tab-btn" onclick="filterServices('category:asp_less_than_lethal', this)">ASP 4 Hours (Less than Lethal)</button>
+              
                 <button class="tab-btn" onclick="filterServices('category:homeland_security', this)">Handgun Carry Permit</button>
-                <button class="tab-btn" onclick="filterServices('category:active_shooter', this)">Active Shooter (8 Hours)</button>
-                <button class="tab-btn" onclick="filterServices('category:security_training', this)">Security</button>
-                <button class="tab-btn" onclick="filterServices('category:force_science', this)">Force Science (De-Escalation)</button>
-                <button class="tab-btn" onclick="filterServices('category:dallas_law', this)">Dallas Law</button>
+              
+             
                 <button class="tab-btn" onclick="filterServices('category:renewals', this)">Renewals</button>
             </div>
 

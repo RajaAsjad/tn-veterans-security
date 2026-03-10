@@ -10,7 +10,9 @@ class Service extends Model
 {
     protected $fillable = [
         'title',
+        'slug',
         'short_description',
+        'sub_titles',
         'description',
         'image',
         'order',
@@ -35,6 +37,7 @@ class Service extends Model
 
     protected $casts = [
         'categories' => 'array',
+        'sub_titles' => 'array',
         'is_active' => 'boolean',
         'order' => 'integer',
         'price' => 'decimal:2',

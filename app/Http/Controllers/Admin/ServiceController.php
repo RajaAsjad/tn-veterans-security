@@ -38,7 +38,10 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:100|unique:services,slug|regex:/^[a-z0-9\-]+$/',
             'short_description' => 'nullable|string|max:500',
+            'sub_titles' => 'nullable|array',
+            'sub_titles.*' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
@@ -67,6 +70,7 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
+        $validated['slug'] = $request->filled('slug') ? strtolower(trim($request->slug)) : null;
         $validated['is_active'] = $request->has('is_active');
         $validated['has_online_parts'] = $request->has('has_online_parts');
         $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
@@ -77,6 +81,7 @@ class ServiceController extends Controller
         unset($validated['linked_services']);
 
         $validated['categories'] = array_values(array_filter($request->input('categories', [])));
+        $validated['sub_titles'] = array_values(array_filter(array_map('trim', $request->input('sub_titles', []))));
 
         $service = Service::create($validated);
 
@@ -117,7 +122,10 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:100|unique:services,slug,' . $service->id . '|regex:/^[a-z0-9\-]+$/',
             'short_description' => 'nullable|string|max:500',
+            'sub_titles' => 'nullable|array',
+            'sub_titles.*' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'order' => 'nullable|integer|min:0',
@@ -150,6 +158,7 @@ class ServiceController extends Controller
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
+        $validated['slug'] = $request->filled('slug') ? strtolower(trim($request->slug)) : null;
         $validated['is_active'] = $request->has('is_active');
         $validated['has_online_parts'] = $request->has('has_online_parts');
         $validated['testing_in_person'] = $request->has('testing_in_person', true); // Default true
@@ -160,6 +169,7 @@ class ServiceController extends Controller
         unset($validated['linked_services']);
 
         $validated['categories'] = array_values(array_filter($request->input('categories', [])));
+        $validated['sub_titles'] = array_values(array_filter(array_map('trim', $request->input('sub_titles', []))));
 
         $service->update($validated);
 

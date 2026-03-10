@@ -445,6 +445,36 @@
                 border-radius: var(--sd-radius);
             }
         }
+
+        /* Sub titles block (below banner, left) */
+        .sd-sub-titles-card {
+            background: #fff;
+            border-radius: var(--sd-radius);
+            box-shadow: var(--sd-shadow);
+            border: 1px solid rgba(0, 0, 0, .04);
+            overflow: hidden;
+        }
+        .sd-sub-titles-header {
+            background: linear-gradient(135deg, var(--sd-primary) 0%, var(--btn-hover-color) 100%);
+            color: #fff;
+            padding: 0.875rem 1.25rem;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+        .sd-sub-titles-list {
+            border-top: 1px solid rgba(0, 0, 0, .06);
+        }
+        .sd-sub-titles-item {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9375rem;
+            color: #0f172a;
+            font-weight: 500;
+        }
+        .sd-sub-titles-item:last-child {
+            border-bottom: none;
+        }
     </style>
 
     <main class="sd-page overflow-hidden bg-[#f8fafc]">
@@ -485,6 +515,22 @@
 
                     {{-- Main column --}}
                     <div class="w-full lg:flex-[1_1_0] lg:min-w-0 space-y-5 sm:space-y-6 lg:space-y-8 order-2 lg:order-1">
+                        {{-- Sub titles (below banner, left - from admin) --}}
+                        @if ($service->sub_titles && count($service->sub_titles) > 0)
+                            <div class="sd-sub-titles-card">
+                                <div class="sd-sub-titles-header" style="font-family: var(--font-display);">
+                                    {{ $service->title }}
+                                </div>
+                                <div class="sd-sub-titles-list">
+                                    @foreach ($service->sub_titles as $subTitle)
+                                        @if (trim($subTitle) !== '')
+                                            <div class="sd-sub-titles-item">{{ $subTitle }}</div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- About --}}
                         @if ($service->description || $service->short_description)
                             <div class="sd-card p-5 sm:p-6 lg:p-8">
@@ -559,14 +605,16 @@
                                 {{-- @if ($service->max_students)
                             <div class="sd-detail-row"><span class="sd-detail-label">Max students</span><span class="sd-detail-value" >{{ $service->max_students }}</span></div>
                             @endif --}}
-                                @if ($service->current_students >= $service->max_students)
-                                <div class="sd-detail-row"><span class="sd-detail-label">Available Seats</span><span
-                                    class="sd-detail-value text-danger">Class Full</span>
-                                </div>
-                                @else
-                                <div class="sd-detail-row"><span class="sd-detail-label">Available Seats</span><span
-                                    class="sd-detail-value">{{ $service->max_students - $service->current_students }}</span>
-                                </div>
+                                @if ($service->max_students !== null && $service->max_students > 0)
+                                    @if (($service->current_students ?? 0) >= $service->max_students)
+                                    <div class="sd-detail-row"><span class="sd-detail-label">Available Seats</span><span
+                                        class="sd-detail-value text-danger">Class Full</span>
+                                    </div>
+                                    @else
+                                    <div class="sd-detail-row"><span class="sd-detail-label">Available Seats</span><span
+                                        class="sd-detail-value">{{ $service->max_students - ($service->current_students ?? 0) }}</span>
+                                    </div>
+                                    @endif
                                 @endif
                                 @if ($service->min_students)
                                     <div class="sd-detail-row"><span class="sd-detail-label">Min students</span><span
@@ -627,16 +675,6 @@
                                             ${{ number_format($service->price, 2) }}</div>
                                         <p class="text-gray-500 text-xs sm:text-sm mt-1">per student</p>
                                     @endif
-                                    @if ($service->deposit_amount)
-                                        <div class="mt-3 sm:mt-4 p-3 sm:p-4 rounded-xl bg-emerald-50 border border-emerald-100 sd-cta-box"
-                                            style="width: 210px;">
-                                            <p class="text-xs text-gray-600 uppercase tracking-wider text-white">Deposit
-                                            </p>
-                                            <p class="text-lg sm:text-xl font-bold text-white">
-                                                ${{ number_format($service->deposit_amount, 2) }} <span
-                                                    class="text-sm font-normal text-white">/ student</span></p>
-                                        </div>
-                                    @endif
                                     @if (!$service->price && !$service->deposit_amount)
                                         <p class="text-gray-500 text-sm">Pricing available on class schedules.</p>
                                     @endif
@@ -679,13 +717,16 @@
                                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                             @enderror
                                         </div>
+                                        @php
+                                            $availableSeats = ($service->max_students ?? 0) - ($service->current_students ?? 0);
+                                        @endphp
                                         <div>
                                             <label for="booking_number_of_students" class="sd-form-label">Number of
-                                                students (Available Seats: {{ $service->max_students - $service->current_students }})</label>
+                                                students (Available Seats: {{ $availableSeats }})</label>
                                             <input type="number" name="number_of_students"
                                                 id="booking_number_of_students"
                                                 value="{{ old('number_of_students', 1) }}"
-                                                min="{{ $service->min_students }}" max="{{ $service->max_students - $service->current_students }}"
+                                                min="{{ $service->min_students ?? 1 }}" max="{{ max(1, $availableSeats) }}"
                                                 class="sd-form-input @error('number_of_students') border-red-400 @enderror"
                                                 placeholder="1">
                                             @error('number_of_students')

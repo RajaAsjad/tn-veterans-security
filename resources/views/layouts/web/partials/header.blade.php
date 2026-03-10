@@ -3,12 +3,13 @@
     $trainingCategories = [
         ['name' => 'NRA', 'url' => route('services', ['category' => 'nra'])],
         ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross'])],
-        ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('services', ['category' => 'asp_less_than_lethal'])],
+      
+        ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('service.by.slug', 'asp-4-hr')],
         ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'homeland_security'])],
-        ['name' => 'Active Shooter 8 Hours', 'url' => route('services', ['category' => 'active_shooter'])],
-        ['name' => 'Security', 'url' => route('services', ['category' => 'security_training'])],
-        ['name' => 'Force Science (De-Escalation)', 'url' => route('services', ['category' => 'force_science'])],
-        ['name' => 'Dallas Law', 'url' => route('services', ['category' => 'dallas_law'])],
+        ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter')],
+        ['name' => 'Homeland Security', 'url' => route('service.by.slug', 'homeland-security')],
+        ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation')],
+        ['name' => 'Dallas Law', 'url' => route('service.by.slug', 'dallas-law')],
         ['name' => 'Renewals', 'url' => route('services', ['category' => 'renewals'])],
     ];
     $servicesAffiliates = [
