@@ -10,7 +10,6 @@
         ['name' => 'Homeland Security', 'url' => route('service.by.slug', 'homeland-security')],
         ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation')],
         ['name' => 'Dallas Law', 'url' => route('service.by.slug', 'dallas-law')],
-        ['name' => 'Renewals', 'url' => route('services', ['category' => 'renewals'])],
     ];
     $servicesAffiliates = [
         ['name' => 'NRA', 'url' => '#', 'external' => true],
@@ -108,9 +107,6 @@
                                     {{ $cat['name'] }}
                                 </a>
                             @endforeach
-                            <a href="{{ route('services') }}" class="category-item font-bold text-(--primary-color) border-t-2 border-gray-50">
-                                View All Services →
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -238,8 +234,8 @@
                 </button>
                 <div id="mobileSecurityTrainingMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
-                        <a href="{{ route('security-training') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Initial Security</a>
-                        <a href="{{ route('services', ['category' => 'renewals']) }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Renewals</a>
+                        <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Initial Security</a>
+                        <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Renewals</a>
                     </div>
                 </div>
             </div>

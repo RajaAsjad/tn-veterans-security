@@ -134,12 +134,27 @@ Route::post('/training-services/{service}/booking-inquiry', function (\App\Model
 Route::get('/security-training', function () {
     return view('security-training');
 })->name('security-training');
-// Renewals
+
+// Security Training: Initial Security – dynamic services (category = security_training; exclude renewals so no double)
 Route::get('/intial-security', function () {
-    return view('intial-security');
+    $services = \App\Models\Service::where('is_active', true)
+        ->whereJsonContains('categories', 'security_training')
+        ->orderBy('order')
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->filter(fn ($s) => ! in_array('renewals', $s->categories ?? []))
+        ->values();
+    return view('intial-security', compact('services'));
 })->name('intial-security');
+
+// Security Training: Renewals – dynamic services (category = renewals), card click → service detail form
 Route::get('/renewals', function () {
-    return view('renewals');
+    $services = \App\Models\Service::where('is_active', true)
+        ->whereJsonContains('categories', 'renewals')
+        ->orderBy('order')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    return view('renewals', compact('services'));
 })->name('renewals');
 
 
