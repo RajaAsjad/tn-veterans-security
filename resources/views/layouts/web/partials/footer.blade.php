@@ -148,6 +148,110 @@
     </div>
 </footer>
 
+{{-- Dallas Law alcohol modal (same style as existing modals) --}}
+<div id="dallas-law-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/50" onclick="if(event.target===this) document.getElementById('dallas-law-modal').classList.add('hidden')">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] overflow-y-auto m-4 sm:m-6 relative" onclick="event.stopPropagation()">
+        <button type="button" onclick="document.getElementById('dallas-law-modal').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+        <div class="p-6 lg:p-8 pt-12">
+            <div id="dallas-law-step-question">
+                <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">Dallas Law</h3>
+                <p class="text-[var(--text-color)] text-[16px] leading-relaxed mb-6">Will you be working around alcohol?</p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button type="button" id="dallas-law-modal-yes" class="flex-1 py-3 px-4 rounded-lg font-semibold text-white transition-colors" style="background: var(--primary-color);">Yes</button>
+                    <button type="button" id="dallas-law-modal-no" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">No</button>
+                </div>
+            </div>
+            <div id="dallas-law-step-no-message" class="hidden">
+                <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">Dallas Law</h3>
+                <p class="text-[var(--text-color)] text-[16px] leading-relaxed mb-6">You do not have to take this course.</p>
+                <button type="button" id="dallas-law-modal-close" class="py-3 px-6 rounded-lg font-semibold text-white transition-colors" style="background: var(--primary-color);">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ASP 4 Hours (Less than Lethal) eligibility modal --}}
+<div id="asp-4-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/50" onclick="if(event.target===this) document.getElementById('asp-4-modal').classList.add('hidden')">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] overflow-y-auto m-4 sm:m-6 relative" onclick="event.stopPropagation()">
+        <button type="button" onclick="document.getElementById('asp-4-modal').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+        <div class="p-6 lg:p-8 pt-12">
+            <div id="asp-4-step-question">
+                <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">ASP 4 Hours (Less than Lethal)</h3>
+                <p class="text-[var(--text-color)] text-[16px] leading-relaxed mb-6">Are you working in the field of Law Enforcement or Security?</p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button type="button" id="asp-4-modal-yes" class="flex-1 py-3 px-4 rounded-lg font-semibold text-white transition-colors" style="background: var(--primary-color);">Yes</button>
+                    <button type="button" id="asp-4-modal-no" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">No</button>
+                </div>
+            </div>
+            <div id="asp-4-step-no-message" class="hidden">
+                <h3 class="text-xl font-bold text-[var(--text-color)] mb-4 uppercase" style="font-family: var(--font-display);">ASP 4 Hours (Less than Lethal)</h3>
+                <p class="text-[var(--text-color)] text-[16px] leading-relaxed mb-6">Then you are not able to take this course. Due to not working in these fields you are ineligible to take these courses.</p>
+                <button type="button" id="asp-4-modal-close" class="py-3 px-6 rounded-lg font-semibold text-white transition-colors" style="background: var(--primary-color);">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var dallasLawTargetUrl = '';
+    var stepQuestion = document.getElementById('dallas-law-step-question');
+    var stepNoMessage = document.getElementById('dallas-law-step-no-message');
+    document.querySelectorAll('.dallas-law-trigger').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            dallasLawTargetUrl = this.getAttribute('href');
+            stepQuestion.classList.remove('hidden');
+            stepNoMessage.classList.add('hidden');
+            document.getElementById('dallas-law-modal').classList.remove('hidden');
+        });
+    });
+    document.getElementById('dallas-law-modal-yes').addEventListener('click', function() {
+        document.getElementById('dallas-law-modal').classList.add('hidden');
+        if (dallasLawTargetUrl) window.location.href = dallasLawTargetUrl;
+    });
+    document.getElementById('dallas-law-modal-no').addEventListener('click', function() {
+        stepQuestion.classList.add('hidden');
+        stepNoMessage.classList.remove('hidden');
+    });
+    document.getElementById('dallas-law-modal-close').addEventListener('click', function() {
+        document.getElementById('dallas-law-modal').classList.add('hidden');
+        stepQuestion.classList.remove('hidden');
+        stepNoMessage.classList.add('hidden');
+    });
+
+    var asp4TargetUrl = '';
+    var asp4StepQuestion = document.getElementById('asp-4-step-question');
+    var asp4StepNoMessage = document.getElementById('asp-4-step-no-message');
+    document.querySelectorAll('.asp-4-modal-trigger').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            asp4TargetUrl = this.getAttribute('href');
+            asp4StepQuestion.classList.remove('hidden');
+            asp4StepNoMessage.classList.add('hidden');
+            document.getElementById('asp-4-modal').classList.remove('hidden');
+        });
+    });
+    document.getElementById('asp-4-modal-yes').addEventListener('click', function() {
+        document.getElementById('asp-4-modal').classList.add('hidden');
+        if (asp4TargetUrl) window.location.href = asp4TargetUrl;
+    });
+    document.getElementById('asp-4-modal-no').addEventListener('click', function() {
+        asp4StepQuestion.classList.add('hidden');
+        asp4StepNoMessage.classList.remove('hidden');
+    });
+    document.getElementById('asp-4-modal-close').addEventListener('click', function() {
+        document.getElementById('asp-4-modal').classList.add('hidden');
+        asp4StepQuestion.classList.remove('hidden');
+        asp4StepNoMessage.classList.add('hidden');
+    });
+});
+</script>
+
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
   AOS.init({

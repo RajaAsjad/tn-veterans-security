@@ -7,7 +7,6 @@
         ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('service.by.slug', 'asp-4-hr')],
         ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'homeland_security'])],
         ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter')],
-        ['name' => 'Homeland Security', 'url' => route('service.by.slug', 'homeland-security')],
         ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation')],
         ['name' => 'Dallas Law', 'url' => route('service.by.slug', 'dallas-law')],
     ];
@@ -15,6 +14,7 @@
         ['name' => 'NRA', 'url' => '#', 'external' => true],
         ['name' => 'ASP', 'url' => '#', 'external' => true],
         ['name' => 'Red Cross', 'url' => '#', 'external' => true],
+        ['name' => 'APEX SECURITY', 'url' => '#', 'external' => true],
         ['name' => 'US Law Shield', 'url' => '#', 'external' => true],
     ];
 @endphp
@@ -103,7 +103,7 @@
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
                             @foreach($trainingCategories as $cat)
-                                <a href="{{ $cat['url'] }}" class="category-item">
+                                <a href="{{ $cat['url'] }}" class="category-item {{ $cat['name'] === 'Dallas Law' ? 'dallas-law-trigger' : ($cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '') }}">
                                     {{ $cat['name'] }}
                                 </a>
                             @endforeach
@@ -193,7 +193,7 @@
                 <div id="mobileServiceMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
                         @foreach($trainingCategories as $cat)
-                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">
+                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color) {{ $cat['name'] === 'Dallas Law' ? 'dallas-law-trigger' : ($cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '') }}">
                                 {{ $cat['name'] }}
                             </a>
                         @endforeach
