@@ -8,32 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
-    protected $fillable = [
-        'title',
-        'slug',
-        'short_description',
-        'sub_titles',
-        'description',
-        'image',
-        'order',
-        'is_active',
-        // Category and organization (categories = JSON array for multi-select)
-        'categories',
-        'subcategory',
-        'location',
-        'requires_dallas_law',
-        'requires_active_shooter',
-        // Class/Service pricing
-        'price',
-        'deposit_amount',
-        // Class configuration
-        'duration_hours',
-        'max_students',
-        'min_students',
-        'class_type',
-        'has_online_parts',
-        'testing_in_person',
-    ];
+    protected $guarded = ['id'];
 
     protected $casts = [
         'categories' => 'array',
@@ -49,6 +24,7 @@ class Service extends Model
         'testing_in_person' => 'boolean',
         'requires_dallas_law' => 'boolean',
         'requires_active_shooter' => 'boolean',
+        'requirements' => 'string',
     ];
 
     /**

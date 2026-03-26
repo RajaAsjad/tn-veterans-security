@@ -546,12 +546,13 @@
                                 @endif
                             </div>
                         @endif
+                       
                     </div>
 
                     {{-- Sidebar (Training details + sticky booking on lg) --}}
                     <div class="w-full lg:flex-[1_1_0] lg:min-w-0 order-1 lg:order-2">
                         {{-- Training details (badges) --}}
-                        <div class="sd-card p-5 sm:p-6 lg:p-8">
+                        <div class="sd-card p-5 sm:p-6 lg:p-8 mb-6">
                             <h2 class="sd-section-title text-gray-900 font-bold uppercase tracking-wide mb-4 sm:mb-5 pb-3 border-b-2 border-[var(--primary-color)]"
                                 style="font-family: var(--font-display);">Training details</h2>
                             <div class="flex flex-wrap gap-3">
@@ -573,6 +574,15 @@
                                     {{ $service->is_active ? 'Available' : 'Coming soon' }}</span>
                             </div>
                         </div>
+                        @if ($service->requirements)
+                        <div class="sd-card p-5 sm:p-6 lg:p-8">
+                            <h2 class="sd-section-title text-gray-900 font-bold uppercase tracking-wide mb-4 sm:mb-6 pb-3 border-b-2 border-[var(--primary-color)]"
+                                style="font-family: var(--font-display);">Requirements</h2>
+                            <div class="sd-desc">
+                                {!! $service->requirements !!}
+                            </div>
+                        </div>
+                    @endif
                         <div class="w-full lg:flex-[2_1_0] lg:min-w-0 sd-card p-5 sm:p-6 lg:p-8 mt-6 sm:mt-8 lg:mt-10">
                             <h2 class="sd-section-title text-gray-900 font-bold uppercase tracking-wide mb-4 sm:mb-6 pb-3 border-b-2 border-[var(--primary-color)]"
                                 style="font-family: var(--font-display);">All service details</h2>
@@ -800,10 +810,10 @@
                         </p>
                     </div>
 
-                    <div class="flex flex-wrap gap-4 sm:gap-5 lg:gap-6 xl:gap-8 justify-center sm:justify-start">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 xl:gap-8">
                         @foreach ($relatedServices as $index => $rel)
                             <a href="{{ route('service.details', $rel->id) }}"
-                                class="sd-rel-card group block w-full sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-0">
+                                class="sd-rel-card group block w-full">
                                 <div class="sd-rel-img">
                                     @if ($rel->image)
                                         <img src="{{ asset('storage/' . $rel->image) }}" alt="{{ $rel->title }}">

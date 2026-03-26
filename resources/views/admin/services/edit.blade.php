@@ -51,6 +51,18 @@
         </div>
 
         <div class="mb-4">
+            <label for="requirements" class="block text-gray-700 text-sm font-bold mb-2">Requirements</label>
+            <div id="requirements-editor" class="bg-white border rounded">
+                {!! old('requirements', $service->requirements) !!}
+            </div>
+            <textarea id="requirements" name="requirements" style="display:none;">{{ old('requirements') }}</textarea>
+            @error('requirements')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+
+        <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Sub titles (show below banner on service page)</label>
             <p class="text-xs text-gray-500 mb-2">Add items like "Flashlight", "OC Spray", "Baton", "Restraints". These appear in a list below the hero banner on the left.</p>
             <div id="sub-titles-container" class="space-y-2">
@@ -379,31 +391,36 @@
         // Get existing content from textarea
         var existingContent = document.getElementById('description').value;
         
-        var quill = new Quill('#description-editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'align': [] }],
-                    ['link', 'image'],
-                    ['clean']
-                ]
-            },
-            placeholder: 'Enter service description...'
-        });
+        function createEditor(editorSelector, inputId, placeholderText) {
+            var editor = new Quill(editorSelector, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        ['clean'],
+                        [{ 'color': [] }]
+                    ]
+                },
+                placeholder: placeholderText
+            });
 
-        // Set existing content if available
-        if (existingContent) {
-            quill.root.innerHTML = existingContent;
+            editor.on('text-change', function() {
+                var input = document.getElementById(inputId);
+                input.value = editor.root.innerHTML;
+            });
+
+            return editor;
         }
 
-        // Update textarea on content change
-        quill.on('text-change', function() {
-            var descriptionInput = document.getElementById('description');
-            descriptionInput.value = quill.root.innerHTML;
-        });
+        var descriptionQuill = createEditor('#description-editor', 'description', 'Enter service description...');
+        var requirementsQuill = createEditor('#requirements-editor', 'requirements', 'Enter service requirements...');
+
+
+
 
         // Also update textarea before form submit (as backup)
         var form = document.querySelector('form');
