@@ -5,7 +5,7 @@
         ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross'])],
       
         ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('service.by.slug', 'asp-4-hr')],
-        ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'homeland_security'])],
+        ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'handgun_carry_permit'])],
         ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter')],
         ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation')],
         ['name' => 'Dallas Law', 'url' => route('service.by.slug', 'dallas-law')],

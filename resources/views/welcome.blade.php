@@ -47,6 +47,10 @@
                             <span class="cert-bullet"></span>
                             <p>ALERRT Active Shooter Instructor</p>
                         </div>
+                        <div class="cert-item">
+                            <span class="cert-bullet"></span>
+                            <p>Tn Veterans Security Services and Training LLC formerly known as the Security Firm LLC</p>
+                        </div>
                     </div>
 
                     <!-- Subtext -->
