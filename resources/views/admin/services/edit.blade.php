@@ -101,7 +101,7 @@
             <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image</label>
             @if($service->image)
                 <div class="mb-2">
-                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="h-32 w-32 object-cover rounded">
+                    <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="h-32 w-32 object-cover rounded">
                 </div>
             @endif
             <input type="file" 
@@ -143,7 +143,7 @@
                    id="max_students" 
                    name="max_students" 
                    value="{{ old('max_students', $service->max_students) }}"
-                   min="1"
+                   max="100"
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <!-- Category Section -->

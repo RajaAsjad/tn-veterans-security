@@ -483,7 +483,7 @@
         <section class="sd-hero">
             <div class="sd-hero-bg">
                 @if ($service->image)
-                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}">
+                    <img src="{{ $service->image_url }}" alt="{{ $service->title }}">
                 @else
                     <img src="{{ asset('images/training-img-1.png') }}" alt="{{ $service->title }}">
                 @endif
@@ -500,13 +500,13 @@
         </section>
 
         {{-- Breadcrumb / back (below banner) --}}
-        <!-- <div class="border-b border-gray-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+          {{-- <div class="border-b border-gray-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
                 <div class="sd-container mx-auto py-3 sm:py-3.5">
                     <a href="{{ route('services') }}" class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-500 hover:text-[var(--primary-color)] transition-colors">
                         <i class="fas fa-arrow-left"></i> All training services
                     </a>
                 </div>
-            </div> -->
+            </div>   --}}
 
         {{-- Main + Sidebar --}}
         <section class="sd-section bg-[#f8fafc]">
@@ -551,6 +551,25 @@
 
                     {{-- Sidebar (Training details + sticky booking on lg) --}}
                     <div class="w-full lg:flex-[1_1_0] lg:min-w-0 order-1 lg:order-2">
+                        @php
+                            $schedulesForDetails = $upcomingSchedulesOverview ?? collect();
+                            $bookingSchedulesForAvailability = $bookingSchedules ?? collect();
+                            $totalOpenSeatsAcrossSessions = (int) $schedulesForDetails->sum(fn ($s) => $s->getAvailableSpots());
+                            $canBookThisService = $service->is_active && $bookingSchedulesForAvailability->isNotEmpty();
+                            $effectiveMinStudents = $schedulesForDetails->isNotEmpty()
+                                ? (int) $schedulesForDetails->min('min_students')
+                                : (int) ($service->min_students ?? 0);
+                            if ($effectiveMinStudents <= 0 && (int) ($service->min_students ?? 0) > 0) {
+                                $effectiveMinStudents = (int) $service->min_students;
+                            }
+                            $scheduleCapacityLabel = ! $service->is_active
+                                ? ['Coming soon', 'text-gray-500']
+                                : ($canBookThisService
+                                    ? ['Available', 'text-emerald-600']
+                                    : ($schedulesForDetails->isNotEmpty() && $totalOpenSeatsAcrossSessions === 0
+                                        ? ['Full', 'text-red-600']
+                                        : ['Not available for booking', 'text-red-600']));
+                        @endphp
                         {{-- Training details (badges) --}}
                         <div class="sd-card p-5 sm:p-6 lg:p-8 mb-6">
                             <h2 class="sd-section-title text-gray-900 font-bold uppercase tracking-wide mb-4 sm:mb-5 pb-3 border-b-2 border-[var(--primary-color)]"
@@ -568,10 +587,19 @@
                                     <span class="sd-badge sd-badge-green"><i class="fas fa-clipboard-check"></i> In-person
                                         testing</span>
                                 @endif
-                                <span
-                                    class="sd-badge {{ $service->is_active ? 'sd-badge-green' : 'bg-gray-100 text-gray-600' }}"><i
-                                        class="fas fa-circle-check"></i>
-                                    {{ $service->is_active ? 'Available' : 'Coming soon' }}</span>
+                                @if (! $service->is_active)
+                                    <span class="sd-badge bg-gray-100 text-gray-600"><i class="fas fa-clock"></i> Coming
+                                        soon</span>
+                                @elseif ($canBookThisService)
+                                    <span class="sd-badge sd-badge-green"><i class="fas fa-circle-check"></i>
+                                        Available for booking</span>
+                                @elseif ($schedulesForDetails->isNotEmpty() && $totalOpenSeatsAcrossSessions === 0)
+                                    <span class="sd-badge bg-red-100 text-red-700"><i class="fas fa-users-slash"></i>
+                                        Full</span>
+                                @else
+                                    <span class="sd-badge bg-red-100 text-red-700"><i class="fas fa-calendar-xmark"></i>
+                                        Not available for booking</span>
+                                @endif
                             </div>
                         </div>
                         @if ($service->requirements)
@@ -585,50 +613,25 @@
                     @endif
                         <div class="w-full lg:flex-[2_1_0] lg:min-w-0 sd-card p-5 sm:p-6 lg:p-8 mt-6 sm:mt-8 lg:mt-10">
                             <h2 class="sd-section-title text-gray-900 font-bold uppercase tracking-wide mb-4 sm:mb-6 pb-3 border-b-2 border-[var(--primary-color)]"
-                                style="font-family: var(--font-display);">All service details</h2>
+                                style="font-family: var(--font-display);">Class schedule details</h2>
                             <div class="sd-detail-grid">
-                                @if ($service->categories && count($service->categories) > 0)
-                                    <div class="sd-detail-row"><span class="sd-detail-label">Categories</span><span
-                                            class="sd-detail-value">{{ collect($service->categories)->map(fn($c) => $catLabels[$c] ?? ucfirst(str_replace('_', ' ', $c)))->implode(', ') }}</span>
-                                    </div>
-                                @endif
-                                @if ($service->subcategory)
-                                    <div class="sd-detail-row"><span class="sd-detail-label">Subcategory</span><span
-                                            class="sd-detail-value">{{ $service->subcategory }}</span></div>
-                                @endif
                                 @if ($service->price)
                                     <div class="sd-detail-row"><span class="sd-detail-label">Price</span><span
                                             class="sd-detail-value"
                                             style="color: var(--sd-primary);">${{ number_format($service->price, 2) }} /
-                                            student</span></div>
+                                           per student</span></div>
                                 @endif
-                                @if ($service->deposit_amount)
-                                    <div class="sd-detail-row"><span class="sd-detail-label">Deposit</span><span
-                                            class="sd-detail-value text-emerald-600">${{ number_format($service->deposit_amount, 2) }}
-                                            / student</span></div>
-                                @endif
-                                @if ($service->duration_hours)
-                                    <div class="sd-detail-row"><span class="sd-detail-label">Duration</span><span
-                                            class="sd-detail-value">{{ $service->duration_hours }}
-                                            {{ Str::plural('hour', $service->duration_hours) }}</span></div>
-                                @endif
-                                {{-- @if ($service->max_students)
-                            <div class="sd-detail-row"><span class="sd-detail-label">Max students</span><span class="sd-detail-value" >{{ $service->max_students }}</span></div>
-                            @endif --}}
-                                @if ($service->max_students !== null && $service->max_students > 0)
-                                    @if (($service->current_students ?? 0) >= $service->max_students)
-                                    <div class="sd-detail-row"><span class="sd-detail-label">Available Seats</span><span
-                                        class="sd-detail-value text-danger">Class Full</span>
-                                    </div>
+                                <div class="sd-detail-row"><span class="sd-detail-label">Available seats</span>
+                                    @if ($schedulesForDetails->isNotEmpty())
+                                        <span
+                                            class="sd-detail-value {{ $totalOpenSeatsAcrossSessions === 0 ? 'text-red-600' : '' }}">{{ $totalOpenSeatsAcrossSessions === 0 ? 'Class full' : $totalOpenSeatsAcrossSessions }}</span>
                                     @else
-                                    <div class="sd-detail-row"><span class="sd-detail-label">Available Seats</span><span
-                                        class="sd-detail-value">{{ $service->max_students - ($service->current_students ?? 0) }}</span>
-                                    </div>
+                                        <span class="sd-detail-value text-red-600">No sessions scheduled</span>
                                     @endif
-                                @endif
-                                @if ($service->min_students)
+                                </div>
+                                @if ($effectiveMinStudents > 0)
                                     <div class="sd-detail-row"><span class="sd-detail-label">Min students</span><span
-                                            class="sd-detail-value">{{ $service->min_students }}</span></div>
+                                            class="sd-detail-value">{{ $effectiveMinStudents }}</span></div>
                                 @endif
                                 @if ($service->class_type)
                                     <div class="sd-detail-row"><span class="sd-detail-label">Class type</span><span
@@ -641,6 +644,28 @@
                                 <div class="sd-detail-row"><span class="sd-detail-label">In-person testing</span><span
                                         class="sd-detail-value">{{ $service->testing_in_person ? 'Yes' : 'No' }}</span>
                                 </div>
+                                <div class="sd-detail-row"><span class="sd-detail-label">Status</span><span
+                                        class="sd-detail-value {{ $scheduleCapacityLabel[1] }}">{{ $scheduleCapacityLabel[0] }}</span>
+                                </div>
+                                @if ($service->categories && count($service->categories) > 0)
+                                    <div class="sd-detail-row"><span class="sd-detail-label">Categories</span><span
+                                            class="sd-detail-value">{{ collect($service->categories)->map(fn ($c) => $catLabels[$c] ?? ucfirst(str_replace('_', ' ', $c)))->implode(', ') }}</span>
+                                    </div>
+                                @endif
+                                @if ($service->subcategory)
+                                    <div class="sd-detail-row"><span class="sd-detail-label">Subcategory</span><span
+                                            class="sd-detail-value">{{ $service->subcategory }}</span></div>
+                                @endif
+                                @if ($service->deposit_amount)
+                                    <div class="sd-detail-row"><span class="sd-detail-label">Deposit</span><span
+                                            class="sd-detail-value text-emerald-600">${{ number_format($service->deposit_amount, 2) }}
+                                            / student</span></div>
+                                @endif
+                                @if ($service->duration_hours)
+                                    <div class="sd-detail-row"><span class="sd-detail-label">Duration</span><span
+                                            class="sd-detail-value">{{ $service->duration_hours }}
+                                            {{ Str::plural('hour', $service->duration_hours) }}</span></div>
+                                @endif
                                 @if ($service->requires_dallas_law)
                                     <div class="sd-detail-row"><span class="sd-detail-label">Requires Dallas Law</span><span
                                             class="sd-detail-value text-amber-600">Yes</span></div>
@@ -649,10 +674,48 @@
                                     <div class="sd-detail-row"><span class="sd-detail-label">Requires Active
                                             Shooter</span><span class="sd-detail-value text-amber-600">Yes</span></div>
                                 @endif
-                                <div class="sd-detail-row"><span class="sd-detail-label">Status</span><span
-                                        class="sd-detail-value {{ $service->is_active ? 'text-emerald-600' : 'text-gray-500' }}">{{ $service->is_active ? 'Available' : 'Coming soon' }}</span>
-                                </div>
                             </div>
+
+                            @if ($schedulesForDetails->isNotEmpty())
+                                <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide mt-6 mb-3"
+                                    style="font-family: var(--font-display);">Upcoming class sessions</h3>
+                                <div class="space-y-3">
+                                    @foreach ($schedulesForDetails as $session)
+                                        @php
+                                            $sessionSpots = $session->getAvailableSpots();
+                                            $sessionLoc = $session->location ?: 'No specific location';
+                                            $timeStart = \Carbon\Carbon::parse($session->start_time)->format('g:i A');
+                                            $timeEnd = $session->end_time
+                                                ? ' – ' . \Carbon\Carbon::parse($session->end_time)->format('g:i A')
+                                                : '';
+                                        @endphp
+                                        <div
+                                            class="rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-3 sm:px-4 text-sm">
+                                            <div class="font-semibold text-gray-900">
+                                                {{ $session->class_date->format('l, F j, Y') }}
+                                                <span class="font-normal text-slate-600">· {{ $timeStart }}{{ $timeEnd }}</span>
+                                            </div>
+                                            <div class="mt-2 grid gap-1.5 text-slate-600 sm:grid-cols-2">
+                                                <div><span class="text-slate-500">Location</span> <span
+                                                        class="font-medium text-gray-800">{{ $sessionLoc }}</span></div>
+                                                <div><span class="text-slate-500">Open seats</span> <span
+                                                        class="font-medium {{ $sessionSpots === 0 ? 'text-red-600' : 'text-gray-800' }}">{{ $sessionSpots === 0 ? 'Full' : $sessionSpots }}</span>
+                                                </div>
+                                                @if ($session->instructor)
+                                                    <div class="sm:col-span-2"><span class="text-slate-500">Instructor</span>
+                                                        <span class="font-medium text-gray-800">{{ $session->instructor }}</span>
+                                                    </div>
+                                                @endif
+                                                @if ($session->room)
+                                                    <div><span class="text-slate-500">Room</span> <span
+                                                            class="font-medium text-gray-800">{{ $session->room }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                         <div class="sd-cta-box mt-6 sm:mt-8 lg:mt-10">
                             <h3 class="text-base sm:text-lg font-bold text-white uppercase tracking-wide mb-1.5 sm:mb-2"
@@ -907,7 +970,7 @@
                                 class="sd-rel-card group block w-full">
                                 <div class="sd-rel-img">
                                     @if ($rel->image)
-                                        <img src="{{ asset('storage/' . $rel->image) }}" alt="{{ $rel->title }}">
+                                        <img src="{{ $rel->image_url }}" alt="{{ $rel->title }}">
                                     @else
                                         <img src="{{ asset('images/training-img-' . (($index % 6) + 1) . '.png') }}"
                                             alt="{{ $rel->title }}">

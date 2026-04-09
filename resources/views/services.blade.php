@@ -82,7 +82,7 @@
                                     <!-- Image Section -->
                                     <div class="relative h-[280px] overflow-hidden">
                                         @if($service->image)
-                                            <img src="{{ asset('storage/' . $service->image) }}" 
+                                            <img src="{{ $service->image_url }}" 
                                                  alt="{{ $service->title }}" 
                                                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                                         @else

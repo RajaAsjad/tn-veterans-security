@@ -56,11 +56,20 @@
     .destop-nav-link {
         @apply hover:text-[var(--primary-color)] transition-colors;
     }
+
+    .destop-nav-link.nav-link-active {
+        @apply text-[var(--primary-color)] font-semibold;
+    }
+
    .mobile-nav-links {
     @apply text-[18px] font-normal p-2;
    }
    .mobile-nav-links:hover {
     @apply text-[var(--primary-color)] transition-colors;
+   }
+
+   .mobile-nav-links.nav-link-active {
+       @apply text-[var(--primary-color)] font-semibold bg-emerald-50 rounded-lg;
    }
    
     .footer-ul {

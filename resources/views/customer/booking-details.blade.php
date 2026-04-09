@@ -7,16 +7,14 @@
     <a href="{{ route('customer.bookings') }}" class="hover:underline inline-flex items-center gap-2 mb-4 transition-colors" style="color: #3AA62C;" onmouseover="this.style.color='#175B0E'" onmouseout="this.style.color='#3AA62C'">
         <i class="fas fa-arrow-left"></i> Back to Bookings
     </a>
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-gray-800">Booking Details</h1>
-        <span class="px-4 py-2 inline-flex text-sm leading-5 font-semibold rounded-full
-            @if($booking->status == 'pending') bg-yellow-100 text-yellow-800
-            @elseif($booking->status == 'confirmed') bg-green-100 text-green-800
-            @elseif($booking->status == 'completed') bg-blue-100 text-blue-800
-            @else bg-red-100 text-red-800
-            @endif">
-            {{ ucfirst($booking->status) }}
-        </span>
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Booking Details</h1>
+    <div class="px-4 py-3 rounded mb-6 font-semibold
+        @if($booking->status == 'pending') bg-yellow-100 border border-yellow-400 text-yellow-800
+        @elseif($booking->status == 'confirmed') bg-green-100 border border-green-400 text-green-700
+        @elseif($booking->status == 'completed') bg-blue-100 border border-blue-400 text-blue-700
+        @else bg-red-100 border border-red-400 text-red-700
+        @endif">
+        {{ ucfirst($booking->status) }}
     </div>
 </div>
 
@@ -41,7 +39,7 @@
             <div class="flex gap-6">
                 @if($booking->service->image)
                 <div class="flex-shrink-0">
-                    <img src="{{ asset('storage/' . $booking->service->image) }}" 
+                    <img src="{{ $booking->service->image_url }}" 
                          alt="{{ $booking->service->title }}" 
                          class="w-32 h-32 object-cover rounded-lg">
                 </div>
@@ -174,7 +172,7 @@
     <!-- Sidebar -->
     <div class="lg:col-span-1 space-y-6">
         <!-- Payment Summary Card -->
-        <div class="bg-white rounded-lg shadow p-6 sticky top-6">
+        <div class="bg-white rounded-lg shadow p-6 top-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Payment Summary</h2>
             
             <div class="space-y-4 mb-6">

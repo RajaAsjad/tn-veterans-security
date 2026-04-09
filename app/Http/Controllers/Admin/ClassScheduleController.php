@@ -13,7 +13,7 @@ class ClassScheduleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Group schedules by service_id
         $schedules = ClassSchedule::with('service')
@@ -22,7 +22,15 @@ class ClassScheduleController extends Controller
             ->get()
             ->groupBy('service_id');
 
-        return view('admin.class-schedules.index', compact('schedules'));
+        $expandServiceKey = null;
+        if ($request->filled('expand_service')) {
+            $wanted = (int) $request->query('expand_service');
+            if ($wanted > 0) {
+                $expandServiceKey = $schedules->keys()->first(fn ($key) => (int) $key === $wanted);
+            }
+        }
+
+        return view('admin.class-schedules.index', compact('schedules', 'expandServiceKey'));
     }
 
     /**

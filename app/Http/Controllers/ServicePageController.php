@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Service;
 use App\Models\ClassSchedule;
+use App\Models\Service;
 
 class ServicePageController extends Controller
 {
@@ -54,6 +54,15 @@ class ServicePageController extends Controller
             ->orderBy('start_time')
             ->get();
 
+        /** All upcoming sessions (including full) for accurate seat totals on the service page. */
+        $upcomingSchedulesOverview = ClassSchedule::query()
+            ->where('service_id', $service->id)
+            ->where('class_date', '>=', now()->toDateString())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->orderBy('class_date')
+            ->orderBy('start_time')
+            ->get();
+
         $bookingLocations = $bookingSchedules
             ->pluck('location')
             ->map(fn ($loc) => $loc ?: 'No Specific Location')
@@ -66,7 +75,8 @@ class ServicePageController extends Controller
             'relatedServices',
             'linkedServices',
             'bookingLocations',
-            'bookingSchedules'
+            'bookingSchedules',
+            'upcomingSchedulesOverview'
         ));
     }
 }

@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
+    /**
+     * Class images on disk live under public/{this path}. The `image` column stores the filename only for new rows.
+     */
+    public const CLASS_IMAGE_PUBLIC_PATH = 'assets/images/classes';
+
     protected $guarded = ['id'];
 
     protected $casts = [
@@ -61,11 +66,33 @@ class Service extends Model
     }
 
     /**
+     * Public URL for the service image (filename-only DB values, full assets/ path, or legacy storage paths).
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image) {
+            return null;
+        }
+
+        $path = $this->image;
+        if (str_starts_with($path, 'assets/')) {
+            return asset($path);
+        }
+
+        if (str_contains($path, '/')) {
+            return asset('storage/'.$path);
+        }
+
+        return asset(self::CLASS_IMAGE_PUBLIC_PATH.'/'.basename($path));
+    }
+
+    /**
      * Primary category (first of multiple) for backward compatibility.
      */
     public function getCategoryAttribute(): ?string
     {
         $cats = $this->categories ?? [];
+
         return is_array($cats) && count($cats) > 0 ? $cats[0] : null;
     }
 
@@ -112,6 +139,7 @@ class Service extends Model
     public function getNextAvailableDate()
     {
         $schedule = $this->availableSchedules()->first();
+
         return $schedule ? $schedule->class_date : null;
     }
 }

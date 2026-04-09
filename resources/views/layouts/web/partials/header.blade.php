@@ -1,14 +1,29 @@
 <!-- Premium Header Section -->
 @php
     $trainingCategories = [
-        ['name' => 'NRA', 'url' => route('services', ['category' => 'nra'])],
-        ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross'])],
-      
-        ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('service.by.slug', 'asp-4-hr')],
-        ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'handgun_carry_permit'])],
-        ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter')],
-        ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation')],
-        ['name' => 'Dallas Law', 'url' => route('service.by.slug', 'dallas-law')],
+        ['name' => 'NRA', 'url' => route('services', ['category' => 'nra']), 'match' => ['type' => 'services', 'category' => 'nra']],
+        ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross']), 'match' => ['type' => 'services', 'category' => 'red_cross']],
+        ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('service.by.slug', 'asp-4-hr'), 'match' => ['type' => 'slug', 'slug' => 'asp-4-hr']],
+        ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'handgun_carry_permit']), 'match' => ['type' => 'services', 'category' => 'handgun_carry_permit']],
+        ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter'), 'match' => ['type' => 'slug', 'slug' => 'active-shooter']],
+        ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation'), 'match' => ['type' => 'slug', 'slug' => 'forced-science-de-escalation']],
+        ['name' => 'Dallas Law', 'url' => route('service.by.slug', 'dallas-law'), 'match' => ['type' => 'slug', 'slug' => 'dallas-law']],
+    ];
+    $path = request()->path();
+    $navActive = [
+        'home' => $path === '' || $path === '/',
+        'about' => request()->routeIs('about'),
+        'training' => request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
+            || str_starts_with($path, 'training-services'),
+        'affiliated' => request()->routeIs('affiliated-services'),
+        'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']),
+        'testimonials' => request()->routeIs('testimonials'),
+        'contact' => request()->routeIs('contact'),
+        'login' => request()->routeIs('customer.login'),
+        'register' => request()->routeIs('customer.register'),
+        'dashboard' => request()->routeIs('customer.*')
+            && ! request()->routeIs(['customer.login', 'customer.register']),
+        'services_all' => request()->routeIs('services') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];
     $servicesAffiliates = [
         ['name' => 'NRA', 'url' => '#', 'external' => true],
@@ -54,6 +69,16 @@
         padding-left: 2rem;
         color: var(--primary-color);
     }
+    .category-item.category-item-active {
+        background-color: rgba(58, 166, 44, 0.1);
+        color: var(--primary-color);
+        font-weight: 600;
+        border-left: 3px solid var(--primary-color);
+        padding-left: calc(1.5rem - 3px);
+    }
+    .category-item.category-item-active:hover {
+        padding-left: calc(2rem - 3px);
+    }
     .mobile-sub-menu {
         max-height: 0;
         overflow: hidden;
@@ -88,12 +113,12 @@
 
             <!-- Desktop Navigation Links (Middle/Right) -->
             <nav class="desktop-nav hidden lg:flex items-center space-x-6 text-[15px] font-medium text-[var(--text-color)]">
-                <a href="{{ url('/') }}" class="destop-nav-link">Home</a>
-                <a href="{{ route('about') }}" class="destop-nav-link">About Us</a>
+                <a href="{{ url('/') }}" class="destop-nav-link {{ $navActive['home'] ? 'nav-link-active' : '' }}">Home</a>
+                <a href="{{ route('about') }}" class="destop-nav-link {{ $navActive['about'] ? 'nav-link-active' : '' }}">About Us</a>
                 
                 <!-- Training Services with Mega Menu -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('services') }}" class="destop-nav-link flex items-center gap-1 py-8">
+                    <a href="{{ route('services') }}" class="destop-nav-link flex items-center gap-1 py-8 {{ $navActive['training'] ? 'nav-link-active' : '' }}">
                         Training & Classes
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -103,7 +128,15 @@
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
                             @foreach($trainingCategories as $cat)
-                                <a href="{{ $cat['url'] }}" class="category-item {{ $cat['name'] === 'Dallas Law' ? 'dallas-law-trigger' : ($cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '') }}">
+                                @php
+                                    $catItemActive = false;
+                                    if (($cat['match']['type'] ?? '') === 'services') {
+                                        $catItemActive = request()->routeIs('services') && request('category') === ($cat['match']['category'] ?? null);
+                                    } elseif (($cat['match']['type'] ?? '') === 'slug') {
+                                        $catItemActive = request()->routeIs('service.by.slug') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
+                                    }
+                                @endphp
+                                <a href="{{ $cat['url'] }}" class="category-item {{ $catItemActive ? 'category-item-active' : '' }} {{ $cat['name'] === 'Dallas Law' ? 'dallas-law-trigger' : ($cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '') }}">
                                     {{ $cat['name'] }}
                                 </a>
                             @endforeach
@@ -113,8 +146,8 @@
 
                 <!-- Services dropdown (NRA, ASP, Red Cross, US Law Shield) -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('affiliated-services') }}" class="destop-nav-link">
-                    <span class="destop-nav-link flex items-center gap-1 py-8 cursor-default">
+                    <a href="{{ route('affiliated-services') }}" class="destop-nav-link {{ $navActive['affiliated'] ? 'nav-link-active' : '' }}">
+                    <span class="destop-nav-link flex items-center gap-1 py-8 cursor-default {{ $navActive['affiliated'] ? 'nav-link-active' : '' }}">
                     Affiliated
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -135,7 +168,7 @@
 
                 <!-- Security Training with dropdown (Initial Security, Renewals) -->
                 <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('security-training') }}" class="destop-nav-link flex items-center gap-1 py-8 cursor-default">
+                    <a href="{{ route('security-training') }}" class="destop-nav-link flex items-center gap-1 py-8 cursor-default {{ $navActive['security'] ? 'nav-link-active' : '' }}">
                         Security Training
 
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,26 +177,26 @@
                     </a>
                     <div class="dropdown-simple">
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
-                            <a href="{{ route('intial-security') }}" class="category-item">Initial Security</a>
-                            <a href="{{ route('renewals') }}" class="category-item">Renewals</a>
+                            <a href="{{ route('intial-security') }}" class="category-item {{ request()->routeIs('intial-security') ? 'category-item-active' : '' }}">Initial Security</a>
+                            <a href="{{ route('renewals') }}" class="category-item {{ request()->routeIs('renewals') ? 'category-item-active' : '' }}">Renewals</a>
                         </div>
                     </div>
                 </div>
-                <a href="{{ route('testimonials') }}" class="destop-nav-link">Testimonials</a>
-                <a href="{{ route('contact') }}" class="destop-nav-link">Contact Us</a>
+                <a href="{{ route('testimonials') }}" class="destop-nav-link {{ $navActive['testimonials'] ? 'nav-link-active' : '' }}">Testimonials</a>
+                <a href="{{ route('contact') }}" class="destop-nav-link {{ $navActive['contact'] ? 'nav-link-active' : '' }}">Contact Us</a>
             </nav>
 
             <!-- Desktop Button (Far Right) -->
             <div class="hidden lg:flex items-center gap-4">
                 @auth('customer')
-                    <a href="{{ route('customer.dashboard') }}" class="destop-nav-link">Dashboard</a>
+                    <a href="{{ route('customer.dashboard') }}" class="destop-nav-link {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
                     <form method="POST" action="{{ route('customer.logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="destop-nav-link">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('customer.login') }}" class="destop-nav-link">Login</a>
-                    <a href="{{ route('customer.register') }}" class="btn primary-button">
+                    <a href="{{ route('customer.login') }}" class="destop-nav-link {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
+                    <a href="{{ route('customer.register') }}" class="btn primary-button {{ $navActive['register'] ? 'ring-2 ring-offset-2 ring-[var(--primary-color)]' : '' }}">
                         Sign Up
                     </a>
                 @endauth
@@ -179,12 +212,12 @@
     <!-- Mobile Menu Vertical List -->
     <div id="mobileMenu" class="hidden lg:hidden   overflow-hidden transition-all duration-300">
         <nav class="flex flex-col p-6 space-y-1 mt-[60px]">
-            <a href="{{ url('/') }}" class="mobile-nav-links">Home</a>
-            <a href="{{ route('about') }}" class="mobile-nav-links">About Us</a>
+            <a href="{{ url('/') }}" class="mobile-nav-links {{ $navActive['home'] ? 'nav-link-active' : '' }}">Home</a>
+            <a href="{{ route('about') }}" class="mobile-nav-links {{ $navActive['about'] ? 'nav-link-active' : '' }}">About Us</a>
             
             <!-- Mobile Training Services Accordion -->
             <div class="mobile-nav-group">
-                <button id="mobileServiceToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none">
+                <button id="mobileServiceToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['training'] ? 'nav-link-active' : '' }}">
                     <span>Training Services</span>
                     <svg id="mobileServiceIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -193,11 +226,19 @@
                 <div id="mobileServiceMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
                         @foreach($trainingCategories as $cat)
-                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color) {{ $cat['name'] === 'Dallas Law' ? 'dallas-law-trigger' : ($cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '') }}">
+                            @php
+                                $mCatItemActive = false;
+                                if (($cat['match']['type'] ?? '') === 'services') {
+                                    $mCatItemActive = request()->routeIs('services') && request('category') === ($cat['match']['category'] ?? null);
+                                } elseif (($cat['match']['type'] ?? '') === 'slug') {
+                                    $mCatItemActive = request()->routeIs('service.by.slug') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
+                                }
+                            @endphp
+                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $mCatItemActive ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }} {{ $cat['name'] === 'Dallas Law' ? 'dallas-law-trigger' : ($cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '') }}">
                                 {{ $cat['name'] }}
                             </a>
                         @endforeach
-                        <a href="{{ route('services') }}" class="mobile-nav-links text-[16px]! py-3 px-4 font-bold text-(--primary-color)">
+                        <a href="{{ route('services') }}" class="mobile-nav-links text-[16px]! py-3 px-4 font-bold {{ $navActive['services_all'] ? 'nav-link-active' : 'text-(--primary-color)' }}">
                             View All Services →
                         </a>
                     </div>
@@ -207,7 +248,7 @@
             <!-- Mobile Services (affiliates) accordion -->
             <div class="mobile-nav-group">
 
-                <button id="mobileServicesToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none">
+                <button id="mobileServicesToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['affiliated'] ? 'nav-link-active' : '' }}">
                     <span>Services</span>
                     <svg id="mobileServicesIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -226,7 +267,7 @@
 
             <!-- Mobile Security Training accordion -->
             <div class="mobile-nav-group">
-                <button id="mobileSecurityTrainingToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none">
+                <button id="mobileSecurityTrainingToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['security'] ? 'nav-link-active' : '' }}">
                     <span>Security Training</span>
                     <svg id="mobileSecurityTrainingIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -234,22 +275,22 @@
                 </button>
                 <div id="mobileSecurityTrainingMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
-                        <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Initial Security</a>
-                        <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)">Renewals</a>
+                        <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('intial-security') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Initial Security</a>
+                        <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('renewals') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Renewals</a>
                     </div>
                 </div>
             </div>
-            <a href="{{ route('testimonials') }}" class="mobile-nav-links">Testimonials</a>
-            <a href="{{ route('contact') }}" class="mobile-nav-links">Contact Us</a>
+            <a href="{{ route('testimonials') }}" class="mobile-nav-links {{ $navActive['testimonials'] ? 'nav-link-active' : '' }}">Testimonials</a>
+            <a href="{{ route('contact') }}" class="mobile-nav-links {{ $navActive['contact'] ? 'nav-link-active' : '' }}">Contact Us</a>
             @auth('customer')
-                <a href="{{ route('customer.dashboard') }}" class="mobile-nav-links">Dashboard</a>
+                <a href="{{ route('customer.dashboard') }}" class="mobile-nav-links {{ $navActive['dashboard'] ? 'nav-link-active' : '' }}">Dashboard</a>
                 <form method="POST" action="{{ route('customer.logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="mobile-nav-links w-full text-left">Logout</button>
                 </form>
             @else
-                <a href="{{ route('customer.login') }}" class="mobile-nav-links">Login</a>
-                <a href="{{ route('customer.register') }}" class="mobile-nav-links">Sign Up</a>
+                <a href="{{ route('customer.login') }}" class="mobile-nav-links {{ $navActive['login'] ? 'nav-link-active' : '' }}">Login</a>
+                <a href="{{ route('customer.register') }}" class="mobile-nav-links {{ $navActive['register'] ? 'nav-link-active' : '' }}">Sign Up</a>
             @endauth
             <div class="pt-6">
                 <a href="{{ route('contact') }}" class="block w-full bg-(--primary-color) text-white text-center py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">

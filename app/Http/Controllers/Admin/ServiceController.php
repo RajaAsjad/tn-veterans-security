@@ -6,23 +6,43 @@ use App\Http\Controllers\Controller;
 use App\Models\ClassSchedule;
 use App\Models\Service;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class ServiceController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request): View|JsonResponse
     {
-        $services = Service::withCount(['classSchedules', 'bookings'])
+        $query = Service::query()
+            ->withCount(['classSchedules', 'bookings'])
             ->orderBy('order')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        return view('admin.services.index', compact('services'));
+            ->orderBy('created_at', 'desc');
+
+        $search = $request->string('q')->trim()->value();
+        if ($search !== '') {
+            $query->where('title', 'like', '%'.$search.'%');
+        }
+
+        $services = $query->get();
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('admin.services.partials.table-rows', [
+                    'services' => $services,
+                    'search' => $search,
+                ])->render(),
+            ]);
+        }
+
+        return view('admin.services.index', compact('services', 'search'));
     }
 
     /**
@@ -31,11 +51,12 @@ class ServiceController extends Controller
     public function create()
     {
         $allServices = Service::where('is_active', true)->orderBy('order')->orderBy('title')->get();
+
         return view('admin.services.create', compact('allServices'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created service. Images are saved under public/assets/images/classes.
      */
     public function store(Request $request)
     {
@@ -54,7 +75,7 @@ class ServiceController extends Controller
             'is_active' => 'boolean',
             // Category fields (multiple)
             'categories' => 'nullable|array',
-            'categories.*' => 'string|in:' . implode(',', array_keys(config('service_categories', []))),
+            'categories.*' => 'string|in:'.implode(',', array_keys(config('service_categories', []))),
             'subcategory' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'requires_dallas_law' => 'boolean',
@@ -82,7 +103,7 @@ class ServiceController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $validated['image'] = $this->storeUploadedClassImage($request->file('image'));
         }
 
         $validated['slug'] = $request->filled('slug') ? strtolower(trim($request->slug)) : null;
@@ -111,7 +132,7 @@ class ServiceController extends Controller
         }
 
         return redirect()->route('admin.services.index')
-            ->with('success', 'Service created successfully.');
+            ->with('success', 'Class created successfully.');
     }
 
     /**
@@ -131,17 +152,18 @@ class ServiceController extends Controller
             $q->orderBy('class_date')->orderBy('start_time');
         }]);
         $allServices = Service::where('is_active', true)->where('id', '!=', $service->id)->orderBy('order')->orderBy('title')->get();
+
         return view('admin.services.edit', compact('service', 'allServices'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified service. New images are saved under public/assets/images/classes.
      */
     public function update(Request $request, Service $service)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:100|unique:services,slug,' . $service->id . '|regex:/^[a-z0-9\-]+$/',
+            'slug' => 'nullable|string|max:100|unique:services,slug,'.$service->id.'|regex:/^[a-z0-9\-]+$/',
             'short_description' => 'nullable|string|max:500',
             'requirements' => 'nullable|string',
             'sub_titles' => 'nullable|array',
@@ -154,7 +176,7 @@ class ServiceController extends Controller
             'is_active' => 'boolean',
             // Category fields (multiple)
             'categories' => 'nullable|array',
-            'categories.*' => 'string|in:' . implode(',', array_keys(config('service_categories', []))),
+            'categories.*' => 'string|in:'.implode(',', array_keys(config('service_categories', []))),
             'subcategory' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'requires_dallas_law' => 'boolean',
@@ -182,11 +204,8 @@ class ServiceController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            // Delete old image
-            if ($service->image) {
-                Storage::disk('public')->delete($service->image);
-            }
-            $validated['image'] = $request->file('image')->store('services', 'public');
+            $this->deleteStoredServiceImage($service->image);
+            $validated['image'] = $this->storeUploadedClassImage($request->file('image'));
         }
 
         $validated['slug'] = $request->filled('slug') ? strtolower(trim($request->slug)) : null;
@@ -216,7 +235,7 @@ class ServiceController extends Controller
         $service->linkedServices()->sync($sync);
 
         return redirect()->route('admin.services.index')
-            ->with('success', 'Service updated successfully.');
+            ->with('success', 'Class updated successfully.');
     }
 
     /**
@@ -224,15 +243,12 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        // Delete image if exists
-        if ($service->image) {
-            Storage::disk('public')->delete($service->image);
-        }
+        $this->deleteStoredServiceImage($service->image);
 
         $service->delete();
 
         return redirect()->route('admin.services.index')
-            ->with('success', 'Service deleted successfully.');
+            ->with('success', 'Class deleted successfully.');
     }
 
     /**
@@ -362,6 +378,53 @@ class ServiceController extends Controller
                     'status' => 'scheduled',
                 ]));
             }
+        }
+    }
+
+    /**
+     * Save an uploaded class image under public/assets/images/classes. Returns the filename for the DB column.
+     */
+    protected function storeUploadedClassImage(UploadedFile $file): string
+    {
+        $directory = public_path(Service::CLASS_IMAGE_PUBLIC_PATH);
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg');
+        $filename = now()->format('Y-m-d-His').'-'.Str::random(8).'.'.$extension;
+        $file->move($directory, $filename);
+
+        return $filename;
+    }
+
+    /**
+     * Remove a service image from disk (filename in public class folder, full assets/ path, or legacy storage).
+     */
+    protected function deleteStoredServiceImage(?string $storedPath): void
+    {
+        if ($storedPath === null || $storedPath === '') {
+            return;
+        }
+
+        if (str_starts_with($storedPath, 'assets/')) {
+            $fullPath = public_path($storedPath);
+            if (is_file($fullPath)) {
+                unlink($fullPath);
+            }
+
+            return;
+        }
+
+        if (str_contains($storedPath, '/')) {
+            Storage::disk('public')->delete($storedPath);
+
+            return;
+        }
+
+        $fullPath = public_path(Service::CLASS_IMAGE_PUBLIC_PATH.'/'.basename($storedPath));
+        if (is_file($fullPath)) {
+            unlink($fullPath);
         }
     }
 }

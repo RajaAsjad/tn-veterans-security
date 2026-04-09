@@ -37,7 +37,7 @@
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
                             @if($service->image)
                                 <div class="relative h-[200px] overflow-hidden">
-                                    <img src="{{ asset('storage/' . $service->image) }}" 
+                                    <img src="{{ $service->image_url }}" 
                                          alt="{{ $service->title }}" 
                                          class="w-full h-full object-cover">
                                 </div>

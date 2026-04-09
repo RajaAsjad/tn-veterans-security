@@ -55,7 +55,7 @@
                                class="training-card block cursor-pointer hover:opacity-90 transition-opacity group h-full">
                                 <div class="training-card-img-div">
                                     @if($service->image)
-                                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                        <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="training-card-img">
                                     @else
                                         <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
                                     @endif
