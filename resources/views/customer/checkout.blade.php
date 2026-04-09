@@ -50,10 +50,13 @@
                     <span class="text-gray-600">Number of students:</span>
                     <span class="font-semibold text-gray-900">{{ $numStudents }}</span>
                 </div>
-                @if(!empty($inquiry['preferred_date']))
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Preferred date:</span>
-                    <span class="font-semibold text-gray-900">{{ date('M j, Y', strtotime($inquiry['preferred_date'])) }}</span>
+                @if(!empty($selectedSchedule))
+                <div class="flex justify-between items-start gap-4">
+                    <span class="text-gray-600 shrink-0">Class session:</span>
+                    <span class="font-semibold text-gray-900 text-right">
+                        {{ $selectedSchedule->class_date->format('D, M j, Y') }}
+                        · {{ \Carbon\Carbon::parse($selectedSchedule->start_time)->format('g:i A') }} 
+                    </span>
                 </div>
                 @endif
                 @if(!empty($inquiry['location']) && $inquiry['location'] !== 'Any location')

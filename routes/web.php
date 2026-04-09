@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\QuickBooksController;
 use App\Http\Controllers\ServicePageController;
+use App\Models\ClassSchedule;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 Route::get('/', function () {
     // Get services (grouped structure: each service can appear in multiple categories)
@@ -89,14 +92,68 @@ Route::get('/training-services/{id}', [ServicePageController::class, 'showById']
 Route::get('/service/{slug}', [ServicePageController::class, 'showBySlug'])->name('service.by.slug')->where('slug', '[a-z0-9\-]+');
 
 Route::post('/training-services/{service}/booking-inquiry', function (\App\Models\Service $service, \Illuminate\Http\Request $request) {
-    $validated = $request->validate([
+    $bookableCount = ClassSchedule::where('service_id', $service->id)
+        ->where('status', 'scheduled')
+        ->where('class_date', '>=', now()->toDateString())
+        ->whereRaw('current_students < max_students')
+        ->count();
+
+    $rules = [
         'name' => 'required|string|max:255',
         'email' => 'required|email',
         'phone' => 'nullable|string|max:50',
-        'number_of_students' => 'nullable|integer|min:1|max:20',
+        'number_of_students' => 'nullable|integer|min:1|max:100',
         'location' => 'nullable|string|max:255',
-        'preferred_date' => 'nullable|date|after_or_equal:today',
-    ]);
+    ];
+
+    if ($bookableCount > 0) {
+        $rules['class_schedule_id'] = [
+            'required',
+            'integer',
+            Rule::exists('class_schedules', 'id')->where(function ($q) use ($service) {
+                $q->where('service_id', $service->id)
+                    ->where('status', 'scheduled')
+                    ->where('class_date', '>=', now()->toDateString())
+                    ->whereRaw('current_students < max_students');
+            }),
+        ];
+    } else {
+        $rules['class_schedule_id'] = 'nullable|integer';
+    }
+
+    $validated = $request->validate($rules);
+
+    $numStudents = max(1, (int) ($request->input('number_of_students', 1)));
+
+    if (! empty($validated['class_schedule_id'])) {
+        $sched = ClassSchedule::where('id', $validated['class_schedule_id'])
+            ->where('service_id', $service->id)
+            ->firstOrFail();
+
+        if ($numStudents > $sched->getAvailableSpots()) {
+            throw ValidationException::withMessages([
+                'number_of_students' => ['Only '.$sched->getAvailableSpots().' seat(s) available for this session.'],
+            ]);
+        }
+
+        if (($service->class_type ?? 'group') === 'group' && $numStudents < $sched->min_students) {
+            throw ValidationException::withMessages([
+                'number_of_students' => ['This session requires at least '.$sched->min_students.' student(s).'],
+            ]);
+        }
+
+        $loc = $request->input('location');
+        if ($loc !== null && $loc !== '' && $loc !== 'Any location') {
+            $schedLoc = $sched->location ?: 'No Specific Location';
+            if ($schedLoc !== $loc) {
+                throw ValidationException::withMessages([
+                    'class_schedule_id' => ['Pick a session that matches your location filter, or choose “Any location”.'],
+                ]);
+            }
+        }
+    }
+
+    $validated['number_of_students'] = $numStudents;
     session()->put('booking_inquiry_' . $service->id, $validated);
 
     // Create customer account if guest, so they don't need to sign up separately

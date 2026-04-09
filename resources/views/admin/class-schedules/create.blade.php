@@ -10,9 +10,9 @@
 
         <!-- Service Selection -->
         <div class="mb-4">
-            <label for="service_id" class="block text-gray-700 text-sm font-bold mb-2">Service (Class) <span class="text-red-500">*</span></label>
+            <label for="service_id" class="block text-gray-700 text-sm font-bold mb-2">Class Schedule for<span class="text-red-500">*</span></label>
             <select id="service_id" name="service_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <option value="">Select a Service</option>
+                <option value="">Select a Class</option>
                 @foreach($services as $service)
                     <option value="{{ $service->id }}" {{ old('service_id', $selectedServiceId ?? null) == $service->id ? 'selected' : '' }}>
                         {{ $service->title }}
@@ -165,24 +165,24 @@
                 <label class="flex items-center">
                     <input type="checkbox" 
                            name="locations[]" 
-                           value="Location A"
-                           {{ in_array('Location A', old('locations', [])) ? 'checked' : '' }}
+                           value="Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210"
+                           {{ in_array('Shooter\'s Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210', old('locations', [])) ? 'checked' : '' }}
                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="text-gray-700 max-w-xs leading-tight">Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</span>
                 </label>
                 <label class="flex items-center">
                     <input type="checkbox" 
                            name="locations[]" 
-                           value="Location B"
-                           {{ in_array('Location B', old('locations', [])) ? 'checked' : '' }}
+                           value="Guns and Leather 2216 US-41, Greenbrier, Tn 37073"
+                           {{ in_array('Guns and Leather 2216 US-41, Greenbrier, Tn 37073', old('locations', [])) ? 'checked' : '' }}
                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="text-gray-700 max-w-[300px] leading-tight">Guns and Leather 2216 US-41, Greenbrier, Tn 37073</span>
                 </label>
                 <label class="flex items-center">
                     <input type="checkbox" 
                            name="locations[]" 
-                           value=""
-                           {{ in_array('', old('locations', [])) ? 'checked' : '' }}
+                           value="No Specific Location"
+                           {{ in_array('No Specific Location', old('locations', [])) ? 'checked' : '' }}
                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <span class="text-gray-700">No Specific Location</span>
                 </label>

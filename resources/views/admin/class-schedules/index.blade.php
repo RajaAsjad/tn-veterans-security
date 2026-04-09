@@ -18,7 +18,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8"></th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Slots</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Students</th>
@@ -34,7 +34,7 @@
                             $totalStudents = $serviceSchedules->sum('current_students');
                             $totalCapacity = $serviceSchedules->sum('max_students');
                         @endphp
-                        <tr class="bg-gray-50 hover:bg-gray-100 cursor-pointer" onclick="toggleScheduleDetails({{ $serviceId }})">
+                        <tr id="schedule-service-row-{{ $serviceId }}" class="bg-gray-50 hover:bg-gray-100 cursor-pointer" onclick="toggleScheduleDetails({{ $serviceId }})">
                             <td class="px-6 py-4">
                                 <i class="fas fa-chevron-down text-gray-400" id="icon-{{ $serviceId }}"></i>
                             </td>
@@ -170,8 +170,11 @@
 function toggleScheduleDetails(serviceId) {
     const detailsRow = document.getElementById('details-' + serviceId);
     const icon = document.getElementById('icon-' + serviceId);
-    
-    if (detailsRow.style.display === 'none') {
+    if (!detailsRow || !icon) {
+        return;
+    }
+    const isHidden = detailsRow.style.display === 'none' || detailsRow.style.display === '';
+    if (isHidden) {
         detailsRow.style.display = 'table-row';
         icon.classList.remove('fa-chevron-down');
         icon.classList.add('fa-chevron-up');
@@ -181,5 +184,24 @@ function toggleScheduleDetails(serviceId) {
         icon.classList.add('fa-chevron-down');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var expandKey = @json($expandServiceKey ?? null);
+    if (expandKey === null) {
+        return;
+    }
+    var details = document.getElementById('details-' + expandKey);
+    if (!details) {
+        return;
+    }
+    var hidden = details.style.display === 'none' || details.style.display === '';
+    if (hidden) {
+        toggleScheduleDetails(expandKey);
+    }
+    var row = document.getElementById('schedule-service-row-' + expandKey);
+    if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
 </script>
 @endsection

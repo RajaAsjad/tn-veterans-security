@@ -264,7 +264,7 @@
                         @endif
                             <div class="training-card-img-div">
                                 @if($service->image)
-                                    <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                    <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="training-card-img">
                                 @else
                                     <img src="{{ asset('images/training-img-' . (($loop->index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
                                 @endif
@@ -337,7 +337,7 @@
                             <a href="{{ route('service.details', $service->id) }}" class="training-card block cursor-pointer hover:opacity-90 transition-opacity" data-aos="zoom-in" data-aos-delay="{{ ($index + 1) * 100 }}">
                                 <div class="training-card-img-div">
                                     @if($service->image)
-                                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="training-card-img">
+                                        <img src="{{ $service->image_url }}" alt="{{ $service->title }}" class="training-card-img">
                                     @else
                                         <img src="{{ asset('images/training-img-' . (($index % 6) + 1) . '.png') }}" alt="{{ $service->title }}" class="training-card-img">
                                     @endif

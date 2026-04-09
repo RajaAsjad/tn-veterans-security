@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Service;
 use App\Models\ClassSchedule;
+use App\Models\Service;
 
 class ServicePageController extends Controller
 {
@@ -46,43 +46,37 @@ class ServicePageController extends Controller
                 ->limit(3)
                 ->get();
 
-        $bookingLocations = ClassSchedule::where('service_id', $service->id)
+        $bookingSchedules = ClassSchedule::where('service_id', $service->id)
             ->where('status', 'scheduled')
             ->where('class_date', '>=', now()->toDateString())
             ->whereRaw('current_students < max_students')
-            ->distinct()
-            ->orderBy('location')
+            ->orderBy('class_date')
+            ->orderBy('start_time')
+            ->get();
+
+        /** All upcoming sessions (including full) for accurate seat totals on the service page. */
+        $upcomingSchedulesOverview = ClassSchedule::query()
+            ->where('service_id', $service->id)
+            ->where('class_date', '>=', now()->toDateString())
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->orderBy('class_date')
+            ->orderBy('start_time')
+            ->get();
+
+        $bookingLocations = $bookingSchedules
             ->pluck('location')
             ->map(fn ($loc) => $loc ?: 'No Specific Location')
             ->unique()
+            ->sort()
             ->values();
-
-        $availableDates = ClassSchedule::where('service_id', $service->id)
-            ->where('status', 'scheduled')
-            ->where('class_date', '>=', now()->toDateString())
-            ->whereRaw('current_students < max_students')
-            ->orderBy('class_date')
-            ->get()
-            ->pluck('class_date')
-            ->map(fn ($d) => $d->format('Y-m-d'))
-            ->unique()
-            ->values()
-            ->toArray();
-
-        $schedule = ClassSchedule::where('service_id', $service->id)
-            ->where('status', 'scheduled')
-            ->where('class_date', '>=', now()->toDateString())
-            ->whereRaw('current_students < max_students')
-            ->orderBy('class_date')
-            ->first();
 
         return view('service-details', compact(
             'service',
             'relatedServices',
             'linkedServices',
             'bookingLocations',
-            'availableDates',
-            'schedule'
+            'bookingSchedules',
+            'upcomingSchedulesOverview'
         ));
     }
 }

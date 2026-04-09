@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceBooking;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,7 +29,42 @@ class DashboardController extends Controller
         
         // Get recent bookings
         $recentBookings = $bookings->take(5);
-        
-        return view('customer.dashboard', compact('customer', 'bookings', 'upcomingBookings', 'recentBookings'));
+
+        $bookingDates = $bookings
+            ->filter(function ($b) {
+                return $b->booking_date
+                    && in_array($b->status, ['pending', 'confirmed'], true);
+            })
+            ->groupBy(fn ($b) => $b->booking_date->format('Y-m-d'));
+
+        $gridStart = now()->copy()->startOfMonth()->startOfWeek(Carbon::SUNDAY);
+        $gridEnd = now()->copy()->endOfMonth()->endOfWeek(Carbon::SATURDAY);
+        $calendarWeeks = [];
+        $cursor = $gridStart->copy();
+        while ($cursor->lte($gridEnd)) {
+            $week = [];
+            for ($i = 0; $i < 7; $i++) {
+                $ds = $cursor->format('Y-m-d');
+                $week[] = [
+                    'day' => $cursor->day,
+                    'dateStr' => $ds,
+                    'inMonth' => $cursor->month === now()->month,
+                    'bookings' => $bookingDates->get($ds, collect()),
+                ];
+                $cursor->addDay();
+            }
+            $calendarWeeks[] = $week;
+        }
+
+        $calendarTitle = now()->format('F Y');
+
+        return view('customer.dashboard', compact(
+            'customer',
+            'bookings',
+            'upcomingBookings',
+            'recentBookings',
+            'calendarWeeks',
+            'calendarTitle'
+        ));
     }
 }
