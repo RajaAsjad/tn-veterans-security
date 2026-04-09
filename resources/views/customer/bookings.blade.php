@@ -27,6 +27,15 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900">{{ $booking->service->title }}</div>
+                        @if($booking->classSchedule)
+                            <div class="text-xs text-gray-500 mt-1">
+                                {{ $booking->classSchedule->class_date->format('M j, Y') }}
+                                · {{ \Carbon\Carbon::parse($booking->classSchedule->start_time)->format('g:i A') }}
+                                @if($booking->classSchedule->location)
+                                    · {{ $booking->classSchedule->location }}
+                                @endif
+                            </div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ $booking->booking_date->format('M d, Y') }}</div>

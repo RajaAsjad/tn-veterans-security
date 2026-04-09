@@ -4,14 +4,14 @@
     use Illuminate\Support\Str;
 @endphp
 
-@section('title', 'Services')
-@section('page-title', 'Services Management')
+@section('title', 'Classes')
+@section('page-title', 'Classes Management')
 
 @section('content')
 <div class="mb-6 flex justify-between items-center">
-    <h3 class="text-xl font-semibold">All Services</h3>
+    <h3 class="text-xl font-semibold">All Classes</h3>
     <a href="{{ route('admin.services.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-        <i class="fas fa-plus mr-2"></i> Add New Service
+        <i class="fas fa-plus mr-2"></i> Add New Class
     </a>
 </div>
 
@@ -24,6 +24,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pricing</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -78,6 +79,11 @@
                                 @endif
                             </div>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <span class="font-semibold">{{ $service->class_schedules_count ?? 0 }}</span>
+                            <span class="text-gray-400"> / </span>
+                            <a href="{{ route('admin.class-schedules.index') }}" class="text-blue-600 hover:underline text-xs" title="Manage in Class schedules">calendar</a>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $service->order }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($service->is_active)
@@ -103,7 +109,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                             No services found. <a href="{{ route('admin.services.create') }}" class="text-green-600 hover:underline">Create one now</a>
                         </td>
                     </tr>

@@ -1,5 +1,9 @@
 @extends('customer.layouts.master')
 
+@php
+    use Illuminate\Support\Str;
+@endphp
+
 @section('title', 'Dashboard')
 
 @section('content')
@@ -48,6 +52,45 @@
         </div>
     </div>
 </div>
+
+<!-- Month calendar: class dates -->
+@if(!empty($calendarWeeks))
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">My class calendar — {{ $calendarTitle }}</h2>
+    <p class="text-sm text-gray-600 mb-4">Days with a scheduled class show your booking. Open <a href="{{ route('customer.bookings') }}" class="underline" style="color: #3AA62C;">My Bookings</a> for full details.</p>
+    <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse text-center text-sm">
+            <thead>
+                <tr class="text-gray-500 text-xs uppercase tracking-wide">
+                    <th class="p-2 border border-gray-200 bg-gray-50">Sun</th>
+                    <th class="p-2 border border-gray-200 bg-gray-50">Mon</th>
+                    <th class="p-2 border border-gray-200 bg-gray-50">Tue</th>
+                    <th class="p-2 border border-gray-200 bg-gray-50">Wed</th>
+                    <th class="p-2 border border-gray-200 bg-gray-50">Thu</th>
+                    <th class="p-2 border border-gray-200 bg-gray-50">Fri</th>
+                    <th class="p-2 border border-gray-200 bg-gray-50">Sat</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($calendarWeeks as $week)
+                <tr>
+                    @foreach($week as $cell)
+                    <td class="p-1 border border-gray-200 align-top min-w-[7rem] h-24 {{ $cell['inMonth'] ? 'bg-white' : 'bg-gray-50 text-gray-400' }}">
+                        <div class="font-semibold text-gray-800 mb-1">{{ $cell['day'] }}</div>
+                        @foreach($cell['bookings'] as $cb)
+                            <a href="{{ route('customer.bookings.show', $cb->id) }}" class="block text-left text-xs rounded px-1 py-0.5 mb-1 truncate {{ $cb->status === 'confirmed' ? 'bg-green-100 text-green-900' : 'bg-amber-100 text-amber-900' }}" title="{{ $cb->service->title ?? 'Class' }}">
+                                {{ Str::limit($cb->service->title ?? 'Class', 18) }}
+                            </a>
+                        @endforeach
+                    </td>
+                    @endforeach
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
 
 <!-- Upcoming Bookings -->
 @if($upcomingBookings->count() > 0)

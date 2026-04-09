@@ -46,43 +46,27 @@ class ServicePageController extends Controller
                 ->limit(3)
                 ->get();
 
-        $bookingLocations = ClassSchedule::where('service_id', $service->id)
+        $bookingSchedules = ClassSchedule::where('service_id', $service->id)
             ->where('status', 'scheduled')
             ->where('class_date', '>=', now()->toDateString())
             ->whereRaw('current_students < max_students')
-            ->distinct()
-            ->orderBy('location')
+            ->orderBy('class_date')
+            ->orderBy('start_time')
+            ->get();
+
+        $bookingLocations = $bookingSchedules
             ->pluck('location')
             ->map(fn ($loc) => $loc ?: 'No Specific Location')
             ->unique()
+            ->sort()
             ->values();
-
-        $availableDates = ClassSchedule::where('service_id', $service->id)
-            ->where('status', 'scheduled')
-            ->where('class_date', '>=', now()->toDateString())
-            ->whereRaw('current_students < max_students')
-            ->orderBy('class_date')
-            ->get()
-            ->pluck('class_date')
-            ->map(fn ($d) => $d->format('Y-m-d'))
-            ->unique()
-            ->values()
-            ->toArray();
-
-        $schedule = ClassSchedule::where('service_id', $service->id)
-            ->where('status', 'scheduled')
-            ->where('class_date', '>=', now()->toDateString())
-            ->whereRaw('current_students < max_students')
-            ->orderBy('class_date')
-            ->first();
 
         return view('service-details', compact(
             'service',
             'relatedServices',
             'linkedServices',
             'bookingLocations',
-            'availableDates',
-            'schedule'
+            'bookingSchedules'
         ));
     }
 }

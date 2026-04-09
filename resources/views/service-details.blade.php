@@ -692,8 +692,13 @@
                                     {{-- Simple booking form (account created automatically if new) --}}
                                     <p class="text-xs text-gray-500 mt-4 mb-2">No account? We'll create one for you when
                                         you book.</p>
+                                    @php
+                                        $bookingSchedulesList = $bookingSchedules ?? collect();
+                                    @endphp
                                     <form action="{{ route('service.booking.inquiry', $service) }}" method="POST"
-                                        class="mt-2 pt-4 border-t border-gray-200 space-y-4">
+                                        class="mt-2 pt-4 border-t border-gray-200 space-y-4"
+                                        id="service-booking-form"
+                                        data-has-sessions="{{ $bookingSchedulesList->isNotEmpty() ? '1' : '0' }}">
                                         @csrf
                                         <div>
                                             <label for="booking_name" class="sd-form-label">Name <span
@@ -728,17 +733,21 @@
                                             @enderror
                                         </div>
                                         @php
-                                            $availableSeats = ($service->max_students ?? 0) - ($service->current_students ?? 0);
+                                            $svcAvail = max(0, ($service->max_students ?? 0) - ($service->current_students ?? 0));
+                                            $maxAcrossSessions = $bookingSchedulesList->isNotEmpty()
+                                                ? (int) $bookingSchedulesList->max(fn ($s) => $s->getAvailableSpots())
+                                                : max(1, $svcAvail);
                                         @endphp
                                         <div>
                                             <label for="booking_number_of_students" class="sd-form-label">Number of
-                                                students (Available Seats: {{ $availableSeats }})</label>
+                                                students <span id="booking-seats-hint" class="text-gray-500 font-normal">(select a session)</span></label>
                                             <input type="number" name="number_of_students"
                                                 id="booking_number_of_students"
                                                 value="{{ old('number_of_students', 1) }}"
-                                                min="{{ $service->min_students ?? 1 }}" max="{{ max(1, $availableSeats) }}"
+                                                min="{{ $service->min_students ?? 1 }}" max="{{ max(1, $maxAcrossSessions) }}"
                                                 class="sd-form-input @error('number_of_students') border-red-400 @enderror"
-                                                placeholder="1">
+                                                placeholder="1"
+                                                @if($bookingSchedulesList->isEmpty()) disabled @endif>
                                             @error('number_of_students')
                                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                             @enderror
@@ -746,7 +755,8 @@
                                         <div>
                                             <label for="booking_location" class="sd-form-label">Location</label>
                                             <select name="location" id="booking_location"
-                                                class="sd-form-input @error('location') border-red-400 @enderror">
+                                                class="sd-form-input @error('location') border-red-400 @enderror"
+                                                @if($bookingSchedulesList->isEmpty()) disabled @endif>
                                                 <option value="">Any location</option>
                                                 @foreach ($bookingLocations ?? collect() as $loc)
                                                     <option value="{{ $loc }}"
@@ -759,26 +769,107 @@
                                             @enderror
                                         </div>
                                         <div>
-                                            <label for="booking_preferred_date" class="sd-form-label">Preferred
-                                                date</label>
-                                            @php
-                                                $dates = $availableDates ?? [];
-                                                $minDate = count($dates) ? min($dates) : now()->toDateString();
-                                                $maxDate = count($dates) ? max($dates) : '';
-                                            @endphp
-                                            <input type="date" name="preferred_date" id="booking_preferred_date"
-                                                value="{{ old('preferred_date') }}" min="{{ $minDate }}"
-                                                @if ($maxDate) max="{{ $maxDate }}" @endif
-                                                class="sd-form-input @error('preferred_date') border-red-400 @enderror">
-                                            @error('preferred_date')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
+                                            <label for="booking_class_schedule_id" class="sd-form-label">Class session
+                                                @if($bookingSchedulesList->isNotEmpty())<span class="text-red-500">*</span>@endif
+                                            </label>
+                                            @if ($bookingSchedulesList->isEmpty())
+                                                <p class="text-amber-800 text-sm bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                                                    No upcoming sessions with open seats. Please check back later or contact us to schedule a class.
+                                                </p>
+                                            @else
+                                                <select name="class_schedule_id" id="booking_class_schedule_id" required
+                                                    class="sd-form-input @error('class_schedule_id') border-red-400 @enderror">
+                                                    <option value="">Choose date &amp; time</option>
+                                                    @foreach ($bookingSchedulesList as $s)
+                                                        @php
+                                                            $locLabel = $s->location ?: 'No Specific Location';
+                                                            $spots = $s->getAvailableSpots();
+                                                            $minSt = ($service->class_type ?? 'group') === 'group' ? (int) $s->min_students : 1;
+                                                        @endphp
+                                                        <option value="{{ $s->id }}"
+                                                            data-location-label="{{ $locLabel }}"
+                                                            data-spots="{{ $spots }}"
+                                                            data-min-students="{{ $minSt }}"
+                                                            {{ (string) old('class_schedule_id') === (string) $s->id ? 'selected' : '' }}>
+                                                            {{ $s->class_date->format('D, M j, Y') }}
+                                                            · {{ \Carbon\Carbon::parse($s->start_time)->format('g:i A') }}
+                                                            · {{ $locLabel }}
+                                                            · {{ $spots }} {{ $spots === 1 ? 'seat' : 'seats' }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('class_schedule_id')
+                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                @enderror
+                                            @endif
                                         </div>
-                                        <button type="submit"
-                                            class="sd-btn w-full mt-2 py-3 sm:py-4 text-sm sm:text-base">
+                                        <button
+                                            type="{{ $bookingSchedulesList->isEmpty() ? 'button' : 'submit' }}"
+                                            class="sd-btn w-full mt-2 py-3 sm:py-4 text-sm sm:text-base @if($bookingSchedulesList->isEmpty()) opacity-50 cursor-not-allowed @endif"
+                                            id="service-booking-submit"
+                                            @if($bookingSchedulesList->isEmpty()) disabled aria-disabled="true" @endif>
                                             <i class="fas fa-calendar-check"></i> Book Now
                                         </button>
                                     </form>
+                                    @if ($bookingSchedulesList->isNotEmpty())
+                                    <script>
+                                    (function() {
+                                        var form = document.getElementById('service-booking-form');
+                                        if (!form) return;
+                                        var locSelect = document.getElementById('booking_location');
+                                        var sessionSelect = document.getElementById('booking_class_schedule_id');
+                                        var numInput = document.getElementById('booking_number_of_students');
+                                        var hint = document.getElementById('booking-seats-hint');
+                                        if (!sessionSelect || !numInput) return;
+
+                                        var options = Array.prototype.slice.call(sessionSelect.querySelectorAll('option[data-spots]'));
+                                        var serviceMin = parseInt(numInput.getAttribute('min'), 10) || 1;
+
+                                        function selectedLocationValue() {
+                                            if (!locSelect || !locSelect.value) return '';
+                                            return locSelect.value;
+                                        }
+
+                                        function filterSessions() {
+                                            var loc = selectedLocationValue();
+                                            var firstVisible = null;
+                                            options.forEach(function(opt) {
+                                                var match = !loc || opt.getAttribute('data-location-label') === loc;
+                                                opt.hidden = !match;
+                                                opt.disabled = !match;
+                                                if (match && !firstVisible) firstVisible = opt;
+                                            });
+                                            var cur = sessionSelect.options[sessionSelect.selectedIndex];
+                                            if (cur && (cur.disabled || cur.hidden)) {
+                                                sessionSelect.value = '';
+                                            }
+                                            updateFromSession();
+                                        }
+
+                                        function updateFromSession() {
+                                            var opt = sessionSelect.options[sessionSelect.selectedIndex];
+                                            if (!opt || !opt.value) {
+                                                if (hint) hint.textContent = '(select a session)';
+                                                return;
+                                            }
+                                            var spots = parseInt(opt.getAttribute('data-spots'), 10);
+                                            var minSt = parseInt(opt.getAttribute('data-min-students'), 10) || serviceMin;
+                                            minSt = Math.max(minSt, serviceMin);
+                                            if (hint) hint.textContent = '(Available seats: ' + spots + ', min. ' + minSt + ')';
+                                            numInput.min = minSt;
+                                            numInput.max = Math.max(minSt, spots);
+                                            var v = parseInt(numInput.value, 10);
+                                            if (isNaN(v) || v < minSt) numInput.value = minSt;
+                                            if (v > spots) numInput.value = spots;
+                                        }
+
+                                        sessionSelect.addEventListener('change', updateFromSession);
+                                        if (locSelect) locSelect.addEventListener('change', filterSessions);
+                                        filterSessions();
+                                        updateFromSession();
+                                    })();
+                                    </script>
+                                    @endif
                                 </div>
                             @endif
 

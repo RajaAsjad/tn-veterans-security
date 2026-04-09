@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassSchedule;
 use App\Models\Service;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ServiceController extends Controller
 {
@@ -65,6 +68,17 @@ class ServiceController extends Controller
             'testing_in_person' => 'boolean',
             'linked_services' => 'nullable|array',
             'linked_services.*' => 'integer|exists:services,id',
+            'schedules' => 'nullable|array',
+            'schedules.*.id' => 'nullable|integer',
+            'schedules.*.class_date' => 'nullable|date',
+            'schedules.*.start_time' => 'nullable',
+            'schedules.*.duration_hours' => 'nullable|integer|min:1|max:48',
+            'schedules.*.max_students' => 'nullable|integer|min:1|max:100',
+            'schedules.*.min_students' => 'nullable|integer|min:1|max:100',
+            'schedules.*.location' => 'nullable|string|max:255',
+            'schedules.*.room' => 'nullable|string|max:255',
+            'schedules.*.instructor' => 'nullable|string|max:255',
+            'schedules.*.notes' => 'nullable|string|max:2000',
         ]);
 
         if ($request->hasFile('image')) {
@@ -85,6 +99,8 @@ class ServiceController extends Controller
         $validated['sub_titles'] = array_values(array_filter(array_map('trim', $request->input('sub_titles', []))));
 
         $service = Service::create($validated);
+
+        $this->syncClassSchedulesFromRequest($service, $request, true);
 
         if (! empty($linkedIds)) {
             $sync = [];
@@ -111,7 +127,9 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        $service->load('linkedServices');
+        $service->load(['linkedServices', 'classSchedules' => function ($q) {
+            $q->orderBy('class_date')->orderBy('start_time');
+        }]);
         $allServices = Service::where('is_active', true)->where('id', '!=', $service->id)->orderBy('order')->orderBy('title')->get();
         return view('admin.services.edit', compact('service', 'allServices'));
     }
@@ -150,6 +168,17 @@ class ServiceController extends Controller
             'testing_in_person' => 'boolean',
             'linked_services' => 'nullable|array',
             'linked_services.*' => 'integer|exists:services,id',
+            'schedules' => 'nullable|array',
+            'schedules.*.id' => 'nullable|integer',
+            'schedules.*.class_date' => 'nullable|date',
+            'schedules.*.start_time' => 'nullable',
+            'schedules.*.duration_hours' => 'nullable|integer|min:1|max:48',
+            'schedules.*.max_students' => 'nullable|integer|min:1|max:100',
+            'schedules.*.min_students' => 'nullable|integer|min:1|max:100',
+            'schedules.*.location' => 'nullable|string|max:255',
+            'schedules.*.room' => 'nullable|string|max:255',
+            'schedules.*.instructor' => 'nullable|string|max:255',
+            'schedules.*.notes' => 'nullable|string|max:2000',
         ]);
 
         if ($request->hasFile('image')) {
@@ -174,6 +203,8 @@ class ServiceController extends Controller
         $validated['sub_titles'] = array_values(array_filter(array_map('trim', $request->input('sub_titles', []))));
 
         $service->update($validated);
+
+        $this->syncClassSchedulesFromRequest($service, $request, false);
 
         $linkedIds = array_filter(array_map('intval', $linkedIds));
         $sync = [];
@@ -202,5 +233,135 @@ class ServiceController extends Controller
 
         return redirect()->route('admin.services.index')
             ->with('success', 'Service deleted successfully.');
+    }
+
+    /**
+     * Create, update, or remove class_schedules rows submitted with the service form.
+     */
+    protected function syncClassSchedulesFromRequest(Service $service, Request $request, bool $isNewService): void
+    {
+        if (! $request->has('sync_schedules')) {
+            return;
+        }
+
+        $rows = $request->input('schedules', []);
+        if (! is_array($rows)) {
+            return;
+        }
+
+        $rows = array_values(array_filter($rows, function ($row) {
+            if (! is_array($row)) {
+                return false;
+            }
+
+            return ! empty($row['class_date']) && $row['start_time'] !== null && $row['start_time'] !== '';
+        }));
+
+        if ($rows === []) {
+            foreach ($service->classSchedules as $existing) {
+                if ($existing->bookings()->exists()) {
+                    throw ValidationException::withMessages([
+                        'schedules' => ['Cannot remove all sessions: some have bookings. Edit or cancel those bookings first.'],
+                    ]);
+                }
+                $existing->delete();
+            }
+
+            return;
+        }
+
+        foreach ($rows as $i => $row) {
+            if (! empty($row['id'])) {
+                $exists = ClassSchedule::where('id', (int) $row['id'])
+                    ->where('service_id', $service->id)
+                    ->exists();
+                if (! $exists) {
+                    throw ValidationException::withMessages([
+                        "schedules.{$i}.id" => ['Invalid session for this class.'],
+                    ]);
+                }
+            } elseif (! $isNewService && Carbon::parse($row['class_date'])->lt(now()->startOfDay())) {
+                throw ValidationException::withMessages([
+                    "schedules.{$i}.class_date" => ['New sessions must be on or after today.'],
+                ]);
+            } elseif ($isNewService && Carbon::parse($row['class_date'])->lt(now()->startOfDay())) {
+                throw ValidationException::withMessages([
+                    "schedules.{$i}.class_date" => ['Session date must be on or after today.'],
+                ]);
+            }
+        }
+
+        $submittedIds = collect($rows)->pluck('id')->filter()->map(fn ($id) => (int) $id);
+
+        foreach ($service->classSchedules()->get() as $existing) {
+            if ($submittedIds->contains($existing->id)) {
+                continue;
+            }
+            if ($existing->bookings()->exists()) {
+                throw ValidationException::withMessages([
+                    'schedules' => ['Cannot remove a session that has bookings ('
+                        .$existing->class_date->format('M j, Y').'). Remove bookings first or leave the session in the list.'],
+                ]);
+            }
+            $existing->delete();
+        }
+
+        foreach ($rows as $row) {
+            $durationHours = (int) ($row['duration_hours'] ?? 8);
+            $maxStudents = (int) ($row['max_students'] ?? 10);
+            $minStudents = (int) ($row['min_students'] ?? 1);
+            if ($minStudents > $maxStudents) {
+                throw ValidationException::withMessages([
+                    'schedules' => ['Minimum students cannot exceed maximum for a session.'],
+                ]);
+            }
+
+            $startTime = Carbon::createFromFormat('Y-m-d H:i', $row['class_date'].' '.$row['start_time']);
+            $endTime = $startTime->copy()->addHours($durationHours);
+
+            $location = $row['location'] ?? null;
+            $location = $location === '' ? null : $location;
+
+            $payload = [
+                'class_date' => $row['class_date'],
+                'start_time' => Carbon::parse($row['start_time'])->format('H:i:s'),
+                'end_time' => $endTime->format('H:i:s'),
+                'duration_hours' => $durationHours,
+                'max_students' => $maxStudents,
+                'min_students' => $minStudents,
+                'room' => $row['room'] ?? null,
+                'location' => $location,
+                'instructor' => $row['instructor'] ?? null,
+                'can_overlap' => ! empty($row['can_overlap']),
+                'notes' => $row['notes'] ?? null,
+            ];
+
+            if (! empty($row['id'])) {
+                $schedule = ClassSchedule::where('id', (int) $row['id'])
+                    ->where('service_id', $service->id)
+                    ->firstOrFail();
+
+                if ($schedule->current_students > $maxStudents) {
+                    throw ValidationException::withMessages([
+                        'schedules' => ['Max students cannot be below current enrollment ('.$schedule->current_students.') for a session.'],
+                    ]);
+                }
+
+                $status = $schedule->status;
+                if ($schedule->current_students >= $maxStudents) {
+                    $status = 'full';
+                } elseif ($status === 'full' && $schedule->current_students < $maxStudents) {
+                    $status = 'scheduled';
+                }
+                $payload['status'] = $status;
+                $schedule->update($payload);
+            } else {
+                ClassSchedule::create(array_merge($payload, [
+                    'service_id' => $service->id,
+                    'current_students' => 0,
+                    'status' => 'scheduled',
+                ]));
+            }
+        }
     }
 }

@@ -71,7 +71,24 @@ class BookingController extends Controller
         if (! $isLoggedIn) {
             session()->put('url.intended', route('customer.services.checkout', $service->id));
         }
-        return view('customer.checkout', compact('service', 'inquiry', 'amountDue', 'totalAmount', 'depositAmount', 'numStudents', 'isLoggedIn'));
+
+        $selectedSchedule = null;
+        if (! empty($inquiry['class_schedule_id'])) {
+            $selectedSchedule = ClassSchedule::where('service_id', $service->id)
+                ->where('id', $inquiry['class_schedule_id'])
+                ->first();
+        }
+
+        return view('customer.checkout', compact(
+            'service',
+            'inquiry',
+            'amountDue',
+            'totalAmount',
+            'depositAmount',
+            'numStudents',
+            'isLoggedIn',
+            'selectedSchedule'
+        ));
     }
 
     /**
@@ -79,6 +96,10 @@ class BookingController extends Controller
      */
     public function processCheckout(Request $request, $serviceId)
     {
+        $request->validate([
+            'policy_acknowledged' => 'accepted',
+        ]);
+
         $customer = Auth::guard('customer')->user();
         $service = Service::where('is_active', true)->findOrFail($serviceId);
         $inquiry = session('booking_inquiry_' . $service->id);
@@ -86,28 +107,57 @@ class BookingController extends Controller
             return redirect()->route('service.details', $service->id)
                 ->with('error', 'Session expired. Please complete the booking form again.');
         }
-        $numStudents = (int) ($inquiry['number_of_students'] ?? 1);
-        $preferredDate = $inquiry['preferred_date'] ?? null;
+        $numStudents = max(1, (int) ($inquiry['number_of_students'] ?? 1));
         $preferredLocation = $inquiry['location'] ?? null;
 
         $totalAmount = ($service->price ?? 0) * $numStudents;
         $depositAmount = 20; // Fixed $20 deposit
         $remainingAmount = $totalAmount - $depositAmount;
 
-        $bookingDate = $preferredDate ? \Carbon\Carbon::parse($preferredDate)->toDateString() : now()->toDateString();
-        $location = ($preferredLocation && $preferredLocation !== 'Any location' && $preferredLocation !== 'No Specific Location')
-            ? $preferredLocation
-            : null;
+        $scheduleId = $inquiry['class_schedule_id'] ?? null;
 
         DB::beginTransaction();
         try {
+            $schedule = null;
+            if ($scheduleId) {
+                $schedule = ClassSchedule::where('service_id', $service->id)
+                    ->where('id', $scheduleId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $schedule || $schedule->status !== 'scheduled') {
+                    throw new \RuntimeException('This class session is no longer available.');
+                }
+
+                if ($numStudents > $schedule->getAvailableSpots()) {
+                    throw new \RuntimeException('Not enough seats left for this session.');
+                }
+
+                if (($service->class_type ?? 'group') === 'group' && $numStudents < $schedule->min_students) {
+                    throw new \RuntimeException("This session requires at least {$schedule->min_students} student(s).");
+                }
+            }
+
+            $bookingDate = $schedule
+                ? $schedule->class_date->toDateString()
+                : now()->toDateString();
+            $bookingTime = $schedule
+                ? Carbon::parse($schedule->start_time)->format('H:i:s')
+                : null;
+
+            $location = $schedule && $schedule->location
+                ? $schedule->location
+                : (($preferredLocation && $preferredLocation !== 'Any location' && $preferredLocation !== 'No Specific Location')
+                    ? $preferredLocation
+                    : null);
+
             $booking = ServiceBooking::create([
                 'customer_id' => $customer->id,
                 'service_id' => $service->id,
-                'class_schedule_id' => null,
+                'class_schedule_id' => $schedule?->id,
                 'location' => $location,
                 'booking_date' => $bookingDate,
-                'booking_time' => null,
+                'booking_time' => $bookingTime,
                 'status' => 'pending',
                 'booking_type' => $service->class_type ?? 'group',
                 'number_of_students' => $numStudents,
@@ -121,6 +171,10 @@ class BookingController extends Controller
             DB::commit();
             return redirect()->route('customer.booking.payment', $booking->id)
                 ->with('success', 'Please complete payment for your booking.');
+        } catch (\RuntimeException $e) {
+            DB::rollBack();
+            return redirect()->route('customer.services.checkout', $service->id)
+                ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('customer.services.checkout', $service->id)
@@ -252,47 +306,70 @@ class BookingController extends Controller
     {
         $customer = Auth::guard('customer')->user();
 
+        $validated = $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'class_schedule_id' => 'required|exists:class_schedules,id',
+            'number_of_students' => 'required|integer|min:1|max:100',
+            'group_name' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $service = Service::where('is_active', true)->findOrFail($validated['service_id']);
+
         DB::beginTransaction();
-
         try {
+            $schedule = ClassSchedule::where('id', $validated['class_schedule_id'])
+                ->where('service_id', $service->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            $service = Service::lockForUpdate()->findOrFail($request->service_id);
-
-            $availableSpots = $service->max_students - $service->current_students;
-
-            $validated = $request->validate([
-                'service_id' => 'required|exists:services,id',
-                'number_of_students' => [
-                    'required',
-                    'integer',
-                    'min:' . $service->min_students,
-                    'max:' . $availableSpots,
-                ],
-                'group_name' => 'nullable|string|max:255',
-                'notes' => 'nullable|string|max:1000',
-            ]);
-
-            if ($validated['number_of_students'] > $availableSpots) {
-                throw new \Exception("Only {$availableSpots} seats left.");
+            if (! $schedule->hasAvailableSpots()) {
+                throw new \RuntimeException('This class is full. Please pick another session.');
             }
+
+            $numStudents = (int) $validated['number_of_students'];
+            if ($numStudents > $schedule->getAvailableSpots()) {
+                throw new \RuntimeException('Only '.$schedule->getAvailableSpots().' seat(s) available.');
+            }
+
+            if (($service->class_type ?? 'group') === 'group' && $numStudents < $schedule->min_students) {
+                throw new \RuntimeException("Minimum {$schedule->min_students} student(s) required for this class.");
+            }
+
+            $totalAmount = ($service->price ?? 0) * $numStudents;
+            $depositAmount = 20;
+            $remainingAmount = $totalAmount - $depositAmount;
 
             $booking = ServiceBooking::create([
                 'customer_id' => $customer->id,
                 'service_id' => $service->id,
-                'number_of_students' => $validated['number_of_students'],
+                'class_schedule_id' => $schedule->id,
+                'location' => $schedule->location,
+                'booking_date' => $schedule->class_date->toDateString(),
+                'booking_time' => Carbon::parse($schedule->start_time)->format('H:i:s'),
                 'status' => 'pending',
+                'booking_type' => $service->class_type ?? 'group',
+                'number_of_students' => $numStudents,
+                'group_name' => $validated['group_name'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'total_amount' => $totalAmount,
+                'deposit_amount' => $depositAmount,
+                'remaining_amount' => $remainingAmount,
                 'payment_status' => 'pending',
             ]);
 
-            dd($service->fresh());
             DB::commit();
 
-            return redirect()->route('customer.booking.payment', $booking->id);
-        } catch (\Exception $e) {
-
+            return redirect()->route('customer.booking.payment', $booking->id)
+                ->with('success', 'Please complete your deposit payment.');
+        } catch (\RuntimeException $e) {
             DB::rollBack();
 
             return back()->withInput()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withInput()->with('error', 'An error occurred. Please try again.');
         }
     }
 
@@ -408,17 +485,20 @@ class BookingController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $service = Service::lockForUpdate()->findOrFail($booking->service_id);
-
-            $availableSpots = $service->max_students - $service->current_students;
-
-            if ($booking->number_of_students > $availableSpots) {
-                throw new \Exception("Seats no longer available.");
+            if ($booking->class_schedule_id) {
+                $schedule = ClassSchedule::lockForUpdate()->findOrFail($booking->class_schedule_id);
+                if ($booking->number_of_students > $schedule->getAvailableSpots()) {
+                    throw new \Exception('Seats no longer available for this session.');
+                }
+                $schedule->incrementStudentCount($booking->number_of_students);
+            } else {
+                $service = Service::lockForUpdate()->findOrFail($booking->service_id);
+                $availableSpots = $service->max_students - $service->current_students;
+                if ($booking->number_of_students > $availableSpots) {
+                    throw new \Exception('Seats no longer available.');
+                }
+                $service->increment('current_students', $booking->number_of_students);
             }
-
-            // increment seats AFTER payment success
-            $service->increment('current_students', $booking->number_of_students);
 
             $booking->update([
                 'payment_status' => $isFullPayment ? 'fully_paid' : 'deposit_paid',
@@ -455,23 +535,47 @@ class BookingController extends Controller
             'transaction_id' => 'nullable|string|max:255',
         ]);
 
-        // Create payment record
-        $payment = Payment::create([
-            'booking_id' => $booking->id,
-            'customer_id' => $customer->id,
-            'amount' => $booking->deposit_amount,
-            'payment_type' => 'deposit',
-            'payment_method' => $validated['payment_method'],
-            'transaction_id' => $validated['transaction_id'] ?? null,
-            'status' => $validated['payment_method'] === 'cash' ? 'pending' : 'completed',
-            'payment_date' => now(),
-        ]);
+        $payment = null;
+        DB::beginTransaction();
+        try {
+            if ($booking->class_schedule_id) {
+                $schedule = ClassSchedule::lockForUpdate()->findOrFail($booking->class_schedule_id);
+                if ($booking->number_of_students > $schedule->getAvailableSpots()) {
+                    throw new \RuntimeException('Seats no longer available for this session.');
+                }
+                $schedule->incrementStudentCount($booking->number_of_students);
+            } else {
+                $svc = Service::lockForUpdate()->findOrFail($booking->service_id);
+                $availableSpots = $svc->max_students - $svc->current_students;
+                if ($booking->number_of_students > $availableSpots) {
+                    throw new \RuntimeException('Seats no longer available.');
+                }
+                $svc->increment('current_students', $booking->number_of_students);
+            }
 
-        // Update booking payment status
-        $booking->update([
-            'payment_status' => 'deposit_paid',
-            'status' => 'confirmed',
-        ]);
+            $booking->update([
+                'payment_status' => 'deposit_paid',
+                'status' => 'confirmed',
+            ]);
+
+            $payment = Payment::create([
+                'booking_id' => $booking->id,
+                'customer_id' => $customer->id,
+                'amount' => $booking->deposit_amount,
+                'payment_type' => 'deposit',
+                'payment_method' => $validated['payment_method'],
+                'transaction_id' => $validated['transaction_id'] ?? null,
+                'status' => $validated['payment_method'] === 'cash' ? 'pending' : 'completed',
+                'payment_date' => now(),
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->route('customer.booking.payment', $booking->id)
+                ->with('error', $e->getMessage());
+        }
 
         // Auto-sync to QuickBooks and Bank if enabled (only for completed payments)
         if ($payment->status === 'completed') {

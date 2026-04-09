@@ -1,7 +1,7 @@
 @extends('admin.layouts.master')
 
-@section('title', 'Edit Service')
-@section('page-title', 'Edit Service')
+@section('title', 'Edit Class')
+@section('page-title', 'Edit Class')
 
 @section('content')
 <div class="bg-white rounded-lg shadow p-6">
@@ -63,7 +63,7 @@
 
 
         <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2">Sub titles (show below banner on service page)</label>
+            <label class="block text-gray-700 text-sm font-bold mb-2">Sub titles (show below banner on class page)</label>
             <p class="text-xs text-gray-500 mb-2">Add items like "Flashlight", "OC Spray", "Baton", "Restraints". These appear in a list below the hero banner on the left.</p>
             <div id="sub-titles-container" class="space-y-2">
                 @php
@@ -307,6 +307,108 @@
             </div>
         </div>
 
+        <!-- Class sessions (saved to class_schedules) -->
+        <div class="mb-6 border-t pt-4 mt-6">
+            <input type="hidden" name="sync_schedules" value="1">
+            <h3 class="text-lg font-bold mb-2">Class sessions (schedule)</h3>
+            <p class="text-sm text-gray-600 mb-3">Edit upcoming sessions or add new ones. Sessions with bookings cannot be removed from this list until those bookings are cancelled.</p>
+            <div id="schedules-container" class="space-y-4">
+                @php
+                    $schedRows = old('schedules');
+                    if (!is_array($schedRows)) {
+                        $schedRows = $service->classSchedules->map(function ($s) {
+                            return [
+                                'id' => $s->id,
+                                'class_date' => $s->class_date->format('Y-m-d'),
+                                'start_time' => \Carbon\Carbon::parse($s->start_time)->format('H:i'),
+                                'duration_hours' => $s->duration_hours,
+                                'max_students' => $s->max_students,
+                                'min_students' => $s->min_students,
+                                'location' => $s->location ?? '',
+                                'room' => $s->room,
+                                'instructor' => $s->instructor,
+                                'notes' => $s->notes,
+                                'can_overlap' => $s->can_overlap,
+                            ];
+                        })->toArray();
+                    }
+                @endphp
+                @foreach($schedRows as $idx => $sch)
+                    <div class="schedule-row border rounded-lg p-4 bg-gray-50 space-y-3">
+                        @if(!empty($sch['id']))
+                            <input type="hidden" name="schedules[{{ $idx }}][id]" value="{{ $sch['id'] }}">
+                        @endif
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">{{ $loop->iteration }}</span></span>
+                            <button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Date *</label>
+                                <input type="date" name="schedules[{{ $idx }}][class_date]" value="{{ $sch['class_date'] ?? '' }}"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Start time *</label>
+                                <input type="time" name="schedules[{{ $idx }}][start_time]" value="{{ $sch['start_time'] ?? '' }}"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Duration (hours) *</label>
+                                <input type="number" name="schedules[{{ $idx }}][duration_hours]" value="{{ $sch['duration_hours'] ?? 8 }}" min="1" max="48"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Location</label>
+                                <select name="schedules[{{ $idx }}][location]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                                    <option value="" {{ ($sch['location'] ?? '') === '' ? 'selected' : '' }}>No Specific Location</option>
+                                    <option value="Location A" {{ ($sch['location'] ?? '') === 'Location A' ? 'selected' : '' }}>Location A (Nashville)</option>
+                                    <option value="Location B" {{ ($sch['location'] ?? '') === 'Location B' ? 'selected' : '' }}>Location B (Greenbrier)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Max students *</label>
+                                <input type="number" name="schedules[{{ $idx }}][max_students]" value="{{ $sch['max_students'] ?? 10 }}" min="1" max="100"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Min students *</label>
+                                <input type="number" name="schedules[{{ $idx }}][min_students]" value="{{ $sch['min_students'] ?? 1 }}" min="1" max="100"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Room</label>
+                                <input type="text" name="schedules[{{ $idx }}][room]" value="{{ $sch['room'] ?? '' }}" maxlength="255"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Instructor</label>
+                                <input type="text" name="schedules[{{ $idx }}][instructor]" value="{{ $sch['instructor'] ?? '' }}" maxlength="255"
+                                    class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-xs font-bold mb-1">Notes</label>
+                            <input type="text" name="schedules[{{ $idx }}][notes]" value="{{ $sch['notes'] ?? '' }}" maxlength="2000"
+                                class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">
+                        </div>
+                        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="schedules[{{ $idx }}][can_overlap]" value="1" {{ !empty($sch['can_overlap']) ? 'checked' : '' }} class="rounded">
+                            Allow overlapping sessions
+                        </label>
+                    </div>
+                @endforeach
+            </div>
+            <button type="button" id="add-schedule-row" class="mt-3 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium">
+                <i class="fas fa-plus mr-1"></i> Add session
+            </button>
+            @error('schedules')
+                <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+            @enderror
+        </div>
+
         <!-- Related Services (Linked / Related Trainings) -->
         @php
             $linkedIds = old('linked_services', $service->linkedServices->pluck('id')->toArray());
@@ -426,7 +528,9 @@
         var form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
             var descriptionInput = document.getElementById('description');
-            descriptionInput.value = quill.root.innerHTML;
+            var requirementsInput = document.getElementById('requirements');
+            descriptionInput.value = descriptionQuill.root.innerHTML;
+            requirementsInput.value = requirementsQuill.root.innerHTML;
         });
 
         // Category selection UI: update selected tags display
@@ -470,6 +574,72 @@
         if (subTitlesContainer) {
             subTitlesContainer.querySelectorAll('.sub-title-remove').forEach(function(btn) {
                 btn.addEventListener('click', function() { btn.closest('.sub-title-row').remove(); });
+            });
+        }
+
+        var scheduleContainer = document.getElementById('schedules-container');
+        var scheduleIndex = scheduleContainer ? scheduleContainer.querySelectorAll('.schedule-row').length : 0;
+        var minDateStr = @json(now()->toDateString());
+
+        function renumberSchedules() {
+            if (!scheduleContainer) return;
+            scheduleContainer.querySelectorAll('.schedule-row').forEach(function(row, i) {
+                var n = row.querySelector('.schedule-num');
+                if (n) n.textContent = String(i + 1);
+            });
+        }
+
+        function bindScheduleRow(row) {
+            var rm = row.querySelector('.schedule-remove');
+            if (rm) {
+                rm.addEventListener('click', function() {
+                    row.remove();
+                    renumberSchedules();
+                });
+            }
+        }
+
+        if (scheduleContainer) {
+            scheduleContainer.querySelectorAll('.schedule-row').forEach(bindScheduleRow);
+        }
+
+        var addScheduleBtn = document.getElementById('add-schedule-row');
+        if (addScheduleBtn && scheduleContainer) {
+            addScheduleBtn.addEventListener('click', function() {
+                var i = scheduleIndex++;
+                var div = document.createElement('div');
+                div.className = 'schedule-row border rounded-lg p-4 bg-gray-50 space-y-3';
+                div.innerHTML = '<div class="flex justify-between items-center">' +
+                    '<span class="text-sm font-semibold text-gray-700">Session <span class="schedule-num">0</span></span>' +
+                    '<button type="button" class="schedule-remove text-red-600 hover:text-red-800 text-sm font-medium">Remove</button></div>' +
+                    '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Date *</label>' +
+                    '<input type="date" name="schedules[' + i + '][class_date]" min="' + minDateStr + '" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Start time *</label>' +
+                    '<input type="time" name="schedules[' + i + '][start_time]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Duration (hours) *</label>' +
+                    '<input type="number" name="schedules[' + i + '][duration_hours]" value="8" min="1" max="48" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Location</label>' +
+                    '<select name="schedules[' + i + '][location]" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700">' +
+                    '<option value="">No Specific Location</option>' +
+                    '<option value="Location A">Location A (Nashville)</option>' +
+                    '<option value="Location B">Location B (Greenbrier)</option></select></div></div>' +
+                    '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Max students *</label>' +
+                    '<input type="number" name="schedules[' + i + '][max_students]" value="10" min="1" max="100" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Min students *</label>' +
+                    '<input type="number" name="schedules[' + i + '][min_students]" value="1" min="1" max="100" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Room</label>' +
+                    '<input type="text" name="schedules[' + i + '][room]" maxlength="255" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Instructor</label>' +
+                    '<input type="text" name="schedules[' + i + '][instructor]" maxlength="255" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div></div>' +
+                    '<div><label class="block text-gray-700 text-xs font-bold mb-1">Notes</label>' +
+                    '<input type="text" name="schedules[' + i + '][notes]" maxlength="2000" class="shadow border rounded w-full py-2 px-2 text-sm text-gray-700"></div>' +
+                    '<label class="inline-flex items-center gap-2 text-sm text-gray-700">' +
+                    '<input type="checkbox" name="schedules[' + i + '][can_overlap]" value="1" class="rounded"> Allow overlapping sessions</label>';
+                scheduleContainer.appendChild(div);
+                bindScheduleRow(div);
+                renumberSchedules();
             });
         }
     });
