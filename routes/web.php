@@ -214,6 +214,9 @@ Route::get('/renewals', function () {
     return view('renewals', compact('services'));
 })->name('renewals');
 
+// Dallas Law training page (canonical URL; same content as /service/dallas-law)
+Route::get('/dallas-law', fn () => app(ServicePageController::class)->showBySlug('dallas-law'))->name('dallas-law');
+
 
 
 
