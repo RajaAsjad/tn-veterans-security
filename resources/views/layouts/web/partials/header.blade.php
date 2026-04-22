@@ -17,6 +17,7 @@
         'training' => (request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
             || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage,
         'affiliated' => request()->routeIs('affiliated-services'),
+        'nra' => request()->routeIs('nra-services'),
         'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage,
         'testimonials' => request()->routeIs('testimonials'),
         'contact' => request()->routeIs('contact'),
@@ -36,6 +37,14 @@
         ['name' => 'SafetyTN Security Solutions', 'url' => 'https://www.safetytennessee.com/', 'external' => true],
         ['name' => 'Shooter\'s Nashville', 'url' => 'https://www.shootersnashville.com/', 'external' => true],
         ['name' => 'US Law Shield', 'url' => 'https://members.uslawshield.com/login', 'external' => true],
+    ];
+    $nraAffiliates = [
+        ['name' => 'Join NRA', 'url' => 'https://membership.nra.org/recruiters/Join/XI048340', 'external' => true],
+        ['name' => 'TNPTI', 'url' => 'https://www.tnpti.com/', 'external' => true],
+        ['name' => 'SouthwindS Cattle Company', 'url' => 'https://www.southwindscattleco.com/', 'external' => true],
+        ['name' => 'Raven 1 Tactical', 'url' => 'https://raven1tactical.com/', 'external' => true],
+        ['name' => 'Blue Line Security', 'url' => 'https://www.nashvillebluelinesecurity.com/services', 'external' => true],
+        ['name' => 'Tactical Rifles and Ammo', 'url' => 'https://tacticalriflesandammollc.com/', 'external' => true], 
     ];
 @endphp
 
@@ -171,6 +180,27 @@
                         </div>
                     </div>
                 </div>
+                <!-- NRA dropdown (NRA) -->
+                <div class="relative nav-group h-full flex items-center">
+                    <a href="{{ route('nra-services') }}" class="destop-nav-link {{ $navActive['nra'] ? 'nav-link-active' : '' }}">
+                    <span class="destop-nav-link flex items-center gap-1 py-8 cursor-default {{ $navActive['nra'] ? 'nav-link-active' : '' }}">
+                    NRA
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </span>
+                    </a>
+                    <div class="dropdown-simple">
+                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                            @foreach($nraAffiliates as $aff)
+                            <!-- add target="_blank" rel="noopener noreferrer" if external is true -->
+                                <a href="{{ $aff['url'] }}" class="category-item" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
+                                    {{ $aff['name'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Security Training with dropdown (Initial Security, Renewals) -->
                 <div class="relative nav-group h-full flex items-center">
@@ -271,6 +301,25 @@
                 <div id="mobileServicesMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
                     <div class="p-4 grid grid-cols-1 gap-2">
                         @foreach($servicesAffiliates as $aff)
+                            <a href="{{ $aff['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
+                                {{ $aff['name'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile NRA (NRA) accordion -->
+            <div class="mobile-nav-group">
+
+                <button id="mobileNRAToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['nra'] ? 'nav-link-active' : '' }}">
+                    <span>NRA</span>
+                    <svg id="mobileNRAAIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="mobileNRAMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
+                    <div class="p-4 grid grid-cols-1 gap-2">
+                        @foreach($nraAffiliates as $aff)
                             <a href="{{ $aff['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
                                 {{ $aff['name'] }}
                             </a>
