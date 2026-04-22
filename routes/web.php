@@ -75,6 +75,10 @@ Route::get('/training-services', function () {
 Route::get('/affiliated-services', function () {
     return view('affiliated-services');
 })->name('affiliated-services');
+
+Route::get('/nra-services', function () {
+    return view('nra-services');
+})->name('nra-services');
 // Services by Page
 
 

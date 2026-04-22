@@ -1,6 +1,6 @@
 @extends('layouts.web.master')
 
-@section('title', 'Affiliated Services - Partners & Organizations')
+@section('title', 'NRA Services - NRA Resources & Organizations')
 
 @section('content')
     <main class="overflow-hidden">
@@ -11,10 +11,10 @@
             <div class="container mx-auto px-4 lg:px-10 relative z-10">
                 <div class="max-w-[1000px]">
                     <h2 class="inner-hero-title" data-aos="fade-down" data-aos-duration="1000">
-                        <span class="text-[var(--primary-color)]">Affiliated</span> Services
+                        <span class="text-[var(--primary-color)]">NRA</span> Services
                     </h2>
                     <p class="inner-hero-subtext" data-aos="fade-up" data-aos-delay="200">
-                        Our trusted partners and affiliated organizations.
+                        NRA resources, programs, and related organizations.
                     </p>
                 </div>
             </div>
@@ -26,27 +26,25 @@
             <div class="container mx-auto px-4 lg:px-10">
                 <div class="text-center mb-12" data-aos="fade-up">
                     <h2 class="text-[30px] md:text-[45px] font-bold text-[var(--text-color)] uppercase mb-4">
-                        Partners & <span class="text-[var(--primary-color)]">Organizations</span>
+                        NRA <span class="text-[var(--primary-color)]">Resources</span>
                     </h2>
                     <p class="text-[16px] md:text-[20px] text-[#666] max-w-2xl mx-auto">
-                        We work with industry-leading organizations. Use the links below to learn more (opens in a new tab).
+                        NRA and related programs. Use the links below to learn more (opens in a new tab).
                     </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     @php
-                        $affiliates = [
-                            ['initials' => 'ASG', 'name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'blurb' => 'Security services and professional protection.'],
-                            ['initials' => 'C1S', 'name' => 'Code One Safety', 'url' => 'https://www.codeonesafety.com/', 'blurb' => 'Safety training and workplace preparedness.'],
-                            ['initials' => 'ESS', 'name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'blurb' => 'Tennessee-based security and protective services.'],
-                            ['initials' => 'G+L', 'name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'blurb' => 'Firearms, gear, and related retail services.'],
-                            ['initials' => 'JSC', 'name' => 'JS Security Consulting', 'url' => 'https://www.jssecurityconsulting.com/', 'blurb' => 'Security consulting and professional guidance.'],
-                            ['initials' => 'STN', 'name' => 'SafetyTN Security Solutions', 'url' => 'https://www.safetytennessee.com/', 'blurb' => 'Security solutions across Tennessee.'],
-                            ['initials' => 'SN', 'name' => "Shooter's Nashville", 'url' => 'https://www.shootersnashville.com/', 'blurb' => 'Shooting sports and range-related services in Nashville.'],
-                            ['initials' => 'USLS', 'name' => 'US Law Shield', 'url' => 'https://members.uslawshield.com/login', 'blurb' => 'Legal defense and education for responsible gun owners.'],
+                        $nraAffiliates = [
+                            ['initials' => 'JNRA', 'name' => 'Join NRA', 'url' => 'https://membership.nra.org/recruiters/Join/XI048340', 'blurb' => 'Join the National Rifle Association and support our mission to protect the Second Amendment.'],
+                            ['initials' => 'TNPTI', 'name' => 'TNPTI', 'url' => 'https://www.tnpti.com/', 'blurb' => 'Tennessee Peace Officer Training Institute — police training and certification.'],
+                            ['initials' => 'SSC', 'name' => 'SouthwindS Cattle Company', 'url' => 'https://www.southwindscattleco.com/', 'blurb' => 'Cattle ranching and agriculture in Tennessee.'],
+                            ['initials' => 'R1T', 'name' => 'Raven 1 Tactical', 'url' => 'https://raven1tactical.com/', 'blurb' => 'Tactical training and equipment for law enforcement and military.'],
+                            ['initials' => 'BL', 'name' => 'Blue Line Security', 'url' => 'https://www.nashvillebluelinesecurity.com/services', 'blurb' => 'Security services and training for businesses and individuals.'],
+                            ['initials' => 'TR', 'name' => 'Tactical Rifles and Ammo', 'url' => 'https://tacticalriflesandammollc.com/', 'blurb' => 'Tactical rifles and ammunition for law enforcement and military.'],
                         ];
                     @endphp
-                    @foreach ($affiliates as $index => $affiliate)
+                    @foreach ($nraAffiliates as $index => $affiliate)
                         @php
                             $delay = 100 + ($index * 50);
                             $initialLen = strlen($affiliate['initials']);
@@ -70,13 +68,13 @@
             <div class="container mx-auto px-4 lg:px-10 relative z-10">
                 <div class="text-left md:text-center lg:text-left md:mx-auto lg:mx-0">
                     <h2 class="mb-5" data-aos="fade-up">
-                        <span class="block text-[18px] md:text-[24px] text-white font-normal">Questions about our</span>
+                        <span class="block text-[18px] md:text-[24px] text-white font-normal">Questions about</span>
                         <span class="block text-[30px] md:text-[45px] font-black leading-tight uppercase">
-                            <span class="text-[#F6CB42]">PARTNERS</span> <span class="text-[#FFFFFF]">?</span>
+                            <span class="text-[#F6CB42]">NRA</span> <span class="text-[#FFFFFF]">RESOURCES</span> <span class="text-[#FFFFFF]">?</span>
                         </span>
                     </h2>
                     <p class="text-[16px] md:text-[20px] text-white font-normal mb-8 md:mx-auto lg:mx-0" data-aos="fade-up" data-aos-delay="200">
-                        Contact us for more information about our affiliated services and training programs.
+                        Contact us for more information about NRA-related training and programs.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-start md:justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="400">
                         <a href="{{ route('contact') }}" class="btn primary-button !text-center">Contact Us</a>
