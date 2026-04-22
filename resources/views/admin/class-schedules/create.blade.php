@@ -181,6 +181,22 @@
                 <label class="flex items-center">
                     <input type="checkbox" 
                            name="locations[]" 
+                           value="Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217"
+                           {{ in_array('Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217', old('locations', [])) ? 'checked' : '' }}
+                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="text-gray-700 max-w-[300px] leading-tight">Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="locations[]" 
+                           value="TNPTI 1630 S. Church St Murfreesboro, Tn 37130"
+                           {{ in_array('TNPTI 1630 S. Church St Murfreesboro, Tn 37130', old('locations', [])) ? 'checked' : '' }}
+                           class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="text-gray-700 max-w-[300px] leading-tight">TNPTI 1630 S. Church St Murfreesboro, Tn 37130</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" 
+                           name="locations[]" 
                            value="No Specific Location"
                            {{ in_array('No Specific Location', old('locations', [])) ? 'checked' : '' }}
                            class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
