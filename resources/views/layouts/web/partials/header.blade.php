@@ -3,7 +3,6 @@
     $trainingCategories = [
         ['name' => 'NRA', 'url' => route('services', ['category' => 'nra']), 'match' => ['type' => 'services', 'category' => 'nra']],
         ['name' => 'Red Cross', 'url' => route('services', ['category' => 'red_cross']), 'match' => ['type' => 'services', 'category' => 'red_cross']],
-        ['name' => 'ASP 4 Hours (Less than Lethal)', 'url' => route('service.by.slug', 'asp-4-hr'), 'match' => ['type' => 'slug', 'slug' => 'asp-4-hr']],
         ['name' => 'Handgun Carry Permit', 'url' => route('services', ['category' => 'handgun_carry_permit']), 'match' => ['type' => 'services', 'category' => 'handgun_carry_permit']],
         ['name' => 'Active Shooter 8 Hours', 'url' => route('service.by.slug', 'active-shooter'), 'match' => ['type' => 'slug', 'slug' => 'active-shooter']],
         ['name' => 'Force Science (De-Escalation)', 'url' => route('service.by.slug', 'forced-science-de-escalation'), 'match' => ['type' => 'slug', 'slug' => 'forced-science-de-escalation']],
@@ -11,13 +10,14 @@
     $path = request()->path();
     $isDallasLawPage = request()->routeIs('dallas-law')
         || (request()->routeIs('service.by.slug') && (string) request()->route('slug') === 'dallas-law');
+    $isAsp4HrPage = request()->routeIs('service.by.slug') && (string) request()->route('slug') === 'asp-4-hr';
     $navActive = [
         'home' => $path === '' || $path === '/',
         'about' => request()->routeIs('about'),
         'training' => (request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
-            || str_starts_with($path, 'training-services')) && ! $isDallasLawPage,
+            || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage,
         'affiliated' => request()->routeIs('affiliated-services'),
-        'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage,
+        'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage,
         'testimonials' => request()->routeIs('testimonials'),
         'contact' => request()->routeIs('contact'),
         'login' => request()->routeIs('customer.login'),
@@ -28,10 +28,13 @@
         'services_all' => request()->routeIs('services') && ! request()->filled('category') && ! request()->filled('subcategory'),
     ];
     $servicesAffiliates = [
-        ['name' => 'NRA', 'url' => '#', 'external' => true],
-        ['name' => 'ASP', 'url' => '#', 'external' => true],
-        ['name' => 'Red Cross', 'url' => '#', 'external' => true],
-        ['name' => 'APEX SECURITY', 'url' => '#', 'external' => true],
+        ['name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'external' => true],
+        ['name' => 'Code One Safety', 'url' => 'https://www.codeonesafety.com/', 'external' => true],
+        ['name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'external' => true],
+        ['name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'external' => true],
+        ['name' => 'JS Security Consulting', 'url' => 'https://www.jssecurityconsulting.com/', 'external' => true],
+        ['name' => 'SafetyTN Security Solutions', 'url' => 'https://www.safetytennessee.com/', 'external' => true],
+        ['name' => 'Shooter\'s Nashville', 'url' => 'https://www.shootersnashville.com/', 'external' => true],
         ['name' => 'US Law Shield', 'url' => 'https://members.uslawshield.com/login', 'external' => true],
     ];
 @endphp
@@ -57,29 +60,30 @@
     .category-item {
         color: #333333;
         padding: 0.75rem 1.5rem;
+        padding-left: calc(1.5rem - 4px);
         display: block;
         font-weight: 500;
         font-size: 16px;
-        transition: all 0.2s ease;
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         border-bottom: 1px solid #f0f0f0;
+        border-left: 4px solid transparent;
+        box-sizing: border-box;
     }
     .category-item:last-child {
         border-bottom: none;
     }
     .category-item:hover {
-        background-color: #f9f9f9;
-        padding-left: 2rem;
-        color: var(--primary-color);
+        background-color: rgba(58, 166, 44, 0.1);
+        color: var(--primary-color); 
     }
     .category-item.category-item-active {
         background-color: rgba(58, 166, 44, 0.1);
         color: var(--primary-color);
         font-weight: 600;
-        border-left: 3px solid var(--primary-color);
-        padding-left: calc(1.5rem - 3px);
+        border-left-color: var(--primary-color);
     }
     .category-item.category-item-active:hover {
-        padding-left: calc(2rem - 3px);
+        background-color: rgba(58, 166, 44, 0.12);
     }
     .mobile-sub-menu {
         max-height: 0;
@@ -138,7 +142,7 @@
                                         $catItemActive = request()->routeIs('service.by.slug') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
                                     }
                                 @endphp
-                                <a href="{{ $cat['url'] }}" class="category-item {{ $catItemActive ? 'category-item-active' : '' }} {{ $cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '' }}">
+                                <a href="{{ $cat['url'] }}" class="category-item {{ $catItemActive ? 'category-item-active' : '' }}">
                                     {{ $cat['name'] }}
                                 </a>
                             @endforeach
@@ -181,7 +185,8 @@
                         <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
                             <a href="{{ route('intial-security') }}" class="category-item {{ request()->routeIs('intial-security') ? 'category-item-active' : '' }}">Initial Security</a>
                             <a href="{{ route('renewals') }}" class="category-item {{ request()->routeIs('renewals') ? 'category-item-active' : '' }}">Renewals</a>
-                            <a href="{{ route('dallas-law') }}" class="category-item {{ $isDallasLawPage ? 'category-item-active' : '' }}">Dallas Law</a>
+                            <a href="{{ route('service.by.slug', 'asp-4-hr') }}" class="category-item asp-4-modal-trigger {{ $isAsp4HrPage ? 'category-item-active' : '' }}">ASP 4 Hours (Less than Lethal)</a>
+                            <a href="{{ route('dallas-law') }}" class="category-item dallas-law-trigger {{ $isDallasLawPage ? 'category-item-active' : '' }}">Dallas Law</a>
                         </div>
                     </div>
                 </div>
@@ -243,7 +248,7 @@
                                     $mCatItemActive = request()->routeIs('service.by.slug') && (string) request()->route('slug') === (string) ($cat['match']['slug'] ?? '');
                                 }
                             @endphp
-                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $mCatItemActive ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }} {{ $cat['name'] === 'ASP 4 Hours (Less than Lethal)' ? 'asp-4-modal-trigger' : '' }}">
+                            <a href="{{ $cat['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $mCatItemActive ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">
                                 {{ $cat['name'] }}
                             </a>
                         @endforeach
@@ -286,7 +291,8 @@
                     <div class="p-4 grid grid-cols-1 gap-2">
                         <a href="{{ route('intial-security') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('intial-security') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Initial Security</a>
                         <a href="{{ route('renewals') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ request()->routeIs('renewals') ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Renewals</a>
-                        <a href="{{ route('dallas-law') }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $isDallasLawPage ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Dallas Law</a>
+                        <a href="{{ route('service.by.slug', 'asp-4-hr') }}" class="mobile-nav-links asp-4-modal-trigger text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $isAsp4HrPage ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">ASP 4 Hours (Less than Lethal)</a>
+                        <a href="{{ route('dallas-law') }}" class="mobile-nav-links dallas-law-trigger text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 {{ $isDallasLawPage ? 'border-(--primary-color) bg-emerald-50 font-semibold text-(--primary-color)' : 'border-transparent hover:border-(--primary-color)' }}">Dallas Law</a>
                     </div>
                 </div>
             </div>

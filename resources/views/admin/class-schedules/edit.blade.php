@@ -125,8 +125,10 @@
                         name="location" 
                         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     <option value="">No Specific Location</option>
-                    <option value="Location A" {{ old('location', $classSchedule->location) === 'Location A' ? 'selected' : '' }}>Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</option>
-                    <option value="Location B" {{ old('location', $classSchedule->location) === 'Location B' ? 'selected' : '' }}>Guns and Leather 2216 US-41, Greenbrier, Tn 37073</option>
+                    <option value="Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210" {{ old('location', $classSchedule->location) === 'Shooter\'s Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210' ? 'selected' : '' }}>Shooter's Guns, Ammo, and Range 575  Murfreesboro Pike, Nashville, Tn 37210</option>
+                    <option value="Guns and Leather 2216 US-41, Greenbrier, Tn 37073" {{ old('location', $classSchedule->location) === 'Guns and Leather 2216 US-41, Greenbrier, Tn 37073' ? 'selected' : '' }}>Guns and Leather 2216 US-41, Greenbrier, Tn 37073</option>
+                    <option value="Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217" {{ old('location', $classSchedule->location) === 'Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217' ? 'selected' : '' }}>Code Blue CPR 640 Spence Lane suite 125 Nashville, tn 37217</option>
+                    <option value="TNPTI 1630 S. Church St Murfreesboro, Tn 37130" {{ old('location', $classSchedule->location) === 'TNPTI 1630 S. Church St Murfreesboro, Tn 37130' ? 'selected' : '' }}>TNPTI 1630 S. Church St Murfreesboro, Tn 37130</option>
                 </select>
                 @error('location')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
