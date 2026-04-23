@@ -31,6 +31,7 @@
     $servicesAffiliates = [
         ['name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'external' => true],
         ['name' => 'Code One Safety', 'url' => 'https://www.codeonesafety.com/', 'external' => true],
+        ['name' => 'Code Blue CPR Services', 'url' => 'https://codebluecprservices.com/', 'external' => true],
         ['name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'external' => true],
         ['name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'external' => true],
         ['name' => 'JS Security Consulting', 'url' => 'https://www.jssecurityconsulting.com/', 'external' => true],
