@@ -38,6 +38,7 @@
                         $affiliates = [
                             ['initials' => 'ASG', 'name' => 'APEX Security Group', 'url' => 'https://apexsgi.com/home', 'blurb' => 'Security services and professional protection.'],
                             ['initials' => 'C1S', 'name' => 'Code One Safety', 'url' => 'https://www.codeonesafety.com/', 'blurb' => 'Safety training and workplace preparedness.'],
+                            ['initials' => 'CBP', 'name' => 'Code Blue CPR Services', 'url' => 'https://codebluecprservices.com/', 'blurb' => 'CPR and first aid training and certification.'],
                             ['initials' => 'ESS', 'name' => 'Elite Security Service', 'url' => 'https://www.elitesecuritytn.org/', 'blurb' => 'Tennessee-based security and protective services.'],
                             ['initials' => 'G+L', 'name' => 'Guns & Leather', 'url' => 'https://www.gunsandleather.com/', 'blurb' => 'Firearms, gear, and related retail services.'],
                             ['initials' => 'JSC', 'name' => 'JS Security Consulting', 'url' => 'https://www.jssecurityconsulting.com/', 'blurb' => 'Security consulting and professional guidance.'],
