@@ -16,8 +16,7 @@
         'about' => request()->routeIs('about'),
         'training' => (request()->routeIs(['services', 'service.details', 'service.by.slug', 'handgun.subcategories'])
             || str_starts_with($path, 'training-services')) && ! $isDallasLawPage && ! $isAsp4HrPage,
-        'affiliated' => request()->routeIs('affiliated-services'),
-        'nra' => request()->routeIs('nra-services'),
+        'affiliated' => request()->routeIs(['affiliated-services', 'nra-services']),
         'security' => request()->routeIs(['security-training', 'intial-security', 'renewals']) || $isDallasLawPage || $isAsp4HrPage,
         'testimonials' => request()->routeIs('testimonials'),
         'contact' => request()->routeIs('contact'),
@@ -104,6 +103,33 @@
         max-height: 1000px;
         transition: max-height 0.5s ease-in;
     }
+    .affiliated-nra-sub > a.category-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+    .affiliated-nra-sub {
+        position: relative;
+    }
+    .affiliated-nra-flyout {
+        position: absolute;
+        left: 100%;
+        top: 0;
+        width: 280px;
+        padding-left: 0.35rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease-out;
+        z-index: 110;
+        pointer-events: none;
+    }
+    .affiliated-nra-sub:hover .affiliated-nra-flyout {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
 </style>
 
 <header class="relative w-full z-50 ">
@@ -171,34 +197,33 @@
                     </span>
                     </a>
                     <div class="dropdown-simple">
-                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-visible py-2">
                             @foreach($servicesAffiliates as $aff)
                             <!-- add target="_blank" rel="noopener noreferrer" if external is true -->
                                 <a href="{{ $aff['url'] }}" class="category-item" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
                                     {{ $aff['name'] }}
                                 </a>
                             @endforeach
-                        </div>
-                    </div>
-                </div>
-                <!-- NRA dropdown (NRA) -->
-                <div class="relative nav-group h-full flex items-center">
-                    <a href="{{ route('nra-services') }}" class="destop-nav-link {{ $navActive['nra'] ? 'nav-link-active' : '' }}">
-                    <span class="destop-nav-link flex items-center gap-1 py-8 cursor-default {{ $navActive['nra'] ? 'nav-link-active' : '' }}">
-                    NRA
-                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </span>
-                    </a>
-                    <div class="dropdown-simple">
-                        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
-                            @foreach($nraAffiliates as $aff)
-                            <!-- add target="_blank" rel="noopener noreferrer" if external is true -->
-                                <a href="{{ $aff['url'] }}" class="category-item" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
-                                    {{ $aff['name'] }}
+                            <div class="affiliated-nra-sub border-t border-gray-100">
+                                <a href="{{ route('nra-services') }}" class="category-item {{ request()->routeIs('nra-services') ? 'category-item-active' : '' }}">
+                                    <span class="min-w-0">NRA</span>
+                                    <svg class="w-4 h-4 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
                                 </a>
-                            @endforeach
+                                <div class="affiliated-nra-flyout">
+                                    <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden py-2">
+                                        @foreach($nraAffiliates as $aff)
+                                            <a href="{{ $aff['url'] }}" class="category-item" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
+                                                {{ $aff['name'] }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="https://www.regimentsecuritygroup.com" class="category-item" target="_blank" rel="noopener noreferrer">
+                            Regiment Security Group
+                                </a>
                         </div>
                     </div>
                 </div>
@@ -306,25 +331,14 @@
                                 {{ $aff['name'] }}
                             </a>
                         @endforeach
-                    </div>
-                </div>
-            </div>
-            <!-- Mobile NRA (NRA) accordion -->
-            <div class="mobile-nav-group">
-
-                <button id="mobileNRAToggle" class="mobile-nav-links w-full flex items-center justify-between focus:outline-none {{ $navActive['nra'] ? 'nav-link-active' : '' }}">
-                    <span>NRA</span>
-                    <svg id="mobileNRAAIcon" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-                <div id="mobileNRAMenu" class="mobile-sub-menu bg-gray-50 rounded-xl mx-2">
-                    <div class="p-4 grid grid-cols-1 gap-2">
-                        @foreach($nraAffiliates as $aff)
-                            <a href="{{ $aff['url'] }}" class="mobile-nav-links text-[16px]! py-3 px-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color)" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
-                                {{ $aff['name'] }}
-                            </a>
-                        @endforeach
+                        <div class="border-t border-gray-200 pt-3 mt-1 col-span-1">
+                            <a href="{{ route('nra-services') }}" class="mobile-nav-links text-[16px]! py-2 px-4 font-semibold text-gray-800 block border-l-4 {{ request()->routeIs('nra-services') ? 'border-(--primary-color) bg-emerald-50 text-(--primary-color)' : 'border-transparent' }}">NRA</a>
+                            @foreach($nraAffiliates as $aff)
+                                <a href="{{ $aff['url'] }}" class="mobile-nav-links text-[16px]! py-2.5 pl-6 pr-4 hover:bg-white rounded-lg block border-l-4 border-transparent hover:border-(--primary-color) text-gray-700" @if(!empty($aff['external'])) target="_blank" rel="noopener noreferrer" @endif>
+                                    {{ $aff['name'] }}
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
